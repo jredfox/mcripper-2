@@ -103,6 +103,25 @@ public class McRipper {
 			dl(assetUrl, new File(workingDir, "assets/objects/" + assetSha1Char + "/" + assetSha1).getPath(), assetSha1);
 		}
 		
+		//download the logging
+		if(json.containsKey("logging"))
+		{
+			JSONObject logging = json.getJSONObject("logging");
+			for(String key : logging.keySet())
+			{
+				JSONObject logEntry = logging.getJSONObject(key);
+				JSONObject logFile = logEntry.getJSONObject("file");
+				String logId = logFile.getString("id");
+				String logSha1 = logFile.getString("sha1");
+				String logUrl = logFile.getString("url");
+				dl(logUrl, new File(workingDir, "assets/log_configs/" + logId).getPath(), logSha1);
+			}
+		}
+		else
+		{
+//			System.out.println("missing logging:" + version);
+		}
+		
 		//download the client data versions, mappings, servers
 		JSONObject clientData = json.getJSONObject("downloads");
 		for(String key : clientData.keySet())
@@ -142,7 +161,7 @@ public class McRipper {
 		if(hasHash && !hashes.add(hash))
 			return output;
 	    if(hasHash && output.exists())
-	    	output = new File(output.getParent(), DeDuperUtil.getTrueName(output) + "-" + hash + DeDuperUtil.getExtension(output));
+	    	output = new File(output.getParent(), DeDuperUtil.getTrueName(output) + "-" + hash + DeDuperUtil.getExtensionFull(output));
 		InputStream inputStream = new URL(url).openStream();
         output.getParentFile().mkdirs();
         IOUtils.copy(inputStream, new FileOutputStream(output));
