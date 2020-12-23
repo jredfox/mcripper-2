@@ -6,6 +6,8 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -58,7 +60,7 @@ public class McRipper {
 			String type = jsonVersion.getString("type");
 			String time = jsonVersion.getString("time");
 			File minorVersion = dl(url, workingDir.getPath() + "/" + type + "/" + version + "/" + version + ".json", minorHash);
-			hashes.add(DeDuperUtil.getSHA1(minorVersion));
+			hashes.add(getSHA1(minorVersion));
 		}
 		System.out.println("Done in:" + (System.currentTimeMillis() - ms) / 1000L + " seconds");
 	}
@@ -70,8 +72,13 @@ public class McRipper {
 		List<File> files = DeDuperUtil.getDirFiles(dir);
 		Set<String> hashes = new HashSet<>(files.size());
 		for(File f : files)
-			hashes.add(DeDuperUtil.getSHA1(f).toLowerCase());
+			hashes.add(getSHA1(f));
 		return hashes;
+	}
+
+	public static String getSHA1(File f) 
+	{
+		return DeDuperUtil.getSHA1(f).toLowerCase();
 	}
 
 	public static JSONObject getJSON(File file)
@@ -101,7 +108,8 @@ public class McRipper {
 	}
 	
 	/**
-	 * download a file to the path specified. With timestamp and hashing support. The hash is in case the file destination already exists. To allow override pass "override" as the hash
+	 * download a file to the path specified. With timestamp and hashing support. 
+	 * The hash is in case the file destination already exists. To allow override pass "override" as the hash
 	 */
 	public static File dl(String url, String path, long timestamp, String hash) throws FileNotFoundException, IOException, IllegalArgumentException
 	{
