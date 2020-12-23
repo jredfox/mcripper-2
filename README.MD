@@ -8,4 +8,4 @@ planned commands:
 - checkOmni
 - checkBetacraft
 - checkAll
-- rip dir outputDir --assetsDir=value
+- rip assetsIndex outputDir --assetsDir=value
