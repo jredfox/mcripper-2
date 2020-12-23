@@ -1,25 +1,15 @@
 package jredfox.mcripper;
 
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStreamWriter;
 import java.net.URL;
-import java.nio.charset.StandardCharsets;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
-import com.jml.evilnotch.lib.JavaUtil;
 import com.jml.evilnotch.lib.json.JSONArray;
 import com.jml.evilnotch.lib.json.JSONObject;
-import com.jml.evilnotch.lib.json.serialize.JSONSerializer;
 
 import jredfox.filededuper.command.Command;
 import jredfox.filededuper.util.DeDuperUtil;
@@ -100,9 +90,18 @@ public class McRipper {
 		String id = assetsIndex.getString("id");
 		String sha1 = assetsIndex.getString("sha1").toLowerCase();
 		String url = assetsIndex.getString("url");
-		dl(url, new File(workingDir, "assets/indexes/" + id + ".json").getPath(), sha1);
+		File assetsIndexFile = dl(url, new File(workingDir, "assets/indexes/" + id + ".json").getPath(), sha1);
 		
-		//TODO: download the assetsIndex data
+		//download the assetsIndex data
+		JSONObject objects = RippedUtils.getJSON(assetsIndexFile).getJSONObject("objects");
+		for(String key : objects.keySet())
+		{
+			JSONObject assetJson = objects.getJSONObject(key);
+			String assetSha1 = assetJson.getString("hash");
+			String assetSha1Char = assetSha1.substring(0, 2);
+			String assetUrl = "https://resources.download.minecraft.net/" + assetSha1Char + "/" + assetSha1;
+			dl(assetUrl, new File(workingDir, "assets/objects/" + assetSha1Char + "/" + assetSha1).getPath(), assetSha1);
+		}
 		
 		//download the client data versions, mappings, servers
 		JSONObject clientData = json.getJSONObject("downloads");
@@ -138,16 +137,16 @@ public class McRipper {
 		if(hash == null)
 			throw new IllegalArgumentException("hash cannot be null!");
 		long time = System.currentTimeMillis();
+		boolean hasHash = !hash.equals("override");
 	    File output = OSUtil.toWinFile(new File(path.replaceAll("%20", " "))).getAbsoluteFile();
-		if(!hashes.add(hash))
+		if(hasHash && !hashes.add(hash))
 			return output;
-	    if(output.exists() && !hash.equals("override"))
+	    if(hasHash && output.exists())
 	    	output = new File(output.getParent(), DeDuperUtil.getTrueName(output) + "-" + hash + DeDuperUtil.getExtension(output));
 		InputStream inputStream = new URL(url).openStream();
         output.getParentFile().mkdirs();
         IOUtils.copy(inputStream, new FileOutputStream(output));
         output.setLastModified(timestamp);
-       
         System.out.println("downloaded:" + output + " in:" + (System.currentTimeMillis() - time) + "ms");
         return output;
 	}
