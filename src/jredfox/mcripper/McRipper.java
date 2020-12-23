@@ -6,6 +6,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
+import java.util.HashSet;
 import java.util.Set;
 
 import com.jml.evilnotch.lib.json.JSONArray;
@@ -42,6 +43,7 @@ public class McRipper {
 		File master = dlMojang(workingDir);
 		JSONObject mjson = RippedUtils.getJSON(master);
 		JSONArray arr = (JSONArray) mjson.get("versions");
+		Set<File> checkedAssets = new HashSet<>(30);
 		for(Object obj : arr)
 		{
 			JSONObject jsonVersion = (JSONObject)obj;
@@ -54,7 +56,7 @@ public class McRipper {
 			String time = jsonVersion.getString("time");
 			File minorVersion = dl(url, workingDir.getPath() + "/" + type + "/" + version + "/" + version + ".json", minorHash);
 			//check the minor version jsons
-			checkVersion(workingDir, minorVersion);
+			checkVersion(checkedAssets, workingDir, minorVersion);
 		}
 		System.out.println("saving hashes");
 		saveHashes();
@@ -87,7 +89,7 @@ public class McRipper {
 		RippedUtils.saveFileLines(hashes, hashFile, true);
 	}
 
-	public static void checkVersion(File workingDir, File version) throws FileNotFoundException, IOException 
+	public static void checkVersion(Set<File> checkedAssets, File workingDir, File version) throws FileNotFoundException, IOException 
 	{
 		JSONObject json = RippedUtils.getJSON(version);
 		String versionName = json.getString("id");
@@ -100,14 +102,18 @@ public class McRipper {
 		File assetsIndexFile = dl(url, new File(workingDir, "assets/indexes/" + id + ".json").getPath(), sha1);
 		
 		//download the assetsIndex data
-		JSONObject objects = RippedUtils.getJSON(assetsIndexFile).getJSONObject("objects");
-		for(String key : objects.keySet())
+		if(!checkedAssets.contains(assetsIndexFile))
 		{
-			JSONObject assetJson = objects.getJSONObject(key);
-			String assetSha1 = assetJson.getString("hash");
-			String assetSha1Char = assetSha1.substring(0, 2);
-			String assetUrl = "https://resources.download.minecraft.net/" + assetSha1Char + "/" + assetSha1;
-			dl(assetUrl, new File(workingDir, "assets/objects/" + assetSha1Char + "/" + assetSha1).getPath(), assetSha1);
+			JSONObject objects = RippedUtils.getJSON(assetsIndexFile).getJSONObject("objects");
+			for(String key : objects.keySet())
+			{
+				JSONObject assetJson = objects.getJSONObject(key);
+				String assetSha1 = assetJson.getString("hash");
+				String assetSha1Char = assetSha1.substring(0, 2);
+				String assetUrl = "https://resources.download.minecraft.net/" + assetSha1Char + "/" + assetSha1;
+				dl(assetUrl, new File(workingDir, "assets/objects/" + assetSha1Char + "/" + assetSha1).getPath(), assetSha1);
+			}
+			checkedAssets.add(assetsIndexFile);
 		}
 		
 		//download the logging
