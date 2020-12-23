@@ -213,7 +213,7 @@ public class McRipper {
 	    if(hasHash)
 	    {	
 	    	if(hashes.containsKey(hash))
-	    		return output;
+	    		return new File(hashes.get(hash));
 	    	else if(output.exists())
 		    	output = new File(output.getParent(), DeDuperUtil.getTrueName(output) + "-" + hash + DeDuperUtil.getExtensionFull(output));
 	    	hashWriter.println(hash + "," + output.getPath());
