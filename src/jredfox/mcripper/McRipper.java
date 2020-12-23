@@ -65,7 +65,7 @@ public class McRipper {
 		}
 		System.out.println("saving hashes");
 		saveHashes();
-		System.out.println("Done in:" + (System.currentTimeMillis() - ms) / 1000L + " seconds");
+		System.out.println("Done in:" + (System.currentTimeMillis() - ms) / 1000D + " seconds");
 		}
 		catch(Throwable t)
 		{
@@ -81,6 +81,9 @@ public class McRipper {
 			computeHashes(hashFile.getParentFile());
 		else
 			hashes = RippedUtils.getFileLines(IOUtils.getReader(hashFile));
+		for(String s : hashes)
+			if(s.isEmpty())
+				System.err.println("EMPTY");
 		hashWriter = new PrintWriter(new BufferedWriter(new FileWriter(hashFile, true)), true);
 	}
 	
@@ -91,8 +94,7 @@ public class McRipper {
 
 	public static void saveHashes() 
 	{
-		File hashFile = new File(System.getProperty("user.dir"),"index.sha1");
-		RippedUtils.saveFileLines(hashes, hashFile, true);
+		hashWriter.close();
 	}
 
 	public static void checkVersion(Set<File> checkedAssets, File workingDir, File version) throws FileNotFoundException, IOException 
@@ -207,16 +209,18 @@ public class McRipper {
 		long time = System.currentTimeMillis();
 		boolean hasHash = !hash.equals("override");
 	    File output = OSUtil.toWinFile(new File(path.replaceAll("%20", " "))).getAbsoluteFile();
-		if(hasHash && !hashes.add(hash))
-			return output;
-	    if(hasHash && output.exists())
-	    	output = new File(output.getParent(), DeDuperUtil.getTrueName(output) + "-" + hash + DeDuperUtil.getExtensionFull(output));
+	    if(hasHash)
+	    {
+	    	if(!hashes.add(hash))
+	    		return output;
+	    	else if(output.exists())
+		    	output = new File(output.getParent(), DeDuperUtil.getTrueName(output) + "-" + hash + DeDuperUtil.getExtensionFull(output));
+	    	hashWriter.println(hash);
+	    }
 		InputStream inputStream = new URL(url).openStream();
         output.getParentFile().mkdirs();
         IOUtils.copy(inputStream, new FileOutputStream(output));
         output.setLastModified(timestamp);
-        if(hasHash)
-        	hashWriter.println(hash);
         System.out.println("downloaded:" + output + " in:" + (System.currentTimeMillis() - time) + "ms");
         return output;
 	}
