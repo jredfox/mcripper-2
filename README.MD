@@ -2,8 +2,8 @@ Rip Minecraft assets from mojang for archiving purposes. You will still need to 
 
 planned commands:
 - checkMojang --skipSnapshots
-- checkDisk
-- checkCustom
+- checkDisk --skipSnapshots
+- checkCustom --skipSnapshots
 - checkOldMc(check older mojang sites like amazon aws)
 - checkOmni
 - checkBetacraft
