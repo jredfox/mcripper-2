@@ -10,6 +10,8 @@ import java.io.InputStream;
 import java.io.PrintWriter;
 import java.net.URL;
 import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import com.jml.evilnotch.lib.json.JSONArray;
@@ -30,9 +32,10 @@ public class McRipper {
 	}
 	
 	public static final String appId = "mcripper";
-	public static final String version = "0.0.0-alpha";
+	public static final String version = "0.0.1-alpha";
 	public static final String appName = "MC Ripper 2:" + version;
-	public static volatile Set<String> hashes;
+	public static volatile Map<String, String> hashes;
+	public static File hashFile;
 	public static PrintWriter hashWriter;
 	
 	public static void main(String[] args)
@@ -73,17 +76,15 @@ public class McRipper {
 			saveHashes();
 		}
 	}
-	
+
 	public static void parseHashes() throws IOException
 	{
-		File hashFile = new File(System.getProperty("user.dir"),"index.sha1");
+		hashFile = new File(System.getProperty("user.dir"), "index.hash");
 		if(!hashFile.exists())
 			computeHashes(hashFile.getParentFile());
 		else
-			hashes = RippedUtils.getFileLines(IOUtils.getReader(hashFile));
-		for(String s : hashes)
-			if(s.isEmpty())
-				System.err.println("EMPTY");
+			hashes = RippedUtils.parseHashFile(IOUtils.getReader(hashFile));
+		RippedUtils.saveFileLines(hashes, hashFile, true);
 		hashWriter = new PrintWriter(new BufferedWriter(new FileWriter(hashFile, true)), true);
 	}
 	
@@ -210,12 +211,13 @@ public class McRipper {
 		boolean hasHash = !hash.equals("override");
 	    File output = OSUtil.toWinFile(new File(path.replaceAll("%20", " "))).getAbsoluteFile();
 	    if(hasHash)
-	    {
-	    	if(!hashes.add(hash))
+	    {	
+	    	if(hashes.containsKey(hash))
 	    		return output;
 	    	else if(output.exists())
 		    	output = new File(output.getParent(), DeDuperUtil.getTrueName(output) + "-" + hash + DeDuperUtil.getExtensionFull(output));
-	    	hashWriter.println(hash);
+	    	hashWriter.println(hash + "," + output.getPath());
+	    	hashes.put(hash, output.getPath());
 	    }
 		InputStream inputStream = new URL(url).openStream();
         output.getParentFile().mkdirs();

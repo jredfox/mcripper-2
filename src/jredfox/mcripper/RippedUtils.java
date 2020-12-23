@@ -10,10 +10,11 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStreamWriter;
 import java.nio.charset.StandardCharsets;
-import java.util.Collection;
-import java.util.HashSet;
+import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
-import java.util.Set;
+import java.util.Map;
+import java.util.Map.Entry;
 
 import org.apache.commons.codec.digest.DigestUtils;
 
@@ -29,18 +30,25 @@ import jredfox.filededuper.util.IOUtils;
  */
 public class RippedUtils {
 	
-	
-	public static Set<String> getFileLines(BufferedReader reader) 
+	/**
+	 * returns if the k,v was added into the hash map. adapted from HashSet impl
+	 */
+	public static <K, V> boolean add(Map<K,V> map, K k, V v)
 	{
-		Set<String> list = null;
+		return map.put(k, v) == null;
+	}
+	
+	public static Map<String, String> parseHashFile(BufferedReader reader) 
+	{
+		Map<String, String> list = null;
 		try
 		{
-			list = new HashSet<>();
+			list = new HashMap<>();
 			String s = reader.readLine();
 			
 			if(s != null)
 			{
-				list.add(s.trim());
+				parse(list, s);
 			}
 			
 			while(s != null)
@@ -48,7 +56,7 @@ public class RippedUtils {
 				s = reader.readLine();
 				if(s != null)
 				{
-					list.add(s.trim());
+					parse(list, s);
 				}
 			}
 		}
@@ -72,24 +80,31 @@ public class RippedUtils {
 		return list;
 	}
 	
-	public static void saveFileLines(Collection<String> list, File f, boolean utf8)
+	private static void parse(Map<String, String> list, String s) 
+	{
+		String[] arr = s.split(",");
+		String fname = arr[1].trim();
+		if(!new File(fname).exists())
+		{
+			System.out.println("deleting hash:" + s);
+			return;
+		}
+		if(!s.isEmpty())
+			list.put(arr[0].trim(), fname);
+	}
+
+	public static void saveFileLines(Map<String, String> map, File f, boolean utf8)
 	{
 		IOUtils.makeParentDirs(f);
 		BufferedWriter writer = null;
 		try
 		{
-			if(!utf8)
+			writer = utf8 ? new BufferedWriter(new OutputStreamWriter(new FileOutputStream(f), StandardCharsets.UTF_8 ) ) : new BufferedWriter(new FileWriter(f));
+			Iterator<Entry<String, String>> it = map.entrySet().iterator();
+			while(it.hasNext())
 			{
-				writer = new BufferedWriter(new FileWriter(f));
-			}
-			else
-			{
-				writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(f), StandardCharsets.UTF_8 ) );
-			}
-			
-			for(String s : list)
-			{
-				writer.write(s + System.lineSeparator());
+				Map.Entry<String, String> pair = it.next();
+				writer.write(pair.getKey() + "," + pair.getValue() + System.lineSeparator());
 			}
 		}
 		catch(Exception e)
@@ -102,14 +117,14 @@ public class RippedUtils {
 		}
 	}
 	
-	public static Set<String> getHashes(File dir)
+	public static Map<String, String> getHashes(File dir)
 	{
 		if(!dir.exists())
-			return new HashSet<>(0);
+			return new HashMap<>(0);
 		List<File> files = DeDuperUtil.getDirFiles(dir);
-		Set<String> hashes = new HashSet<>(files.size());
+		Map<String, String> hashes = new HashMap<>(files.size());
 		for(File f : files)
-			hashes.add(getSHA1(f));
+			hashes.put(getSHA1(f), f.getAbsolutePath());
 		return hashes;
 	}
 	
