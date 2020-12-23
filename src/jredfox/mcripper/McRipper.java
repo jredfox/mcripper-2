@@ -30,11 +30,12 @@ public class McRipper {
 	public static final String appName = "MC Ripper " + version;
 	public static volatile Set<String> hashes;
 	
-	public static void main(String[] args) throws Exception
+	public static void main(String[] args)
 	{
 		args = SelfCommandPrompt.runWithCMD(appId, appName, args, true, true);
 		System.out.println("starting:" + appName);
 		long ms = System.currentTimeMillis();
+		try {
 		File workingDir = new File(System.getProperty("user.dir"), "mcripped/mojang");
 		parseHashes();
 		System.out.println("computed Hashes in:" + (System.currentTimeMillis() - ms) + "ms");
@@ -58,6 +59,12 @@ public class McRipper {
 		System.out.println("saving hashes");
 		saveHashes();
 		System.out.println("Done in:" + (System.currentTimeMillis() - ms) / 1000L + " seconds");
+		}
+		catch(Throwable t)
+		{
+			t.printStackTrace();
+			saveHashes();
+		}
 	}
 	
 	public static void parseHashes()
@@ -134,7 +141,37 @@ public class McRipper {
 			dl(dataUrl, new File(version.getParentFile(), versionName + "-" + name).getPath(), dataSha1);
 		}
 		
-		//TODO: download the libs
+		//download the libs classifier's
+		JSONArray libs = json.getJSONArray("libraries");
+		for(Object obj : libs)
+		{
+			JSONObject entry = (JSONObject)obj;
+			JSONObject downloads = entry.getJSONObject("downloads");
+			
+			//download the artifacts
+			if(downloads.containsKey("artifact"))
+			{
+				JSONObject artifact = downloads.getJSONObject("artifact");
+				String libName = artifact.getString("path");
+				String libSha1 = artifact.getString("sha1");
+				String libUrl = artifact.getString("url");
+				dl(libUrl, new File(workingDir, "libraries/" + libName).getPath(), libSha1);
+			}
+			
+			//download the classifiers
+			if(downloads.containsKey("classifiers"))
+			{
+				JSONObject classifiers = downloads.getJSONObject("classifiers");
+				for(String key : classifiers.keySet())
+				{
+					JSONObject cl = classifiers.getJSONObject(key);
+					String clPath = cl.getString("path");
+					String clSha1 = cl.getString("sha1");
+					String clUrl = cl.getString("url");
+					dl(clUrl, new File(workingDir, "libraries/" + clPath).getPath(), clSha1);
+				}
+			}
+		}
 	}
 
 	private static File dlMojang(File dir) throws FileNotFoundException, IOException 
