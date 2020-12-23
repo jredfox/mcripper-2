@@ -6,4 +6,6 @@ planned commands:
 - checkCustom
 - checkOldMc(check older mojang sites like amazon aws)
 - checkOmni
+- checkBetacraft
+- checkAll
 - rip dir outputDir --assetsDir=value
