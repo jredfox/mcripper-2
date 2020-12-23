@@ -7,4 +7,3 @@ planned commands:
 - checkOldMc(check older mojang sites like amazon aws)
 - checkOmni
 - checkBetacraft
-- checkAll
