@@ -1,10 +1,13 @@
 package jredfox.mcripper;
 
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.PrintWriter;
 import java.net.URL;
 import java.util.HashSet;
 import java.util.Set;
@@ -27,23 +30,25 @@ public class McRipper {
 	}
 	
 	public static final String appId = "mcripper";
-	public static final String version = "2-0.0.0";
-	public static final String appName = "MC Ripper " + version;
+	public static final String version = "0.0.0-alpha";
+	public static final String appName = "MC Ripper 2:" + version;
 	public static volatile Set<String> hashes;
+	public static PrintWriter hashWriter;
 	
 	public static void main(String[] args)
 	{
 		args = SelfCommandPrompt.runWithCMD(appId, appName, args, true, true);
 		System.out.println("starting:" + appName);
 		long ms = System.currentTimeMillis();
-		try {
+		try
+		{
 		File workingDir = new File(System.getProperty("user.dir"), "mcripped/mojang");
 		parseHashes();
 		System.out.println("computed Hashes in:" + (System.currentTimeMillis() - ms) + "ms");
 		File master = dlMojang(workingDir);
 		JSONObject mjson = RippedUtils.getJSON(master);
 		JSONArray arr = (JSONArray) mjson.get("versions");
-		Set<File> checkedAssets = new HashSet<>(30);
+		Set<File> checkFiles = new HashSet<>(30);
 		for(Object obj : arr)
 		{
 			JSONObject jsonVersion = (JSONObject)obj;
@@ -56,7 +61,7 @@ public class McRipper {
 			String time = jsonVersion.getString("time");
 			File minorVersion = dl(url, workingDir.getPath() + "/" + type + "/" + version + "/" + version + ".json", minorHash);
 			//check the minor version jsons
-			checkVersion(checkedAssets, workingDir, minorVersion);
+			checkVersion(checkFiles, workingDir, minorVersion);
 		}
 		System.out.println("saving hashes");
 		saveHashes();
@@ -69,13 +74,14 @@ public class McRipper {
 		}
 	}
 	
-	public static void parseHashes()
+	public static void parseHashes() throws IOException
 	{
 		File hashFile = new File(System.getProperty("user.dir"),"index.sha1");
 		if(!hashFile.exists())
 			computeHashes(hashFile.getParentFile());
 		else
 			hashes = RippedUtils.getFileLines(IOUtils.getReader(hashFile));
+		hashWriter = new PrintWriter(new BufferedWriter(new FileWriter(hashFile, true)), true);
 	}
 	
 	private static void computeHashes(File dir)
@@ -209,6 +215,8 @@ public class McRipper {
         output.getParentFile().mkdirs();
         IOUtils.copy(inputStream, new FileOutputStream(output));
         output.setLastModified(timestamp);
+        if(hasHash)
+        	hashWriter.println(hash);
         System.out.println("downloaded:" + output + " in:" + (System.currentTimeMillis() - time) + "ms");
         return output;
 	}

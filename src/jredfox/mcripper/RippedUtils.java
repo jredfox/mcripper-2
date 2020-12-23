@@ -3,15 +3,19 @@ package jredfox.mcripper;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStreamWriter;
 import java.nio.charset.StandardCharsets;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+
+import org.apache.commons.codec.digest.DigestUtils;
 
 import com.jml.evilnotch.lib.JavaUtil;
 import com.jml.evilnotch.lib.json.JSONObject;
@@ -111,7 +115,18 @@ public class RippedUtils {
 	
 	public static String getSHA1(File f) 
 	{
-		return DeDuperUtil.getSHA1(f).toLowerCase();
+		try
+		{
+			InputStream input = new FileInputStream(f);
+			String hash = DigestUtils.sha1Hex(input);
+			input.close();
+			return hash;
+		}
+		catch(Exception e)
+		{
+			e.printStackTrace();
+		}
+		return null;
 	}
 
 	public static JSONObject getJSON(File file)
