@@ -1,13 +1,17 @@
 package jredfox.mcripper;
 
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStreamWriter;
 import java.net.URL;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
+import java.nio.charset.StandardCharsets;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -34,67 +38,85 @@ public class McRipper {
 	public static final String appId = "mcripper";
 	public static final String version = "2-0.0.0";
 	public static final String appName = "MC Ripper " + version;
-	public static volatile Set<String> hashes = new HashSet<>();
+	public static volatile Set<String> hashes;
 	
 	public static void main(String[] args) throws Exception
 	{
 		args = SelfCommandPrompt.runWithCMD(appId, appName, args, true, true);
+		System.out.println("starting:" + appName);
 		long ms = System.currentTimeMillis();
 		File workingDir = new File(System.getProperty("user.dir"), "mcripped/mojang");
-		hashes = getHashes(workingDir);
+		parseHashes();
 		System.out.println("computed Hashes in:" + (System.currentTimeMillis() - ms) + "ms");
 		File master = dlMojang(workingDir);
-		JSONObject mjson = getJSON(master);
+		JSONObject mjson = RippedUtils.getJSON(master);
 		JSONArray arr = (JSONArray) mjson.get("versions");
 		for(Object obj : arr)
 		{
 			JSONObject jsonVersion = (JSONObject)obj;
 			String url = jsonVersion.getString("url");
 			String[] urlArr = url.replace("\\", "/").split("/");
+			//download the minor versions from the version_manifest.json
 			String minorHash = urlArr[urlArr.length - 2].toLowerCase();
-			if(hashes.contains(minorHash))
-			{
-				continue;
-			}
 			String version = jsonVersion.getString("id");
 			String type = jsonVersion.getString("type");
 			String time = jsonVersion.getString("time");
 			File minorVersion = dl(url, workingDir.getPath() + "/" + type + "/" + version + "/" + version + ".json", minorHash);
-			hashes.add(getSHA1(minorVersion));
+			//check the minor version jsons
+			checkVersion(workingDir, minorVersion);
 		}
+		System.out.println("saving hashes");
+		saveHashes();
 		System.out.println("Done in:" + (System.currentTimeMillis() - ms) / 1000L + " seconds");
 	}
 	
-	public static Set<String> getHashes(File dir)
+	public static void parseHashes()
 	{
-		if(!dir.exists())
-			return new HashSet<>(0);
-		List<File> files = DeDuperUtil.getDirFiles(dir);
-		Set<String> hashes = new HashSet<>(files.size());
-		for(File f : files)
-			hashes.add(getSHA1(f));
-		return hashes;
+		File hashFile = new File(System.getProperty("user.dir"),"index.sha1");
+		if(!hashFile.exists())
+			computeHashes(hashFile.getParentFile());
+		else
+			hashes = RippedUtils.getFileLines(IOUtils.getReader(hashFile));
+	}
+	
+	private static void computeHashes(File dir)
+	{
+		hashes = RippedUtils.getHashes(dir);
 	}
 
-	public static String getSHA1(File f) 
+	public static void saveHashes() 
 	{
-		return DeDuperUtil.getSHA1(f).toLowerCase();
+		File hashFile = new File(System.getProperty("user.dir"),"index.sha1");
+		RippedUtils.saveFileLines(hashes, hashFile, true);
 	}
 
-	public static JSONObject getJSON(File file)
+	public static void checkVersion(File workingDir, File version) throws FileNotFoundException, IOException 
 	{
-		if(!file.exists())
-			return null;
-		try
+		JSONObject json = RippedUtils.getJSON(version);
+		String versionName = json.getString("id");
+		
+		//download the asset indexes
+		JSONObject assetsIndex = json.getJSONObject("assetIndex");
+		String id = assetsIndex.getString("id");
+		String sha1 = assetsIndex.getString("sha1").toLowerCase();
+		String url = assetsIndex.getString("url");
+		dl(url, new File(workingDir, "assets/indexes/" + id + ".json").getPath(), sha1);
+		
+		//TODO: download the assetsIndex data
+		
+		//download the client data versions, mappings, servers
+		JSONObject clientData = json.getJSONObject("downloads");
+		for(String key : clientData.keySet())
 		{
-			JSONSerializer parser = new JSONSerializer();
-			return parser.readJSONObject(JavaUtil.getReader(file));
+			JSONObject data = clientData.getJSONObject(key);
+			String dataSha1 = data.getString("sha1").toLowerCase();
+			String dataUrl = data.getString("url");
+			String[] dataUrlSplit = dataUrl.replace("\\", "/").split("/");
+			String name = dataUrlSplit[dataUrlSplit.length - 1];
+			dl(dataUrl, new File(version.getParentFile(), versionName + "-" + name).getPath(), dataSha1);
 		}
-		catch(Exception e)
-		{
-			e.printStackTrace();
-		}
-		return null;
+		
+		//TODO: download the libs
 	}
 
 	private static File dlMojang(File dir) throws FileNotFoundException, IOException 
@@ -117,12 +139,15 @@ public class McRipper {
 			throw new IllegalArgumentException("hash cannot be null!");
 		long time = System.currentTimeMillis();
 	    File output = OSUtil.toWinFile(new File(path.replaceAll("%20", " "))).getAbsoluteFile();
+		if(!hashes.add(hash))
+			return output;
 	    if(output.exists() && !hash.equals("override"))
 	    	output = new File(output.getParent(), DeDuperUtil.getTrueName(output) + "-" + hash + DeDuperUtil.getExtension(output));
 		InputStream inputStream = new URL(url).openStream();
         output.getParentFile().mkdirs();
         IOUtils.copy(inputStream, new FileOutputStream(output));
         output.setLastModified(timestamp);
+       
         System.out.println("downloaded:" + output + " in:" + (System.currentTimeMillis() - time) + "ms");
         return output;
 	}
