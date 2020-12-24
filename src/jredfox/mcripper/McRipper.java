@@ -17,7 +17,6 @@ import java.util.Set;
 import com.jml.evilnotch.lib.json.JSONArray;
 import com.jml.evilnotch.lib.json.JSONObject;
 
-import jredfox.filededuper.Main;
 import jredfox.filededuper.command.Command;
 import jredfox.filededuper.util.DeDuperUtil;
 import jredfox.filededuper.util.IOUtils;
@@ -33,7 +32,7 @@ public class McRipper {
 	}
 	
 	public static final String appId = "mcripper";
-	public static final String version = "a.0.0.3";
+	public static final String version = "a.0.1.0";
 	public static final String appName = "MC Ripper 2 Build: " + version;
 	public static volatile Map<String, String> hashes;
 	public static File root = new File(System.getProperty("user.dir"));
@@ -157,10 +156,6 @@ public class McRipper {
 				dl(logUrl, new File(workingDir, "assets/log_configs/" + logId).getPath(), logSha1);
 			}
 		}
-		else
-		{
-//			System.out.println("missing logging:" + version);
-		}
 		
 		//download the client data versions, mappings, servers
 		JSONObject clientData = json.getJSONObject("downloads");
@@ -223,9 +218,9 @@ public class McRipper {
 
 	private static File dlMojang(File workingDir) throws FileNotFoundException, IOException 
 	{
-		File master = dl("https://launchermeta.mojang.com/mc/game/version_manifest.json", new File(OSUtil.getAppData() + "/" + McRipper.appId, "version_manifest.json").getPath(), "override");
+		File master = dl("https://launchermeta.mojang.com/mc/game/version_manifest.json", new File(OSUtil.getAppData() + "/" + McRipper.appId, "mojang-versions.json").getPath(), "override");
 		String sha1 = RippedUtils.getSHA1(master);
-		return dl(master.toURI().toURL().toString(), new File(workingDir, "version_manifest.json").getPath(), sha1);
+		return dl(master.toURI().toURL().toString(), new File(workingDir, "majors/version_manifest.json").getPath(), sha1);
 	}
 
 	public static File dl(String url, String path, String hash) throws FileNotFoundException, IOException
