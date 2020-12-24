@@ -227,18 +227,14 @@ public class McRipper {
 	    	else if(output.exists())
 	    	{
 	    		//prevent duplicate downloads
-	    		String tocheckHash = RippedUtils.getSHA1(output);
-	    		if(hash.equals(tocheckHash))
+	    		File hfile = new File(output.getParent(), DeDuperUtil.getTrueName(output) + "-" + hash + DeDuperUtil.getExtensionFull(output));
+	    		if(hfile.exists() || hash.equals(RippedUtils.getSHA1(output)))
 	    		{
-	    			System.err.println("Skipping duplicate file:" + output);
+	    			System.err.println("File is out of sync with " + hashFile.getName() + " skipping duplicate download:" + output);
 	    			add(hash, output);
 	    			return output;
 	    		}
-		    	output = new File(output.getParent(), DeDuperUtil.getTrueName(output) + "-" + hash + DeDuperUtil.getExtensionFull(output));
-		    	
-		    	//if the hashed version exists on the disk skip the download
-		    	if(output.exists())
-		    		return output;
+		    	output = hfile;
 	    	}
 	    	add(hash, output);
 	    }
