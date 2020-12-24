@@ -37,6 +37,7 @@ public class McRipper {
 	public static volatile Map<String, String> hashes;
 	public static File root = new File(System.getProperty("user.dir"));
 	public static File mcripped = new File(root, "mcripped");
+	public static File jsonDir = new File(mcripped, "mojang/jsons");
 	public static File hashFile;
 	public static PrintWriter hashWriter;
 	
@@ -52,7 +53,7 @@ public class McRipper {
 		if(args.length != 0 && args[0].equals("hashCheck"))
 			hashCheck();
 		System.out.println("computed Hashes in:" + (System.currentTimeMillis() - ms) + "ms");
-		File master = dlMojang(workingDir);
+		File master = dlMojang();
 		JSONObject mjson = RippedUtils.getJSON(master);
 		JSONArray arr = (JSONArray) mjson.get("versions");
 		Set<File> checkFiles = new HashSet<>(30);
@@ -66,7 +67,7 @@ public class McRipper {
 			String version = jsonVersion.getString("id");
 			String type = jsonVersion.getString("type");
 			String time = jsonVersion.getString("time");
-			File minorVersion = dl(url, workingDir.getPath() + "/" + type + "/" + version + "/" + version + ".json", minorHash);
+			File minorVersion = dl(url, jsonDir.getPath() + "/minor/" + type + "/" + version + ".json", minorHash);
 			//check the minor version jsons
 			checkVersion(checkFiles, workingDir, minorVersion);
 		}
@@ -125,7 +126,7 @@ public class McRipper {
 		String id = assetsIndex.getString("id");
 		String sha1 = assetsIndex.getString("sha1").toLowerCase();
 		String url = assetsIndex.getString("url");
-		File assetsIndexFile = dl(url, new File(workingDir, "assets/indexes/" + id + ".json").getPath(), sha1);
+		File assetsIndexFile = dl(url, new File(jsonDir, "assets/" + id + ".json").getPath(), sha1);
 		
 		//download the assetsIndex data
 		if(!checkedAssets.contains(assetsIndexFile))
@@ -216,11 +217,11 @@ public class McRipper {
 		return new File(OSUtil.getAppData(), OSUtil.isMac() ? "minecraft" : ".minecraft");
 	}
 
-	private static File dlMojang(File workingDir) throws FileNotFoundException, IOException 
+	private static File dlMojang() throws FileNotFoundException, IOException 
 	{
 		File master = dl("https://launchermeta.mojang.com/mc/game/version_manifest.json", new File(OSUtil.getAppData() + "/" + McRipper.appId, "mojang-versions.json").getPath(), "override");
 		String sha1 = RippedUtils.getSHA1(master);
-		return dl(master.toURI().toURL().toString(), new File(workingDir, "majors/version_manifest.json").getPath(), sha1);
+		return dl(master.toURI().toURL().toString(), new File(jsonDir, "major/version_manifest.json").getPath(), sha1);
 	}
 
 	public static File dl(String url, String path, String hash) throws FileNotFoundException, IOException
