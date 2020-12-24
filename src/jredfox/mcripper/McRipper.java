@@ -224,9 +224,17 @@ public class McRipper {
 	    	if(hashes.containsKey(hash))
 	    		return new File(hashes.get(hash));
 	    	else if(output.exists())
+	    	{
+	    		String tocheckHash = RippedUtils.getSHA1(output);
+	    		if(hash.equals(tocheckHash))
+	    		{
+	    			System.err.println("Skipping duplicate file:" + output);
+	    			add(hash, output);
+	    			return output;
+	    		}
 		    	output = new File(output.getParent(), DeDuperUtil.getTrueName(output) + "-" + hash + DeDuperUtil.getExtensionFull(output));
-	    	hashes.put(hash, output.getPath());
-	    	hashWriter.println(hash + "," + DeDuperUtil.getRealtivePath(root, output));
+	    	}
+	    	add(hash, output);
 	    }
 		InputStream inputStream = new URL(url).openStream();
         output.getParentFile().mkdirs();
@@ -234,6 +242,12 @@ public class McRipper {
         output.setLastModified(timestamp);
         System.out.println("downloaded:" + output + " in:" + (System.currentTimeMillis() - time) + "ms");
         return output;
+	}
+
+	public static void add(String hash, File output) 
+	{
+		hashes.put(hash, output.getPath());
+    	hashWriter.println(hash + "," + DeDuperUtil.getRealtivePath(root, output));
 	}
 
 }
