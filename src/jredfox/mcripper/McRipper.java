@@ -10,7 +10,6 @@ import java.io.InputStream;
 import java.io.PrintWriter;
 import java.net.URL;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -32,8 +31,8 @@ public class McRipper {
 	}
 	
 	public static final String appId = "mcripper";
-	public static final String version = "0.0.1-alpha";
-	public static final String appName = "MC Ripper 2:" + version;
+	public static final String version = "a.0.0.2";
+	public static final String appName = "MC Ripper 2 Build: " + version;
 	public static volatile Map<String, String> hashes;
 	public static File root = new File(System.getProperty("user.dir"));
 	public static File mcripped = new File(root, "mcripped");
