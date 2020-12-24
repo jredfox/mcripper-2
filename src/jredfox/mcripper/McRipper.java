@@ -10,6 +10,7 @@ import java.io.InputStream;
 import java.io.PrintWriter;
 import java.net.URL;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 
@@ -48,6 +49,8 @@ public class McRipper {
 		{
 		File workingDir = new File(mcripped, "mojang");
 		parseHashes();
+		if(args.length != 0 && args[0].equals("hashCheck"))
+			hashCheck();
 		System.out.println("computed Hashes in:" + (System.currentTimeMillis() - ms) + "ms");
 		File master = dlMojang(workingDir);
 		JSONObject mjson = RippedUtils.getJSON(master);
@@ -78,6 +81,25 @@ public class McRipper {
 		}
 	}
 
+	private static void hashCheck() 
+	{
+		Iterator<Map.Entry<String, String>> it = hashes.entrySet().iterator();
+		while(it.hasNext())
+		{
+			Map.Entry<String, String> p = it.next();
+			String h = p.getKey();
+			String path = p.getValue();
+			File f = new File(path);
+			if(!RippedUtils.getSHA1(f).equals(h))
+			{
+				System.err.println("file has been modified removing:" + path);
+				it.remove();
+				f.delete();
+			}
+		}
+		RippedUtils.saveFileLines(hashes, hashFile, true);
+	}
+
 	public static void parseHashes() throws IOException
 	{
 		hashFile = new File(root, "index.hash");
@@ -91,6 +113,7 @@ public class McRipper {
 	
 	private static void computeHashes(File dir)
 	{
+		System.out.println("Computing hashes This may take a while");
 		hashes = RippedUtils.getHashes(dir);
 	}
 
