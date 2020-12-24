@@ -36,6 +36,7 @@ public class McRipper {
 	public static final String appName = "MC Ripper 2:" + version;
 	public static volatile Map<String, String> hashes;
 	public static File root = new File(System.getProperty("user.dir"));
+	public static File mcripped = new File(root, "mcripped");
 	public static File hashFile;
 	public static PrintWriter hashWriter;
 	
@@ -46,7 +47,7 @@ public class McRipper {
 		long ms = System.currentTimeMillis();
 		try
 		{
-		File workingDir = new File(root, "mcripped/mojang");
+		File workingDir = new File(mcripped, "mojang");
 		parseHashes();
 		System.out.println("computed Hashes in:" + (System.currentTimeMillis() - ms) + "ms");
 		File master = dlMojang(workingDir);
@@ -82,7 +83,7 @@ public class McRipper {
 	{
 		hashFile = new File(root, "index.hash");
 		if(!hashFile.exists())
-			computeHashes(root);
+			computeHashes(mcripped);
 		else
 			hashes = RippedUtils.parseHashFile(IOUtils.getReader(hashFile));
 		RippedUtils.saveFileLines(hashes, hashFile, true);
