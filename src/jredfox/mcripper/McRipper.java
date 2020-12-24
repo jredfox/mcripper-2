@@ -70,15 +70,13 @@ public class McRipper {
 			//check the minor version jsons
 			checkVersion(checkFiles, workingDir, minorVersion);
 		}
-		System.out.println("saving hashes");
-		saveHashes();
 		System.out.println("Done in:" + (System.currentTimeMillis() - ms) / 1000D + " seconds");
 		}
 		catch(Throwable t)
 		{
 			t.printStackTrace();
-			saveHashes();
 		}
+		hashWriter.close();
 	}
 
 	private static void hashCheck() 
@@ -115,11 +113,6 @@ public class McRipper {
 	{
 		System.out.println("Computing hashes This may take a while");
 		hashes = RippedUtils.getHashes(dir);
-	}
-
-	public static void saveHashes() 
-	{
-		hashWriter.close();
 	}
 
 	public static void checkVersion(Set<File> checkedAssets, File workingDir, File version) throws FileNotFoundException, IOException 
@@ -213,10 +206,16 @@ public class McRipper {
 		}
 	}
 	
+	public static void add(String hash, File output) 
+	{
+		hashes.put(hash, output.getPath());
+    	hashWriter.println(hash + "," + DeDuperUtil.getRealtivePath(root, output));
+	}
+	
 	/**
 	 * get the default minecraft folder supports all os's
 	 */
-	public static File getMinecraftFolder()
+	public static File getMinecraftDir()
 	{
 		return new File(OSUtil.getAppData(), OSUtil.isMac() ? "minecraft" : ".minecraft");
 	}
@@ -231,6 +230,14 @@ public class McRipper {
 		return dl(url, path, System.currentTimeMillis(), hash);
 	}
 	
+	public static File dlFromMC(String url, String path, String hash) throws FileNotFoundException, IOException
+	{
+		File minecraft = getMinecraftDir();
+		File cached = new File(minecraft, DeDuperUtil.getRealtivePath(new File(mcripped + "/mojang"), new File(path).getAbsoluteFile()));
+		//dl will automatically handle libraries but, the rest has to be delt with by this method to prefer the disk
+		return !path.contains("libraries") && cached.exists() ? dl(cached.toURI().toURL().toString(), path, hash) : dl(url, path, hash);
+	}
+	
 	/**
 	 * download a file to the path specified. With timestamp and hashing support. 
 	 * The hash is in case the file destination already exists. To allow override pass "override" as the hash
@@ -239,39 +246,53 @@ public class McRipper {
 	{
 		if(hash == null)
 			throw new IllegalArgumentException("hash cannot be null!");
-		long time = System.currentTimeMillis();
-		boolean hasHash = !hash.equals("override");
-	    File output = OSUtil.toWinFile(new File(path.replaceAll("%20", " "))).getAbsoluteFile();
-	    if(hasHash)
-	    {	
-	    	if(hashes.containsKey(hash))
-	    		return new File(hashes.get(hash));
-	    	else if(output.exists())
-	    	{
-	    		//prevent duplicate downloads
-	    		File hfile = new File(output.getParent(), DeDuperUtil.getTrueName(output) + "-" + hash + DeDuperUtil.getExtensionFull(output));
-	    		if(hfile.exists() || hash.equals(RippedUtils.getSHA1(output)))
-	    		{
-	    			System.err.println("File is out of sync with " + hashFile.getName() + " skipping duplicate download:" + output);
-	    			add(hash, output);
-	    			return output;
-	    		}
-		    	output = hfile;
-	    	}
-	    	add(hash, output);
-	    }
-		InputStream inputStream = new URL(url).openStream();
-        output.getParentFile().mkdirs();
-        IOUtils.copy(inputStream, new FileOutputStream(output));
-        output.setLastModified(timestamp);
-        System.out.println("downloaded:" + output + " in:" + (System.currentTimeMillis() - time) + "ms");
-        return output;
-	}
-
-	public static void add(String hash, File output) 
-	{
-		hashes.put(hash, output.getPath());
-    	hashWriter.println(hash + "," + DeDuperUtil.getRealtivePath(root, output));
+		File output = null;
+		try
+		{
+			long time = System.currentTimeMillis();
+			boolean hasHash = !hash.equals("override");
+			output = OSUtil.toWinFile(new File(path.replaceAll("%20", " "))).getAbsoluteFile();
+			if(hasHash)
+			{
+				if(hashes.containsKey(hash))
+					return new File(hashes.get(hash));
+				else if(output.exists())
+				{
+					//prevent duplicate downloads
+					File hfile = new File(output.getParent(), DeDuperUtil.getTrueName(output) + "-" + hash + DeDuperUtil.getExtensionFull(output));
+					if(hfile.exists() || hash.equals(RippedUtils.getSHA1(output)))
+					{
+						System.err.println("File is out of sync with " + hashFile.getName() + " skipping duplicate download:" + output);
+						add(hash, output);
+						return output;
+					}
+					output = hfile;
+				}
+				add(hash, output);
+			}
+			
+			//speed the process up for libraries as they are extremly slow
+			if(path.contains("libraries"))
+			{
+				File minecraft = getMinecraftDir();
+				File cached = new File(minecraft, DeDuperUtil.getRealtivePath(new File(mcripped + "/mojang"), new File(path).getAbsoluteFile()));
+				if(cached.exists())
+					url = cached.toURI().toURL().toString();
+			}
+			
+			InputStream inputStream = new URL(url).openStream();
+			output.getParentFile().mkdirs();
+			IOUtils.copy(inputStream, new FileOutputStream(output));
+			output.setLastModified(timestamp);
+			System.out.println("dl:" + output + " in:" + (System.currentTimeMillis() - time) + "ms");
+			return output;
+		}
+		catch(IOException io)
+		{
+			if(output.exists())
+				output.delete();
+			throw io;
+		}
 	}
 
 }
