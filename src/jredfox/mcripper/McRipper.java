@@ -226,6 +226,7 @@ public class McRipper {
 	    		return new File(hashes.get(hash));
 	    	else if(output.exists())
 	    	{
+	    		//prevent duplicate downloads
 	    		String tocheckHash = RippedUtils.getSHA1(output);
 	    		if(hash.equals(tocheckHash))
 	    		{
@@ -234,6 +235,10 @@ public class McRipper {
 	    			return output;
 	    		}
 		    	output = new File(output.getParent(), DeDuperUtil.getTrueName(output) + "-" + hash + DeDuperUtil.getExtensionFull(output));
+		    	
+		    	//if the hashed version exists on the disk skip the download
+		    	if(output.exists())
+		    		return output;
 	    	}
 	    	add(hash, output);
 	    }
