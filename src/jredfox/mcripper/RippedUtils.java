@@ -124,7 +124,7 @@ public class RippedUtils {
 		List<File> files = DeDuperUtil.getDirFiles(dir);
 		Map<String, String> hashes = new HashMap<>(files.size());
 		for(File f : files)
-			hashes.put(getSHA1(f), f.getAbsolutePath());
+			hashes.put(getSHA1(f), DeDuperUtil.getRealtivePath(McRipper.root, f));
 		return hashes;
 	}
 	

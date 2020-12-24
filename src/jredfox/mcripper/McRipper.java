@@ -35,6 +35,7 @@ public class McRipper {
 	public static final String version = "0.0.1-alpha";
 	public static final String appName = "MC Ripper 2:" + version;
 	public static volatile Map<String, String> hashes;
+	public static File root = new File(System.getProperty("user.dir"));
 	public static File hashFile;
 	public static PrintWriter hashWriter;
 	
@@ -45,7 +46,7 @@ public class McRipper {
 		long ms = System.currentTimeMillis();
 		try
 		{
-		File workingDir = new File(System.getProperty("user.dir"), "mcripped/mojang");
+		File workingDir = new File(root, "mcripped/mojang");
 		parseHashes();
 		System.out.println("computed Hashes in:" + (System.currentTimeMillis() - ms) + "ms");
 		File master = dlMojang(workingDir);
@@ -79,9 +80,9 @@ public class McRipper {
 
 	public static void parseHashes() throws IOException
 	{
-		hashFile = new File(System.getProperty("user.dir"), "index.hash");
+		hashFile = new File(root, "index.hash");
 		if(!hashFile.exists())
-			computeHashes(hashFile.getParentFile());
+			computeHashes(root);
 		else
 			hashes = RippedUtils.parseHashFile(IOUtils.getReader(hashFile));
 		RippedUtils.saveFileLines(hashes, hashFile, true);
@@ -188,6 +189,14 @@ public class McRipper {
 			}
 		}
 	}
+	
+	/**
+	 * get the default minecraft folder supports all os's
+	 */
+	public static File getMinecraftFolder()
+	{
+		return new File(OSUtil.getAppData(), OSUtil.isMac() ? "minecraft" : ".minecraft");
+	}
 
 	private static File dlMojang(File dir) throws FileNotFoundException, IOException 
 	{
@@ -216,8 +225,8 @@ public class McRipper {
 	    		return new File(hashes.get(hash));
 	    	else if(output.exists())
 		    	output = new File(output.getParent(), DeDuperUtil.getTrueName(output) + "-" + hash + DeDuperUtil.getExtensionFull(output));
-	    	hashWriter.println(hash + "," + output.getPath());
 	    	hashes.put(hash, output.getPath());
+	    	hashWriter.println(hash + "," + DeDuperUtil.getRealtivePath(root, output));
 	    }
 		InputStream inputStream = new URL(url).openStream();
         output.getParentFile().mkdirs();
