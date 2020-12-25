@@ -7,5 +7,5 @@ planned commands:
 Done Commands
 - checkMojang --skipSnaps --mcDir=value
 - checkDisk --skipSnaps --mcDir=value --diskOnly
-- verify
 - recomputeHashes
+- verify
