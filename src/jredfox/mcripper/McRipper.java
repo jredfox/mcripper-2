@@ -32,6 +32,7 @@ public class McRipper {
 	{
 		Command.get("");
 		Command.cmds.clear();
+		MCRipperCommands.load();
 	}
 	
 	public static final String appId = "Mcripper";
@@ -54,16 +55,14 @@ public class McRipper {
 	
 	public static void main(String[] args)
 	{
-		args = SelfCommandPrompt.runWithCMD(appId, appName, args, true, true);
+		args = SelfCommandPrompt.wrapWithCMD("input a command: ", appId, appName, args, false, true);
 		System.out.println("starting:" + appName);
 		try
 		{
 			long ms = System.currentTimeMillis();
 			parseHashes();
-			if(args.length != 0 && args[0].equals("hashCheck"))
-				hashCheck();
 			System.out.println("computed Hashes in:" + (System.currentTimeMillis() - ms) + "ms");
-			checkCustom(false);
+			Command.run(args.length == 0 ? new String[]{"checkMojang"} : args);
 			System.out.println("Done in:" + (System.currentTimeMillis() - ms) / 1000D + " seconds" + " major:" + majorCount + " minor:" + minorCount + " assets:" + assetsCount);
 		}
 		catch(Throwable t)
@@ -222,7 +221,7 @@ public class McRipper {
 			}
 		}
 		minorCount++;
-		return aIndexFile;
+		return aIndexFile.getAbsoluteFile();
 	}
 
 	private static void checkAssets(File assetsIndexFile) throws FileNotFoundException, IOException
@@ -258,7 +257,7 @@ public class McRipper {
 		hashes = RippedUtils.getHashes(dir);
 	}
 	
-	private static void hashCheck() 
+	public static void checkHashes() 
 	{
 		Iterator<Map.Entry<String, String>> it = hashes.entrySet().iterator();
 		while(it.hasNext())
