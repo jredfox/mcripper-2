@@ -12,6 +12,8 @@ import java.io.OutputStreamWriter;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -44,7 +46,7 @@ public class RippedUtils {
 		Map<String, String> list = null;
 		try
 		{
-			list = new HashMap<>();
+			list = new LinkedHashMap<>();
 			String s = reader.readLine();
 			
 			if(s != null)
@@ -123,7 +125,7 @@ public class RippedUtils {
 		if(!dir.exists())
 			return new HashMap<>(0);
 		List<File> files = DeDuperUtil.getDirFiles(dir);
-		Map<String, String> hashes = new HashMap<>(files.size());
+		Map<String, String> hashes = new LinkedHashMap<String, String>(files.size());
 		for(File f : files)
 		{
 			String hash = null;

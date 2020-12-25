@@ -228,7 +228,8 @@ public class McRipper {
 	{
 		if(!checkJsons.add(assetsIndexFile.getAbsoluteFile()))
 			return;
-		JSONObject objects = RippedUtils.getJSON(assetsIndexFile).getJSONObject("objects");
+		JSONObject json = RippedUtils.getJSON(assetsIndexFile);
+		JSONObject objects = json.getJSONObject("objects");
 		for(String key : objects.keySet())
 		{
 			JSONObject assetJson = objects.getJSONObject(key);
@@ -278,8 +279,9 @@ public class McRipper {
 	
 	public static void add(String hash, File output) 
 	{
-		hashes.put(hash, output.getPath());
-    	hashWriter.println(hash + "," + DeDuperUtil.getRealtivePath(root, output));
+		String path = DeDuperUtil.getRealtivePath(root, output);
+		hashes.put(hash, path);
+    	hashWriter.println(hash + "," + path);
 	}
 	
 	/**
