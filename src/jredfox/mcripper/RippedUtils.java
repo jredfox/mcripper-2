@@ -133,23 +133,29 @@ public class RippedUtils {
 		Map<String, String> hashes = new LinkedHashMap<String, String>(files.size());
 		for(File f : files)
 		{
-			String hash = null;
-			String name = DeDuperUtil.getTrueName(f);
-			if(name.contains("-"))
-			{
-				String[] splited = DeDuperUtil.split(name, '-', '?', '?');
-				String possibleHash = splited[splited.length - 1];
-				hash = isValidSHA1(possibleHash) ? possibleHash.toLowerCase() : getSHA1(f);
-			}
-			else
-			{
-				hash = getSHA1(f);
-			}
+			String hash = getUnsafeHash(f);
 			hashes.put(hash, DeDuperUtil.getRealtivePath(McRipper.root, f));
 		}
 		return hashes;
 	}
 	
+	public static String getUnsafeHash(File f) 
+	{
+		String hash = null;
+		String name = DeDuperUtil.getTrueName(f);
+		if(name.contains("-"))
+		{
+			String[] splited = DeDuperUtil.split(name, '-', '?', '?');
+			String possibleHash = splited[splited.length - 1];
+			hash = isValidSHA1(possibleHash) ? possibleHash.toLowerCase() : getSHA1(f);
+		}
+		else
+		{
+			hash = getSHA1(f);
+		}
+		return hash;
+	}
+
 	public static boolean isValidMD5(String s) {
 	    return s.matches("^[a-fA-F0-9]{32}$");
 	}

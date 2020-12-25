@@ -88,28 +88,33 @@ public class MCRipperCommands {
 		}
 	};
 	
-	public static RunableCommand checkSelfIntegrity = new RunableCommand("checkSelfIntegrity")
+	public static RunableCommand verify = new RunableCommand("verify")
 	{
 		@Override
 		public void run(ParamList<Object> params)
 		{
 			try 
 			{
+				boolean shouldSave = false;
 				Iterator<Map.Entry<String, String>> it = McRipper.hashes.entrySet().iterator();
 				while(it.hasNext())
 				{
 					Map.Entry<String, String> p = it.next();
 					String h = p.getKey();
 					String path = p.getValue();
-					File f = new File(path);
-					if(!f.exists() || !RippedUtils.getSHA1(f).equals(h))
+					File f = new File(McRipper.root, path);
+					if(!f.exists() || !h.equals(RippedUtils.getUnsafeHash(f)))
 					{
-						System.err.println("file has been modified removing:" + path);
+						System.err.println("file has been modified removing:" + path + " " + h + ", " + RippedUtils.getUnsafeHash(f));
 						it.remove();
 						f.delete();
+						shouldSave = true;
 					}
 				}
-				RippedUtils.saveFileLines(McRipper.hashes, McRipper.hashFile, true);
+				if(shouldSave)
+					RippedUtils.saveFileLines(McRipper.hashes, McRipper.hashFile, true);
+				else
+					System.out.println("All files have been verified with no errors");
 			}
 			catch (Exception e)
 			{
