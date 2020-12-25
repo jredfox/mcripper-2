@@ -114,7 +114,7 @@ public class McRipper {
 			return;
 		JSONObject json = RippedUtils.getJSON(version);
 		String versionName = json.getString("id");
-		String type = json.containsKey("type") ? json.getString("type") : DeDuperUtil.getTrueName(version);
+		String type = json.containsKey("type") ? json.getString("type") : DeDuperUtil.getTrueName(version.getParentFile());
 		
 		//download the asset indexes
 		JSONObject assetsIndex = json.getJSONObject("assetIndex");
@@ -326,10 +326,9 @@ public class McRipper {
 		}
 		catch(IOException io)
 		{
-			io.printStackTrace();
 			if(output.exists())
 			{
-//				hashes.remove(hash);
+				hashes.remove(hash);
 				output.delete();
 			}
 			throw io;
