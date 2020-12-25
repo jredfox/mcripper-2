@@ -217,7 +217,7 @@ public class McRipper {
 			String dataUrl = data.getString("url");
 			String[] dataUrlSplit = dataUrl.replace("\\", "/").split("/");
 			String name = dataUrlSplit[dataUrlSplit.length - 1];
-			dl(dataUrl, new File(mojang, type + "/" + versionName + "/" + versionName + "-" + name).getPath(), dataSha1);
+			dl(dataUrl, new File(mojang, "versions/" + type + "/" + versionName + "/" + versionName + "-" + name).getPath(), dataSha1);
 		}
 		
 		//download the libs classifier's

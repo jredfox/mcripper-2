@@ -6,6 +6,7 @@ import java.util.Map;
 
 import jredfox.filededuper.command.Command;
 import jredfox.filededuper.command.ParamList;
+import jredfox.filededuper.util.DeDuperUtil;
 
 public class MCRipperCommands {
 	
@@ -103,9 +104,9 @@ public class MCRipperCommands {
 					String h = p.getKey();
 					String path = p.getValue();
 					File f = new File(McRipper.root, path);
-					if(!f.exists() || !h.equals(RippedUtils.getUnsafeHash(f)))
+					if(!h.equals(RippedUtils.getSHA1(f)))
 					{
-						System.err.println("file has been modified removing:" + path + " " + h + ", " + RippedUtils.getUnsafeHash(f));
+						System.err.println("file has been modified removing:" + path);
 						it.remove();
 						f.delete();
 						shouldSave = true;
