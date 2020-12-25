@@ -40,6 +40,7 @@ public class RippedUtils {
 	
 	public static Map<String, String> parseHashFile(BufferedReader reader) 
 	{
+		String path = McRipper.root.getPath();
 		Map<String, String> list = null;
 		try
 		{
@@ -48,7 +49,7 @@ public class RippedUtils {
 			
 			if(s != null)
 			{
-				parse(list, s);
+				parse(list, path, s);
 			}
 			
 			while(s != null)
@@ -56,7 +57,7 @@ public class RippedUtils {
 				s = reader.readLine();
 				if(s != null)
 				{
-					parse(list, s);
+					parse(list, path, s);
 				}
 			}
 		}
@@ -80,11 +81,11 @@ public class RippedUtils {
 		return list;
 	}
 	
-	private static void parse(Map<String, String> list, String s) 
+	private static void parse(Map<String, String> list, String root, String s) 
 	{
 		String[] arr = s.split(",");
 		String fname = arr[1].trim();
-		if(!new File(fname).exists())
+		if(!new File(root, fname).exists())
 		{
 			System.out.println("deleting hash:" + s);
 			return;

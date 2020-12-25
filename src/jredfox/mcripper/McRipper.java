@@ -9,8 +9,10 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintWriter;
 import java.net.URL;
+import java.net.URLConnection;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -31,32 +33,66 @@ public class McRipper {
 		Command.cmds.clear();
 	}
 	
-	public static final String appId = "mcripper";
+	public static final String appId = "Mcripper";
 	public static final String version = "a.0.1.0";
 	public static final String appName = "MC Ripper 2 Build: " + version;
 	public static volatile Map<String, String> hashes;
-	public static File root = new File(System.getProperty("user.dir"));
+	public static volatile Set<File> checkJsons = new HashSet<>(100);
+	public static File root = new File(OSUtil.getAppData(), McRipper.appId);
 	public static File mcripped = new File(root, "mcripped");
-	public static File jsonDir = new File(mcripped, "mojang/jsons");
+	public static File mojang = new File(mcripped, "mojang");
+	public static File jsonDir = new File(mojang, "jsons");
+	public static File jsonMajor = new File(jsonDir, "major");
+	public static File jsonMinor = new File(jsonDir, "minor");
+	public static File jsonAssets = new File(jsonDir, "assets");
 	public static File hashFile;
 	public static PrintWriter hashWriter;
+	public static int majorCount;
+	public static int minorCount;
+	public static int assetsCount;
 	
 	public static void main(String[] args)
 	{
 		args = SelfCommandPrompt.runWithCMD(appId, appName, args, true, true);
 		System.out.println("starting:" + appName);
-		long ms = System.currentTimeMillis();
 		try
 		{
-		File workingDir = new File(mcripped, "mojang");
-		parseHashes();
-		if(args.length != 0 && args[0].equals("hashCheck"))
-			hashCheck();
-		System.out.println("computed Hashes in:" + (System.currentTimeMillis() - ms) + "ms");
-		File master = dlMojang();
+			long ms = System.currentTimeMillis();
+			parseHashes();
+			if(args.length != 0 && args[0].equals("hashCheck"))
+				hashCheck();
+			System.out.println("computed Hashes in:" + (System.currentTimeMillis() - ms) + "ms");
+			dlMojang();
+			List<File> majors = DeDuperUtil.getDirFiles(jsonMajor);
+			for(File major : majors)
+			{
+				checkMajor(major);
+			}
+			List<File> minors = DeDuperUtil.getDirFiles(jsonMinor);
+			for(File minor : minors)
+			{
+				checkMinor(minor);
+			}
+			List<File> assetsJsons = DeDuperUtil.getDirFiles(jsonAssets);
+			for(File assets : assetsJsons)
+			{
+				checkAssets(assets);
+			}
+			System.out.println("Done in:" + (System.currentTimeMillis() - ms) / 1000D + " seconds" + " major:" + majorCount + " minor:" + minorCount + " assets:" + assetsCount);
+		}
+		catch(Throwable t)
+		{
+			t.printStackTrace();
+		}
+		hashWriter.close();
+	}
+
+	public static void checkMajor(File master) throws FileNotFoundException, IOException
+	{
+		if(!checkJsons.add(master.getAbsoluteFile()))
+			return;
 		JSONObject mjson = RippedUtils.getJSON(master);
 		JSONArray arr = (JSONArray) mjson.get("versions");
-		Set<File> checkFiles = new HashSet<>(30);
 		for(Object obj : arr)
 		{
 			JSONObject jsonVersion = (JSONObject)obj;
@@ -67,36 +103,101 @@ public class McRipper {
 			String version = jsonVersion.getString("id");
 			String type = jsonVersion.getString("type");
 			String time = jsonVersion.getString("time");
-			File minorVersion = dl(url, jsonDir.getPath() + "/minor/" + type + "/" + version + ".json", minorHash);
-			//check the minor version jsons
-			checkVersion(checkFiles, workingDir, minorVersion);
+			dl(url, jsonMinor + "/" + type + "/" + version + ".json", minorHash);
 		}
-		System.out.println("Done in:" + (System.currentTimeMillis() - ms) / 1000D + " seconds");
-		}
-		catch(Throwable t)
-		{
-			t.printStackTrace();
-		}
-		hashWriter.close();
+		majorCount++;
 	}
 
-	private static void hashCheck() 
+	public static void checkMinor(File version) throws FileNotFoundException, IOException 
 	{
-		Iterator<Map.Entry<String, String>> it = hashes.entrySet().iterator();
-		while(it.hasNext())
+		if(!checkJsons.add(version.getAbsoluteFile()))
+			return;
+		JSONObject json = RippedUtils.getJSON(version);
+		String versionName = json.getString("id");
+		String type = json.containsKey("type") ? json.getString("type") : DeDuperUtil.getTrueName(version);
+		
+		//download the asset indexes
+		JSONObject assetsIndex = json.getJSONObject("assetIndex");
+		String id = assetsIndex.getString("id");
+		String sha1 = assetsIndex.getString("sha1").toLowerCase();
+		String url = assetsIndex.getString("url");
+		dl(url, new File(jsonAssets, id + ".json").getPath(), sha1);
+		
+		//download the logging
+		if(json.containsKey("logging"))
 		{
-			Map.Entry<String, String> p = it.next();
-			String h = p.getKey();
-			String path = p.getValue();
-			File f = new File(path);
-			if(!RippedUtils.getSHA1(f).equals(h))
+			JSONObject logging = json.getJSONObject("logging");
+			for(String key : logging.keySet())
 			{
-				System.err.println("file has been modified removing:" + path);
-				it.remove();
-				f.delete();
+				JSONObject logEntry = logging.getJSONObject(key);
+				JSONObject logFile = logEntry.getJSONObject("file");
+				String logId = logFile.getString("id");
+				String logSha1 = logFile.getString("sha1");
+				String logUrl = logFile.getString("url");
+				dl(logUrl, new File(mojang, "assets/log_configs/" + logId).getPath(), logSha1);
 			}
 		}
-		RippedUtils.saveFileLines(hashes, hashFile, true);
+		
+		//download the client data versions, mappings, servers
+		JSONObject clientData = json.getJSONObject("downloads");
+		for(String key : clientData.keySet())
+		{
+			JSONObject data = clientData.getJSONObject(key);
+			String dataSha1 = data.getString("sha1").toLowerCase();
+			String dataUrl = data.getString("url");
+			String[] dataUrlSplit = dataUrl.replace("\\", "/").split("/");
+			String name = dataUrlSplit[dataUrlSplit.length - 1];
+			dl(dataUrl, new File(mojang, type + "/" + versionName + "/" + versionName + "-" + name).getPath(), dataSha1);
+		}
+		
+		//download the libs classifier's
+		JSONArray libs = json.getJSONArray("libraries");
+		for(Object obj : libs)
+		{
+			JSONObject entry = (JSONObject)obj;
+			JSONObject downloads = entry.getJSONObject("downloads");
+			
+			//download the artifacts
+			if(downloads.containsKey("artifact"))
+			{
+				JSONObject artifact = downloads.getJSONObject("artifact");
+				String libPath = artifact.getString("path");
+				String libSha1 = artifact.getString("sha1");
+				String libUrl = artifact.getString("url");
+				dl(libUrl, new File(mojang, "libraries/" + libPath).getPath(), libSha1);
+			}
+			
+			//download the classifiers
+			if(downloads.containsKey("classifiers"))
+			{
+				JSONObject classifiers = downloads.getJSONObject("classifiers");
+				for(String key : classifiers.keySet())
+				{
+					JSONObject cl = classifiers.getJSONObject(key);
+					String clPath = cl.getString("path");
+					String clSha1 = cl.getString("sha1");
+					String clUrl = cl.getString("url");
+					dl(clUrl, new File(mojang, "libraries/" + clPath).getPath(), clSha1);
+				}
+			}
+		}
+		minorCount++;
+	}
+
+	private static void checkAssets(File assetsIndexFile) throws FileNotFoundException, IOException
+	{
+		if(!checkJsons.add(assetsIndexFile.getAbsoluteFile()))
+			return;
+		JSONObject objects = RippedUtils.getJSON(assetsIndexFile).getJSONObject("objects");
+		for(String key : objects.keySet())
+		{
+			JSONObject assetJson = objects.getJSONObject(key);
+			String assetSha1 = assetJson.getString("hash");
+			String assetSha1Char = assetSha1.substring(0, 2);
+			String assetUrl = "https://resources.download.minecraft.net/" + assetSha1Char + "/" + assetSha1;
+			dl(assetUrl, new File(mojang, "assets/objects/" + assetSha1Char + "/" + assetSha1).getPath(), assetSha1);
+		}
+		assetsCount++;
 	}
 
 	public static void parseHashes() throws IOException
@@ -115,92 +216,24 @@ public class McRipper {
 		System.out.println("Computing hashes This may take a while");
 		hashes = RippedUtils.getHashes(dir);
 	}
-
-	public static void checkVersion(Set<File> checkedAssets, File workingDir, File version) throws FileNotFoundException, IOException 
+	
+	private static void hashCheck() 
 	{
-		JSONObject json = RippedUtils.getJSON(version);
-		String versionName = json.getString("id");
-		
-		//download the asset indexes
-		JSONObject assetsIndex = json.getJSONObject("assetIndex");
-		String id = assetsIndex.getString("id");
-		String sha1 = assetsIndex.getString("sha1").toLowerCase();
-		String url = assetsIndex.getString("url");
-		File assetsIndexFile = dl(url, new File(jsonDir, "assets/" + id + ".json").getPath(), sha1);
-		
-		//download the assetsIndex data
-		if(!checkedAssets.contains(assetsIndexFile))
+		Iterator<Map.Entry<String, String>> it = hashes.entrySet().iterator();
+		while(it.hasNext())
 		{
-			JSONObject objects = RippedUtils.getJSON(assetsIndexFile).getJSONObject("objects");
-			for(String key : objects.keySet())
+			Map.Entry<String, String> p = it.next();
+			String h = p.getKey();
+			String path = p.getValue();
+			File f = new File(path);
+			if(!f.exists() || !RippedUtils.getSHA1(f).equals(h))
 			{
-				JSONObject assetJson = objects.getJSONObject(key);
-				String assetSha1 = assetJson.getString("hash");
-				String assetSha1Char = assetSha1.substring(0, 2);
-				String assetUrl = "https://resources.download.minecraft.net/" + assetSha1Char + "/" + assetSha1;
-				dl(assetUrl, new File(workingDir, "assets/objects/" + assetSha1Char + "/" + assetSha1).getPath(), assetSha1);
-			}
-			checkedAssets.add(assetsIndexFile);
-		}
-		
-		//download the logging
-		if(json.containsKey("logging"))
-		{
-			JSONObject logging = json.getJSONObject("logging");
-			for(String key : logging.keySet())
-			{
-				JSONObject logEntry = logging.getJSONObject(key);
-				JSONObject logFile = logEntry.getJSONObject("file");
-				String logId = logFile.getString("id");
-				String logSha1 = logFile.getString("sha1");
-				String logUrl = logFile.getString("url");
-				dl(logUrl, new File(workingDir, "assets/log_configs/" + logId).getPath(), logSha1);
+				System.err.println("file has been modified removing:" + path);
+				it.remove();
+				f.delete();
 			}
 		}
-		
-		//download the client data versions, mappings, servers
-		JSONObject clientData = json.getJSONObject("downloads");
-		for(String key : clientData.keySet())
-		{
-			JSONObject data = clientData.getJSONObject(key);
-			String dataSha1 = data.getString("sha1").toLowerCase();
-			String dataUrl = data.getString("url");
-			String[] dataUrlSplit = dataUrl.replace("\\", "/").split("/");
-			String name = dataUrlSplit[dataUrlSplit.length - 1];
-			dl(dataUrl, new File(version.getParentFile(), versionName + "-" + name).getPath(), dataSha1);
-		}
-		
-		//download the libs classifier's
-		JSONArray libs = json.getJSONArray("libraries");
-		for(Object obj : libs)
-		{
-			JSONObject entry = (JSONObject)obj;
-			JSONObject downloads = entry.getJSONObject("downloads");
-			
-			//download the artifacts
-			if(downloads.containsKey("artifact"))
-			{
-				JSONObject artifact = downloads.getJSONObject("artifact");
-				String libName = artifact.getString("path");
-				String libSha1 = artifact.getString("sha1");
-				String libUrl = artifact.getString("url");
-				dl(libUrl, new File(workingDir, "libraries/" + libName).getPath(), libSha1);
-			}
-			
-			//download the classifiers
-			if(downloads.containsKey("classifiers"))
-			{
-				JSONObject classifiers = downloads.getJSONObject("classifiers");
-				for(String key : classifiers.keySet())
-				{
-					JSONObject cl = classifiers.getJSONObject(key);
-					String clPath = cl.getString("path");
-					String clSha1 = cl.getString("sha1");
-					String clUrl = cl.getString("url");
-					dl(clUrl, new File(workingDir, "libraries/" + clPath).getPath(), clSha1);
-				}
-			}
-		}
+		RippedUtils.saveFileLines(hashes, hashFile, true);
 	}
 	
 	public static void add(String hash, File output) 
@@ -221,7 +254,7 @@ public class McRipper {
 	{
 		File master = dl("https://launchermeta.mojang.com/mc/game/version_manifest.json", new File(OSUtil.getAppData() + "/" + McRipper.appId, "mojang-versions.json").getPath(), "override");
 		String sha1 = RippedUtils.getSHA1(master);
-		return dl(master.toURI().toURL().toString(), new File(jsonDir, "major/version_manifest.json").getPath(), sha1);
+		return dl(master.toURI().toURL().toString(), new File(jsonMajor, "version_manifest.json").getPath(), sha1);
 	}
 
 	public static File dl(String url, String path, String hash) throws FileNotFoundException, IOException
@@ -232,7 +265,7 @@ public class McRipper {
 	public static File dlFromMC(String url, String path, String hash) throws FileNotFoundException, IOException
 	{
 		File minecraft = getMinecraftDir();
-		File cached = new File(minecraft, DeDuperUtil.getRealtivePath(new File(mcripped + "/mojang"), new File(path).getAbsoluteFile()));
+		File cached = new File(minecraft, DeDuperUtil.getRealtivePath(mojang, new File(path).getAbsoluteFile()));
 		//dl will automatically handle libraries but, the rest has to be delt with by this method to prefer the disk
 		return !path.contains("libraries") && cached.exists() ? dl(cached.toURI().toURL().toString(), path, hash) : dl(url, path, hash);
 	}
@@ -259,8 +292,10 @@ public class McRipper {
 				{
 					//prevent duplicate downloads
 					File hfile = new File(output.getParent(), DeDuperUtil.getTrueName(output) + "-" + hash + DeDuperUtil.getExtensionFull(output));
-					if(hfile.exists() || hash.equals(RippedUtils.getSHA1(output)))
+					boolean hflag = hfile.exists();
+					if(hflag || hash.equals(RippedUtils.getSHA1(output)))
 					{
+						output = hflag ? hfile : output;
 						System.err.println("File is out of sync with " + hashFile.getName() + " skipping duplicate download:" + output);
 						add(hash, output);
 						return output;
@@ -270,16 +305,19 @@ public class McRipper {
 				add(hash, output);
 			}
 			
-			//speed the process up for libraries as they are extremly slow
+			//speed the process up for libraries as they are extremely slow
 			if(path.contains("libraries"))
 			{
 				File minecraft = getMinecraftDir();
-				File cached = new File(minecraft, DeDuperUtil.getRealtivePath(new File(mcripped + "/mojang"), new File(path).getAbsoluteFile()));
+				File cached = new File(minecraft, DeDuperUtil.getRealtivePath(mojang, new File(path).getAbsoluteFile()));
 				if(cached.exists())
 					url = cached.toURI().toURL().toString();
 			}
 			
-			InputStream inputStream = new URL(url).openStream();
+			URLConnection con = new URL(url).openConnection();
+			con.setConnectTimeout(1000 * 15);
+			con.setReadTimeout(Integer.MAX_VALUE / 2);
+			InputStream inputStream = con.getInputStream();
 			output.getParentFile().mkdirs();
 			IOUtils.copy(inputStream, new FileOutputStream(output));
 			output.setLastModified(timestamp);
@@ -288,8 +326,12 @@ public class McRipper {
 		}
 		catch(IOException io)
 		{
+			io.printStackTrace();
 			if(output.exists())
+			{
+//				hashes.remove(hash);
 				output.delete();
+			}
 			throw io;
 		}
 	}
