@@ -64,9 +64,13 @@ public class McRipper {
 		{
 			long ms = System.currentTimeMillis();
 			loadCfg();
-			parseHashes();
-			System.out.println("computed Hashes in:" + (System.currentTimeMillis() - ms) + "ms");
-			Command.run(args.length == 0 ? new String[]{"checkMojang"} : args);
+			Command<?> cmd = Command.fromArgs(args.length == 0 ? new String[]{"checkMojang"} : args);
+			if(cmd != MCRipperCommands.recomputeHashes)
+			{
+				parseHashes();
+				System.out.println("computed Hashes in:" + (System.currentTimeMillis() - ms) + "ms");
+			}
+			cmd.run();
 			System.out.println("Done in:" + (System.currentTimeMillis() - ms) / 1000D + " seconds" + " major:" + majorCount + " minor:" + minorCount + " assets:" + assetsCount);
 		}
 		catch(Throwable t)
@@ -84,6 +88,7 @@ public class McRipper {
 		appdir = new File(cfg.get(McRipper.appId + "Dir", appdir.getPath())).getAbsoluteFile();
 		cfg.save();
 		root = appdir;
+		hashFile = new File(root, "index.hash");
 		mcripped = new File(root, "mcripped");
 		mojang = new File(mcripped, "mojang");
 		jsonDir = new File(mojang, "jsons");
@@ -274,7 +279,6 @@ public class McRipper {
 
 	public static void parseHashes() throws IOException
 	{
-		hashFile = new File(root, "index.hash");
 		if(!hashFile.exists())
 			computeHashes(mcripped);
 		else
@@ -286,25 +290,6 @@ public class McRipper {
 	{
 		System.out.println("Computing hashes This may take a while");
 		hashes = RippedUtils.getHashes(dir);
-		RippedUtils.saveFileLines(hashes, hashFile, true);
-	}
-	
-	public static void checkHashes() 
-	{
-		Iterator<Map.Entry<String, String>> it = hashes.entrySet().iterator();
-		while(it.hasNext())
-		{
-			Map.Entry<String, String> p = it.next();
-			String h = p.getKey();
-			String path = p.getValue();
-			File f = new File(path);
-			if(!f.exists() || !RippedUtils.getSHA1(f).equals(h))
-			{
-				System.err.println("file has been modified removing:" + path);
-				it.remove();
-				f.delete();
-			}
-		}
 		RippedUtils.saveFileLines(hashes, hashFile, true);
 	}
 	
