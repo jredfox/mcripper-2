@@ -2,6 +2,10 @@ Rip Minecraft assets from mojang for archiving purposes. You will still need to 
 
 planned commands:
 - rip assetsIndex outputDir --mcDir=value
+- checkOptional
+
+Done Commands
 - checkMojang --skipSnaps --mcDir=value
 - checkDisk --skipSnaps --mcDir=value --diskOnly
-- checkOptional
+- recomputeHashes
+- verify
