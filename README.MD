@@ -3,6 +3,5 @@ Rip Minecraft assets from mojang for archiving purposes. You will still need to 
 planned commands:
 - rip assetsIndex outputDir --assetsDir=value
 - checkMojang --skipSnapshots --assetsDir=value
-- checkOldMc(check older mojang sites like amazon aws)
-- checkOmni
-- checkBetacraft
+- checkCustom --skipSnapShots --assetsDir=value --diskOnly
+- checkOptional
