@@ -4,6 +4,4 @@ planned commands:
 - rip assetsIndex outputDir --assetsDir=value
 - checkMojang --skipSnapshots --assetsDir=value
 - checkDisk --skipSnapShots --assetsDir=value
-- checkOldMc(check older mojang sites like amazon aws)
-- checkOmni
-- checkBetacraft
+- checkOptional
