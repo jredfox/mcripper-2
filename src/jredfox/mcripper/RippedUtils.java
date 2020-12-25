@@ -125,8 +125,43 @@ public class RippedUtils {
 		List<File> files = DeDuperUtil.getDirFiles(dir);
 		Map<String, String> hashes = new HashMap<>(files.size());
 		for(File f : files)
-			hashes.put(getSHA1(f), DeDuperUtil.getRealtivePath(McRipper.root, f));
+		{
+			String hash = null;
+			String name = DeDuperUtil.getTrueName(f);
+			if(name.contains("-"))
+			{
+				String[] splited = DeDuperUtil.split(name, '-', '?', '?');
+				String possibleHash = splited[splited.length - 1];
+				hash = isValidSHA1(possibleHash) ? possibleHash.toLowerCase() : getSHA1(f);
+			}
+			else
+			{
+				hash = getSHA1(f);
+			}
+			hashes.put(hash, DeDuperUtil.getRealtivePath(McRipper.root, f));
+		}
 		return hashes;
+	}
+	
+	public static boolean isValidMD5(String s) {
+	    return s.matches("^[a-fA-F0-9]{32}$");
+	}
+	
+	public static boolean isValidSHA1(String s) {
+	    return s.matches("^[a-fA-F0-9]{40}$");
+	}
+	
+	public static boolean isValidSHA256(String s) {
+	    return s.matches("^[a-fA-F0-9]{64}$");
+	}
+	
+	/**
+	 * no directory support use at your own risk
+	 */
+	public static String getExtension(char c, String name) 
+	{
+		int index = name.lastIndexOf(c);
+		return index != -1 ? name.substring(index + 1) : "";
 	}
 	
 	public static String getSHA1(File f) 

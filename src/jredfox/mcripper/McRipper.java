@@ -34,7 +34,7 @@ public class McRipper {
 	}
 	
 	public static final String appId = "Mcripper";
-	public static final String version = "a.0.1.0";
+	public static final String version = "a.0.2.0";
 	public static final String appName = "MC Ripper 2 Build: " + version;
 	public static volatile Map<String, String> hashes;
 	public static volatile Set<File> checkJsons = new HashSet<>(100);
