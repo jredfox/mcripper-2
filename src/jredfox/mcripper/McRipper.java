@@ -103,12 +103,12 @@ public class McRipper {
 	{
 		File major = dlMojang();
 		Set<File> minors = checkMajor(major, skipSnaps);
-		Set<File> assets = new HashSet<>(minors.size());
+		Set<File> assets = new HashSet<>(jsonAssets.listFiles().length);
 		for(File minor : minors)
 		{
 			File assetsIndex = checkMinor(minor, skipSnaps);
 			if(assetsIndex != null)
-				assets.add(assetsIndex);			
+				assets.add(assetsIndex);
 		}
 		for(File asset : assets)
 		{
@@ -251,6 +251,10 @@ public class McRipper {
 		return aIndexFile.getAbsoluteFile();
 	}
 
+	/**
+	 * NOTE: there is nothing to differentiate a snapshot only assets index and a non snapshot one. As types are not specified.
+	 * I got it working with checkMojang --skipSnaps but, that's because it uses only the return files it will fail with checkCustom --skipSnaps
+	 */
 	public static void checkAssets(File assetsIndexFile) throws FileNotFoundException, IOException
 	{
 		if(!checkJsons.add(assetsIndexFile.getAbsoluteFile()))
@@ -275,7 +279,6 @@ public class McRipper {
 			computeHashes(mcripped);
 		else
 			hashes = RippedUtils.parseHashFile(IOUtils.getReader(hashFile));
-		RippedUtils.saveFileLines(hashes, hashFile, true);
 		hashWriter = new PrintWriter(new BufferedWriter(new FileWriter(hashFile, true)), true);
 	}
 	
@@ -283,6 +286,7 @@ public class McRipper {
 	{
 		System.out.println("Computing hashes This may take a while");
 		hashes = RippedUtils.getHashes(dir);
+		RippedUtils.saveFileLines(hashes, hashFile, true);
 	}
 	
 	public static void checkHashes() 
@@ -388,7 +392,7 @@ public class McRipper {
 			output.getParentFile().mkdirs();
 			IOUtils.copy(inputStream, new FileOutputStream(output));
 			output.setLastModified(timestamp);
-			System.out.println("dl:" + output + " in:" + (System.currentTimeMillis() - time) + "ms" + " url:" + url);
+			System.out.println("dl:" + output + " in:" + (System.currentTimeMillis() - time) + "ms");
 			return output;
 		}
 		catch(IOException io)

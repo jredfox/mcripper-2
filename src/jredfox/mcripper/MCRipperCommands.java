@@ -7,7 +7,7 @@ import jredfox.filededuper.command.ParamList;
 
 public class MCRipperCommands {
 	
-	public static RunableCommand checkCustom = new RunableCommand(new String[]{"--mcDir=value", "--diskOnly", "--skipSnaps"}, "checkCustom")
+	public static RunableCommand checkDisk = new RunableCommand(new String[]{"--mcDir=value", "--diskOnly", "--skipSnaps"}, "checkDisk")
 	{
 		@Override
 		public void run(ParamList<Object> params)

@@ -44,6 +44,7 @@ public class RippedUtils {
 	{
 		String path = McRipper.root.getPath();
 		Map<String, String> list = null;
+		ModBoolean hsave = new ModBoolean();
 		try
 		{
 			list = new LinkedHashMap<>();
@@ -51,7 +52,7 @@ public class RippedUtils {
 			
 			if(s != null)
 			{
-				parse(list, path, s);
+				parse(list, hsave, path, s);
 			}
 			
 			while(s != null)
@@ -59,7 +60,7 @@ public class RippedUtils {
 				s = reader.readLine();
 				if(s != null)
 				{
-					parse(list, path, s);
+					parse(list, hsave, path, s);
 				}
 			}
 		}
@@ -74,22 +75,26 @@ public class RippedUtils {
 				try 
 				{
 					reader.close();
-				} catch (IOException e) 
+				} 
+				catch (IOException e) 
 				{
 					System.out.println("Unable to Close InputStream this is bad");
 				}
 			}
 		}
+		if(hsave.b)
+			RippedUtils.saveFileLines(list, McRipper.hashFile, true);
 		return list;
 	}
 	
-	private static void parse(Map<String, String> list, String root, String s) 
+	private static void parse(Map<String, String> list, ModBoolean hsave, String root, String s) 
 	{
 		String[] arr = s.split(",");
 		String fname = arr[1].trim();
 		if(!new File(root, fname).exists())
 		{
 			System.out.println("deleting hash:" + s);
+			hsave.b = true;
 			return;
 		}
 		if(!s.isEmpty())
