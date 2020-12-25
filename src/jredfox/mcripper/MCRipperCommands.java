@@ -7,41 +7,45 @@ import jredfox.filededuper.command.ParamList;
 
 public class MCRipperCommands {
 	
-	public static RunableCommand checkCustom = new RunableCommand(new String[]{"--assetsDir=value", "--diskOnly"}, "checkCustom")
+	public static RunableCommand checkCustom = new RunableCommand(new String[]{"--mcDir=value", "--diskOnly", "--skipSnaps"}, "checkCustom")
 	{
 		@Override
 		public void run(ParamList<Object> params)
 		{
 			try 
 			{
-				McRipper.checkCustom(params.hasFlag("diskOnly"));
+				McRipper.mcDir = params.hasFlag("mcDir") ? new File(params.getValue("mcDir")).getAbsoluteFile() : McRipper.mcDir;
+				McRipper.checkCustom(params.hasFlag("diskOnly"), params.hasFlag("skipSnaps"));
 			}
 			catch (Exception e)
 			{
 				e.printStackTrace();
 			} 
 			McRipper.checkJsons.clear();
+			McRipper.mcDir = McRipper.mcDefaultDir;
 		}
 	};
 	
-	public static RunableCommand checkMojang = new RunableCommand(new String[]{"--assetsDir=value"}, "checkMojang")
+	public static RunableCommand checkMojang = new RunableCommand(new String[]{"--mcDir=value", "--skipSnaps"}, "checkMojang")
 	{
 		@Override
 		public void run(ParamList<Object> params)
 		{
 			try 
 			{
-				McRipper.checkMojang();
+				McRipper.mcDir = params.hasFlag("mcDir") ? new File(params.getValue("mcDir")).getAbsoluteFile() : McRipper.mcDir;
+				McRipper.checkMojang(params.hasFlag("skipSnaps"));
 			}
 			catch (Exception e)
 			{
 				e.printStackTrace();
 			} 
 			McRipper.checkJsons.clear();
+			McRipper.mcDir = McRipper.mcDefaultDir;
 		}
 	};
 	
-	public static Command<File> rip = new Command<File>(new String[]{"--assetsDir=value"}, "rip")
+	public static Command<File> rip = new Command<File>(new String[]{"--mcDir=value"}, "rip")
 	{
 		@Override
 		public String[] displayArgs() 

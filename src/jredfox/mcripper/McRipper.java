@@ -21,6 +21,7 @@ import com.jml.evilnotch.lib.json.JSONArray;
 import com.jml.evilnotch.lib.json.JSONObject;
 
 import jredfox.filededuper.command.Command;
+import jredfox.filededuper.config.simple.MapConfig;
 import jredfox.filededuper.util.DeDuperUtil;
 import jredfox.filededuper.util.IOUtils;
 import jredfox.selfcmd.SelfCommandPrompt;
@@ -36,30 +37,33 @@ public class McRipper {
 	}
 	
 	public static final String appId = "Mcripper";
-	public static final String version = "b.1.0.0";
+	public static final String version = "b.1.1.0";
 	public static final String appName = "MC Ripper 2 Build: " + version;
 	public static volatile Map<String, String> hashes;
 	public static volatile Set<File> checkJsons = new HashSet<>(100);
-	public static File root = new File(OSUtil.getAppData(), McRipper.appId);
-	public static File mcripped = new File(root, "mcripped");
-	public static File mojang = new File(mcripped, "mojang");
-	public static File jsonDir = new File(mojang, "jsons");
-	public static File jsonMajor = new File(jsonDir, "major");
-	public static File jsonMinor = new File(jsonDir, "minor");
-	public static File jsonAssets = new File(jsonDir, "assets");
+	public static final File mcDefaultDir = getMinecraftDir();
+	public static volatile File mcDir = mcDefaultDir;
+	public static File root;
+	public static File mcripped;
+	public static File mojang;
+	public static File jsonDir;
+	public static File jsonMajor;
+	public static File jsonMinor;
+	public static File jsonAssets;
 	public static File hashFile;
 	public static PrintWriter hashWriter;
 	public static int majorCount;
 	public static int minorCount;
 	public static int assetsCount;
 	
-	public static void main(String[] args)
+	public static void main(String[] args) throws FileNotFoundException, IOException
 	{
-		args = SelfCommandPrompt.wrapWithCMD("input a command: ", appId, appName, args, false, true);
+		args = SelfCommandPrompt.wrapWithCMD("input a command: ", appId, appName, args, true, true);
 		System.out.println("starting:" + appName);
 		try
 		{
 			long ms = System.currentTimeMillis();
+			loadCfg();
 			parseHashes();
 			System.out.println("computed Hashes in:" + (System.currentTimeMillis() - ms) + "ms");
 			Command.run(args.length == 0 ? new String[]{"checkMojang"} : args);
@@ -72,21 +76,39 @@ public class McRipper {
 		hashWriter.close();
 	}
 	
-	public static void checkCustom(boolean diskOnly) throws FileNotFoundException, IOException
+	public static void loadCfg() 
+	{
+		File appdir = new File(OSUtil.getAppData(), McRipper.appId);
+		MapConfig cfg = new MapConfig(new File(System.getProperty("user.dir"), McRipper.appId + ".cfg"));
+		cfg.load();
+		appdir = new File(cfg.get(McRipper.appId + "Dir", appdir.getPath())).getAbsoluteFile();
+		cfg.save();
+		root = appdir;
+		mcripped = new File(root, "mcripped");
+		mojang = new File(mcripped, "mojang");
+		jsonDir = new File(mojang, "jsons");
+		jsonMajor = new File(jsonDir, "major");
+		jsonMinor = new File(jsonDir, "minor");
+		jsonAssets = new File(jsonDir, "assets");
+	}
+
+	public static void checkCustom(boolean diskOnly, boolean skipSnap) throws FileNotFoundException, IOException
 	{
 		if(!diskOnly)
 			dlMojang();
-		checkDisk();
+		checkDisk(skipSnap);
 	}
 	
-	public static void checkMojang() throws FileNotFoundException, IOException 
+	public static void checkMojang(boolean skipSnaps) throws FileNotFoundException, IOException 
 	{
 		File major = dlMojang();
-		Set<File> minors = checkMajor(major);
+		Set<File> minors = checkMajor(major, skipSnaps);
 		Set<File> assets = new HashSet<>(minors.size());
 		for(File minor : minors)
 		{
-			assets.add(checkMinor(minor));			
+			File assetsIndex = checkMinor(minor, skipSnaps);
+			if(assetsIndex != null)
+				assets.add(assetsIndex);			
 		}
 		for(File asset : assets)
 		{
@@ -94,17 +116,17 @@ public class McRipper {
 		}
 	}
 
-	public static void checkDisk() throws FileNotFoundException, IOException
+	public static void checkDisk(boolean skipSnaps) throws FileNotFoundException, IOException
 	{
 		List<File> majors = DeDuperUtil.getDirFiles(jsonMajor);
 		for(File major : majors)
 		{
-			checkMajor(major);
+			checkMajor(major, skipSnaps);
 		}
 		List<File> minors = DeDuperUtil.getDirFiles(jsonMinor);
 		for(File minor : minors)
 		{
-			checkMinor(minor);
+			checkMinor(minor, skipSnaps);
 		}
 		List<File> assetsJsons = DeDuperUtil.getDirFiles(jsonAssets);
 		for(File assets : assetsJsons)
@@ -123,7 +145,7 @@ public class McRipper {
 		
 	}
 
-	public static Set<File> checkMajor(File master) throws FileNotFoundException, IOException
+	public static Set<File> checkMajor(File master, boolean skipSnap) throws FileNotFoundException, IOException
 	{
 		if(!checkJsons.add(master.getAbsoluteFile()))
 			return Collections.emptySet();
@@ -139,6 +161,8 @@ public class McRipper {
 			String minorHash = urlArr[urlArr.length - 2].toLowerCase();
 			String version = jsonVersion.getString("id");
 			String type = jsonVersion.getString("type");
+			if(skipSnap && type.startsWith("snapshot"))
+				continue;
 			String time = jsonVersion.getString("time");
 			File minor = dl(url, jsonMinor + "/" + type + "/" + version + ".json", minorHash);
 			minors.add(minor.getAbsoluteFile());
@@ -147,14 +171,17 @@ public class McRipper {
 		return minors;
 	}
 
-	public static File checkMinor(File version) throws FileNotFoundException, IOException 
+	public static File checkMinor(File version, boolean skipSnap) throws FileNotFoundException, IOException 
 	{
 		if(!checkJsons.add(version.getAbsoluteFile()))
 			return version;
 		JSONObject json = RippedUtils.getJSON(version);
 		String versionName = json.getString("id");
 		String type = json.containsKey("type") ? json.getString("type") : DeDuperUtil.getTrueName(version.getParentFile());
-		
+		if(skipSnap && type.startsWith("snapshot"))
+		{
+			return null;
+		}
 		//download the asset indexes
 		JSONObject aIndex = json.getJSONObject("assetIndex");
 		String id = aIndex.getString("id");
@@ -224,7 +251,7 @@ public class McRipper {
 		return aIndexFile.getAbsoluteFile();
 	}
 
-	private static void checkAssets(File assetsIndexFile) throws FileNotFoundException, IOException
+	public static void checkAssets(File assetsIndexFile) throws FileNotFoundException, IOException
 	{
 		if(!checkJsons.add(assetsIndexFile.getAbsoluteFile()))
 			return;
@@ -306,8 +333,7 @@ public class McRipper {
 	
 	public static File dlFromMC(String url, String path, String hash) throws FileNotFoundException, IOException
 	{
-		File minecraft = getMinecraftDir();
-		File cached = new File(minecraft, DeDuperUtil.getRealtivePath(mojang, new File(path).getAbsoluteFile()));
+		File cached = new File(mcDir, DeDuperUtil.getRealtivePath(mojang, new File(path).getAbsoluteFile()));
 		//dl will automatically handle libraries but, the rest has to be delt with by this method to prefer the disk
 		return !path.contains("libraries") && cached.exists() ? dl(cached.toURI().toURL().toString(), path, hash) : dl(url, path, hash);
 	}
@@ -350,8 +376,7 @@ public class McRipper {
 			//speed the process up for libraries as they are extremely slow
 			if(path.contains("libraries"))
 			{
-				File minecraft = getMinecraftDir();
-				File cached = new File(minecraft, DeDuperUtil.getRealtivePath(mojang, new File(path).getAbsoluteFile()));
+				File cached = new File(mcDir, DeDuperUtil.getRealtivePath(mojang, new File(path).getAbsoluteFile()));
 				if(cached.exists())
 					url = cached.toURI().toURL().toString();
 			}
@@ -363,7 +388,7 @@ public class McRipper {
 			output.getParentFile().mkdirs();
 			IOUtils.copy(inputStream, new FileOutputStream(output));
 			output.setLastModified(timestamp);
-			System.out.println("downloaded:" + output + " in:" + (System.currentTimeMillis() - time) + "ms");
+			System.out.println("dl:" + output + " in:" + (System.currentTimeMillis() - time) + "ms" + " url:" + url);
 			return output;
 		}
 		catch(IOException io)
