@@ -10,6 +10,7 @@ import java.io.InputStream;
 import java.io.PrintWriter;
 import java.net.URL;
 import java.net.URLConnection;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -34,7 +35,7 @@ public class McRipper {
 	}
 	
 	public static final String appId = "Mcripper";
-	public static final String version = "a.0.2.0";
+	public static final String version = "b.1.0.0";
 	public static final String appName = "MC Ripper 2 Build: " + version;
 	public static volatile Map<String, String> hashes;
 	public static volatile Set<File> checkJsons = new HashSet<>(100);
@@ -62,22 +63,7 @@ public class McRipper {
 			if(args.length != 0 && args[0].equals("hashCheck"))
 				hashCheck();
 			System.out.println("computed Hashes in:" + (System.currentTimeMillis() - ms) + "ms");
-			dlMojang();
-			List<File> majors = DeDuperUtil.getDirFiles(jsonMajor);
-			for(File major : majors)
-			{
-				checkMajor(major);
-			}
-			List<File> minors = DeDuperUtil.getDirFiles(jsonMinor);
-			for(File minor : minors)
-			{
-				checkMinor(minor);
-			}
-			List<File> assetsJsons = DeDuperUtil.getDirFiles(jsonAssets);
-			for(File assets : assetsJsons)
-			{
-				checkAssets(assets);
-			}
+			checkCustom(false);
 			System.out.println("Done in:" + (System.currentTimeMillis() - ms) / 1000D + " seconds" + " major:" + majorCount + " minor:" + minorCount + " assets:" + assetsCount);
 		}
 		catch(Throwable t)
@@ -86,13 +72,65 @@ public class McRipper {
 		}
 		hashWriter.close();
 	}
+	
+	public static void checkCustom(boolean diskOnly) throws FileNotFoundException, IOException
+	{
+		if(!diskOnly)
+			dlMojang();
+		checkDisk();
+	}
+	
+	public static void checkMojang() throws FileNotFoundException, IOException 
+	{
+		File major = dlMojang();
+		Set<File> minors = checkMajor(major);
+		Set<File> assets = new HashSet<>(minors.size());
+		for(File minor : minors)
+		{
+			assets.add(checkMinor(minor));			
+		}
+		for(File asset : assets)
+		{
+			checkAssets(asset);
+		}
+	}
 
-	public static void checkMajor(File master) throws FileNotFoundException, IOException
+	public static void checkDisk() throws FileNotFoundException, IOException
+	{
+		List<File> majors = DeDuperUtil.getDirFiles(jsonMajor);
+		for(File major : majors)
+		{
+			checkMajor(major);
+		}
+		List<File> minors = DeDuperUtil.getDirFiles(jsonMinor);
+		for(File minor : minors)
+		{
+			checkMinor(minor);
+		}
+		List<File> assetsJsons = DeDuperUtil.getDirFiles(jsonAssets);
+		for(File assets : assetsJsons)
+		{
+			checkAssets(assets);
+		}
+	}
+	
+	/**
+	 * TODO: checkOldMc(check older mojang sites like amazon aws)
+	 * TODO: dl checkOmni
+	 * TODO: dl checkBetacraft
+	 */
+	public static void checkOptional()
+	{
+		
+	}
+
+	public static Set<File> checkMajor(File master) throws FileNotFoundException, IOException
 	{
 		if(!checkJsons.add(master.getAbsoluteFile()))
-			return;
+			return Collections.emptySet();
 		JSONObject mjson = RippedUtils.getJSON(master);
 		JSONArray arr = (JSONArray) mjson.get("versions");
+		Set<File> minors = new HashSet<>(arr.size());
 		for(Object obj : arr)
 		{
 			JSONObject jsonVersion = (JSONObject)obj;
@@ -103,25 +141,27 @@ public class McRipper {
 			String version = jsonVersion.getString("id");
 			String type = jsonVersion.getString("type");
 			String time = jsonVersion.getString("time");
-			dl(url, jsonMinor + "/" + type + "/" + version + ".json", minorHash);
+			File minor = dl(url, jsonMinor + "/" + type + "/" + version + ".json", minorHash);
+			minors.add(minor.getAbsoluteFile());
 		}
 		majorCount++;
+		return minors;
 	}
 
-	public static void checkMinor(File version) throws FileNotFoundException, IOException 
+	public static File checkMinor(File version) throws FileNotFoundException, IOException 
 	{
 		if(!checkJsons.add(version.getAbsoluteFile()))
-			return;
+			return version;
 		JSONObject json = RippedUtils.getJSON(version);
 		String versionName = json.getString("id");
 		String type = json.containsKey("type") ? json.getString("type") : DeDuperUtil.getTrueName(version.getParentFile());
 		
 		//download the asset indexes
-		JSONObject assetsIndex = json.getJSONObject("assetIndex");
-		String id = assetsIndex.getString("id");
-		String sha1 = assetsIndex.getString("sha1").toLowerCase();
-		String url = assetsIndex.getString("url");
-		dl(url, new File(jsonAssets, id + ".json").getPath(), sha1);
+		JSONObject aIndex = json.getJSONObject("assetIndex");
+		String id = aIndex.getString("id");
+		String sha1 = aIndex.getString("sha1").toLowerCase();
+		String url = aIndex.getString("url");
+		File aIndexFile = dl(url, new File(jsonAssets, id + ".json").getPath(), sha1);
 		
 		//download the logging
 		if(json.containsKey("logging"))
@@ -182,6 +222,7 @@ public class McRipper {
 			}
 		}
 		minorCount++;
+		return aIndexFile;
 	}
 
 	private static void checkAssets(File assetsIndexFile) throws FileNotFoundException, IOException
@@ -287,7 +328,7 @@ public class McRipper {
 			if(hasHash)
 			{
 				if(hashes.containsKey(hash))
-					return new File(hashes.get(hash));
+					return new File(root, hashes.get(hash));
 				else if(output.exists())
 				{
 					//prevent duplicate downloads
@@ -327,10 +368,8 @@ public class McRipper {
 		catch(IOException io)
 		{
 			if(output.exists())
-			{
-				hashes.remove(hash);
 				output.delete();
-			}
+			hashes.remove(hash);
 			throw io;
 		}
 	}
