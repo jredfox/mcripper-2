@@ -1,6 +1,8 @@
 package jredfox.mcripper;
 
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.util.Iterator;
 import java.util.Map;
 
@@ -55,6 +57,28 @@ public class McRipperCommands {
 		public void run(ParamList<Object> params)
 		{
 			McRipper.mcDir = params.hasFlag("mcDir") ? new File(params.getValue("mcDir")).getAbsoluteFile() : McRipper.mcDir;
+//			this.dlOmni();
+			this.dlOldMC();
+			McRipper.mcDir = McRipper.mcDefaultDir;
+		}
+
+		public void dlOldMC()
+		{
+			try
+			{
+//				McRipper.dlAmazonAws("http://s3.amazonaws.com/MinecraftDownload", "MinecraftDownload");
+//				McRipper.dlAmazonAws("http://s3.amazonaws.com/MinecraftResources", "MinecraftResources");
+//				McRipper.dlAmazonAws("http://s3.amazonaws.com/Minecraft.Resources", "Minecraft.Resources");
+				McRipper.dlAmazonMcVersions("http://s3.amazonaws.com/Minecraft.Download", "Minecraft.Download");
+			}
+			catch(Exception e) 
+			{
+				e.printStackTrace();
+			}
+		}
+
+		public void dlOmni()
+		{
 			try 
 			{
 				McRipper.dlWebArchive("https://archive.org/download/Minecraft-JE-Pre-Classic", "Omniarchive/Pre-Classic");
@@ -69,7 +93,6 @@ public class McRipperCommands {
 			{
 				e.printStackTrace();
 			}
-			McRipper.mcDir = McRipper.mcDefaultDir;
 		}
 	};
 	

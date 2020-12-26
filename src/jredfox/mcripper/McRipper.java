@@ -370,6 +370,8 @@ public class McRipper {
 	
 	public static File dlToFile(String url, File output, long timestamp) throws FileNotFoundException, IOException
 	{
+		url = url.replaceAll(" ", "%20");
+		output = new File(output.getPath().replaceAll("%20", " "));
 		URLConnection con = new URL(url).openConnection();
 		con.setConnectTimeout(1000 * 15);
 		con.setReadTimeout(Integer.MAX_VALUE / 2);
@@ -387,6 +389,7 @@ public class McRipper {
 	 */
 	public static File dl(String url, String path, long timestamp, String hash) throws FileNotFoundException, IOException, IllegalArgumentException
 	{
+		url = url.replaceAll(" ", "%20");
 		if(hash == null)
 			throw new IllegalArgumentException("hash cannot be null!");
 		File output = null;
@@ -413,7 +416,6 @@ public class McRipper {
 					}
 					output = hfile;
 				}
-				add(hash, output);
 			}
 			
 			//speed the process up for libraries as they are extremely slow
@@ -431,6 +433,7 @@ public class McRipper {
 			output.getParentFile().mkdirs();
 			IOUtils.copy(inputStream, new FileOutputStream(output));
 			output.setLastModified(timestamp);
+			add(hash, output);
 			System.out.println("dl:" + output + " in:" + (System.currentTimeMillis() - time) + "ms");
 			return output;
 		}
@@ -483,7 +486,62 @@ public class McRipper {
 				}
 				long ms = Long.parseLong(nodeStamp.getTextContent()) * 1000L;
 				String sha1 = nodeHash.getTextContent();
-				McRipper.dl(baseUrl + "/" + nodeName, new File(webDir, nodeName).getPath(), ms, sha1);
+				try
+				{
+					McRipper.dl(baseUrl + "/" + nodeName, new File(webDir, nodeName).getPath(), ms, sha1);
+				}
+				catch(Exception e)
+				{
+					e.printStackTrace();
+				}
+			}
+		}
+	}
+	
+	/**
+	 * dl all files from an amazonAws website
+	 * @throws IOException 
+	 * @throws FileNotFoundException 
+	 * @throws ParserConfigurationException 
+	 * @throws SAXException 
+	 */
+	public static void dlAmazonAws(String url, String path) throws FileNotFoundException, IOException, SAXException, ParserConfigurationException
+	{
+		File oldMcDir = new File(mcripped, path);
+		File xmlFile = dlMove(url, path, new File(oldMcDir, path + ".xml"));
+		Document doc = parseXML(xmlFile);
+		NodeList nlist = doc.getElementsByTagName("Contents");
+		for(int i=0; i < nlist.getLength(); i++)
+		{
+			Node node = nlist.item(i);
+			if(node.getNodeType() == Node.ELEMENT_NODE)
+			{
+				Element element = (Element) node;
+				String key = element.getElementsByTagName("Key").item(0).getTextContent();
+				//skip directories
+				if(key.endsWith("/"))
+					continue;
+				String timestamp = element.getElementsByTagName("LastModified").item(0).getTextContent();
+				String sha1 = DeDuperUtil.parseQuotes(element.getElementsByTagName("ETag").item(0).getTextContent(), '"', '"');
+				String fileUrl = url + "/" + key;
+				try
+				{
+					McRipper.dl(fileUrl, new File(oldMcDir, key).getPath(), sha1);
+				}
+				catch(IOException io)
+				{
+					String msg = io.getMessage();
+					if(msg.contains("code: 403"))
+					{
+						System.err.println("amazon is denying access to URL:" + fileUrl);
+					}
+					else
+						io.printStackTrace();
+				}
+				catch(Exception e)
+				{
+					e.printStackTrace();
+				}
 			}
 		}
 	}
@@ -514,4 +572,8 @@ public class McRipper {
 		return arr[arr.length - 1];
 	}
 
+	public static void dlAmazonMcVersions(String string, String string2) 
+	{
+		//TODO:
+	}
 }
