@@ -162,16 +162,6 @@ public class McRipper {
 		}
 	}
 	
-	/**
-	 * TODO: checkOldMc(check older mojang sites like amazon aws)
-	 * TODO: dl checkOmni
-	 * TODO: dl checkBetacraft
-	 */
-	public static void checkOptional()
-	{
-		
-	}
-
 	public static Set<File> checkMajor(File master, boolean skipSnap) throws FileNotFoundException, IOException
 	{
 		if(!checkJsons.add(master.getAbsoluteFile()))
@@ -652,6 +642,20 @@ public class McRipper {
 			McRipper.dlWebArchive("https://archive.org/download/Minecraft-JE-Sounds", "Omniarchive/JE-Sounds");
 		}
 		catch (Exception e)
+		{
+			e.printStackTrace();
+		}
+	}
+
+	public static void checkOldMc()
+	{
+		try
+		{
+			McRipper.dlAmazonAws("http://s3.amazonaws.com/MinecraftDownload", "MinecraftDownload");
+			McRipper.dlAmazonAws("http://s3.amazonaws.com/MinecraftResources", "MinecraftResources");
+			McRipper.dlOldVersions();
+		}
+		catch(Exception e) 
 		{
 			e.printStackTrace();
 		}

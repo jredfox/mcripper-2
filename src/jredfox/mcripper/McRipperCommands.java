@@ -66,22 +66,8 @@ public class McRipperCommands {
 		public void run(ParamList<Object> params)
 		{
 			McRipper.mcDir = params.hasFlag("mcDir") ? new File(params.getValue("mcDir")).getAbsoluteFile() : McRipper.mcDir;
-			this.dlOldMC();
+			McRipper.checkOldMc();
 			McRipper.mcDir = McRipper.mcDefaultDir;
-		}
-
-		public void dlOldMC()
-		{
-			try
-			{
-				McRipper.dlAmazonAws("http://s3.amazonaws.com/MinecraftDownload", "MinecraftDownload");
-				McRipper.dlAmazonAws("http://s3.amazonaws.com/MinecraftResources", "MinecraftResources");
-				McRipper.dlOldVersions();
-			}
-			catch(Exception e) 
-			{
-				e.printStackTrace();
-			}
 		}
 	};
 	
