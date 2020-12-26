@@ -37,7 +37,7 @@ public class McRipper {
 	}
 	
 	public static final String appId = "Mcripper";
-	public static final String version = "b.1.2.0";
+	public static final String version = "1.0.0-pre.1";
 	public static final String appName = "MC Ripper 2 Build: " + version;
 	public static volatile Map<String, String> hashes;
 	public static volatile Set<File> checkJsons = new HashSet<>(100);
@@ -431,6 +431,36 @@ public class McRipper {
 			hashes.remove(hash);
 			throw io;
 		}
+	}
+
+	/**
+	 * dl an entire webArchive to the archive directory
+	 * @throws IOException 
+	 * @throws FileNotFoundException 
+	 */
+	public static void dlWebArchive(String url, String dirPath) throws FileNotFoundException, IOException 
+	{
+		String name = getLastSplit(url, "/");
+		url = url + "/" + name + "_files.xml";
+		File webDir = new File(mcripped, dirPath);
+		name = name + "_files.xml";
+		File xmlFile = dlMove(url, name, new File(webDir, name));
+	}
+	
+	public static File dlMove(String url, String path, File saveAs) throws FileNotFoundException, IOException
+	{
+		File tmp = new File(root, "tmp");
+		File tmpFile = McRipper.dlToFile(url, new File(tmp, path));
+		String hash = RippedUtils.getSHA1(tmpFile);
+		File moved = McRipper.dl(url, saveAs.getPath(), hash);
+		tmpFile.delete();
+		return moved;
+	}
+
+	private static String getLastSplit(String str, String sep) 
+	{
+		String[] arr = str.split(sep);
+		return arr[arr.length - 1];
 	}
 
 }
