@@ -474,13 +474,16 @@ public class McRipper {
 				if(!source.equals("original"))
 					continue;
 				Node nodeHash = element.getElementsByTagName("sha1").item(0);
-				if(nodeHash == null)
+				Node nodeStamp = element.getElementsByTagName("mtime").item(0);
+				if(nodeHash == null || nodeStamp == null)
 				{
-					System.err.println("null sha1 for skipping Node Element:" + nodeName);
+					String timeErr = nodeStamp == null ? "time" : "";
+					System.err.println("skipping Node Element:" + nodeName + " reasons:" + timeErr  + (nodeHash == null ? (timeErr.isEmpty() ? "hash" : ",hash") : ""));
 					continue;
 				}
+				long ms = Long.parseLong(nodeStamp.getTextContent()) * 1000L;
 				String sha1 = nodeHash.getTextContent();
-				McRipper.dl(baseUrl + "/" + nodeName, new File(webDir, nodeName).getPath(), sha1);
+				McRipper.dl(baseUrl + "/" + nodeName, new File(webDir, nodeName).getPath(), ms, sha1);
 			}
 		}
 	}
