@@ -66,8 +66,8 @@ public class McRipperCommands {
 		{
 			try
 			{
-//				McRipper.dlAmazonAws("http://s3.amazonaws.com/MinecraftDownload", "MinecraftDownload");
-//				McRipper.dlAmazonAws("http://s3.amazonaws.com/MinecraftResources", "MinecraftResources");
+				McRipper.dlAmazonAws("http://s3.amazonaws.com/MinecraftDownload", "MinecraftDownload");
+				McRipper.dlAmazonAws("http://s3.amazonaws.com/MinecraftResources", "MinecraftResources");
 //				McRipper.dlAmazonAws("http://s3.amazonaws.com/Minecraft.Resources", "Minecraft.Resources");
 				McRipper.dlAmazonMcVersions("http://s3.amazonaws.com/Minecraft.Download", "Minecraft.Download");
 			}

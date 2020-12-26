@@ -30,6 +30,7 @@ import org.xml.sax.SAXException;
 import com.jml.evilnotch.lib.json.JSONArray;
 import com.jml.evilnotch.lib.json.JSONObject;
 
+import jredfox.filededuper.Main;
 import jredfox.filededuper.command.Command;
 import jredfox.filededuper.config.simple.MapConfig;
 import jredfox.filededuper.util.DeDuperUtil;
@@ -379,7 +380,6 @@ public class McRipper {
 		output.getParentFile().mkdirs();
 		IOUtils.copy(inputStream, new FileOutputStream(output));
 		output.setLastModified(timestamp);
-		System.out.println("dl:" + url + " to:" + output);
 		return output;
 	}
 	
@@ -508,7 +508,7 @@ public class McRipper {
 	public static void dlAmazonAws(String url, String path) throws FileNotFoundException, IOException, SAXException, ParserConfigurationException
 	{
 		File oldMcDir = new File(mcripped, path);
-		File xmlFile = dlMove(url, path, new File(oldMcDir, path + ".xml"));
+		File xmlFile = dlMove(url, path + "/" + path + ".xml", new File(oldMcDir, path + ".xml"));
 		Document doc = parseXML(xmlFile);
 		NodeList nlist = doc.getElementsByTagName("Contents");
 		for(int i=0; i < nlist.getLength(); i++)
@@ -522,11 +522,10 @@ public class McRipper {
 				if(key.endsWith("/"))
 					continue;
 				String timestamp = element.getElementsByTagName("LastModified").item(0).getTextContent();
-				String sha1 = DeDuperUtil.parseQuotes(element.getElementsByTagName("ETag").item(0).getTextContent(), '"', '"');
 				String fileUrl = url + "/" + key;
 				try
 				{
-					McRipper.dl(fileUrl, new File(oldMcDir, key).getPath(), sha1);
+					McRipper.dlMove(fileUrl, path + "/" + key, new File(oldMcDir, key));
 				}
 				catch(IOException io)
 				{
