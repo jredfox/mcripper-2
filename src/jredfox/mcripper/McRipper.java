@@ -421,7 +421,7 @@ public class McRipper {
 			output.getParentFile().mkdirs();
 			IOUtils.copy(inputStream, new FileOutputStream(output));
 			output.setLastModified(timestamp);
-			System.out.println("dl:" + output + " in:" + (System.currentTimeMillis() - time) + "ms" + " url:" + url);
+			System.out.println("dl:" + output + " in:" + (System.currentTimeMillis() - time) + "ms");
 			return output;
 		}
 		catch(IOException io)
