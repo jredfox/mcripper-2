@@ -51,13 +51,21 @@ public class McRipperCommands {
 		}
 	};
 	
-	public static RunableCommand checkOther = new RunableCommand(new String[]{"--mcDir=value"}, "checkOther")
+	public static RunableCommand checkOmni = new RunableCommand("checkOmni")
+	{
+		@Override
+		public void run(ParamList<Object> params)
+		{
+			McRipper.checkOmni();
+		}
+	};
+	
+	public static RunableCommand checkOldMc = new RunableCommand(new String[]{"--mcDir=value"}, "checkOldMc", "checkOld")
 	{
 		@Override
 		public void run(ParamList<Object> params)
 		{
 			McRipper.mcDir = params.hasFlag("mcDir") ? new File(params.getValue("mcDir")).getAbsoluteFile() : McRipper.mcDir;
-//			this.dlOmni();
 			this.dlOldMC();
 			McRipper.mcDir = McRipper.mcDefaultDir;
 		}
@@ -68,28 +76,9 @@ public class McRipperCommands {
 			{
 				McRipper.dlAmazonAws("http://s3.amazonaws.com/MinecraftDownload", "MinecraftDownload");
 				McRipper.dlAmazonAws("http://s3.amazonaws.com/MinecraftResources", "MinecraftResources");
-//				McRipper.dlAmazonAws("http://s3.amazonaws.com/Minecraft.Resources", "Minecraft.Resources");
-				McRipper.dlAmazonMcVersions("http://s3.amazonaws.com/Minecraft.Download", "Minecraft.Download");
+				McRipper.dlOldVersions();
 			}
 			catch(Exception e) 
-			{
-				e.printStackTrace();
-			}
-		}
-
-		public void dlOmni()
-		{
-			try 
-			{
-				McRipper.dlWebArchive("https://archive.org/download/Minecraft-JE-Pre-Classic", "Omniarchive/Pre-Classic");
-				McRipper.dlWebArchive("https://archive.org/download/Minecraft-JE-Classic", "Omniarchive/JE-Classic");
-				McRipper.dlWebArchive("https://archive.org/download/Minecraft-JE-Indev", "Omniarchive/JE-Indev");
-				McRipper.dlWebArchive("https://archive.org/download/Minecraft-JE-Infdev", "Omniarchive/JE-Infdev");
-				McRipper.dlWebArchive("https://archive.org/download/Minecraft-JE-Alpha", "Omniarchive/JE-Alpha");
-				McRipper.dlWebArchive("https://archive.org/download/Minecraft-JE-Beta", "Omniarchive/JE-Beta");
-				McRipper.dlWebArchive("https://archive.org/download/Minecraft-JE-Sounds", "Omniarchive/JE-Sounds");
-			}
-			catch (Exception e)
 			{
 				e.printStackTrace();
 			}

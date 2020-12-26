@@ -48,7 +48,7 @@ public class McRipper {
 	}
 	
 	public static final String appId = "Mcripper";
-	public static final String version = "1.0.0-pre.1";
+	public static final String version = "b.1.3.0";
 	public static final String appName = "MC Ripper 2 Build: " + version;
 	public static volatile Map<String, String> hashes;
 	public static volatile Set<File> checkJsons = new HashSet<>(100);
@@ -61,6 +61,7 @@ public class McRipper {
 	public static File jsonMajor;
 	public static File jsonMinor;
 	public static File jsonAssets;
+	public static File jsonOldMajor;
 	public static File hashFile;
 	public static PrintWriter hashWriter;
 	public static int majorCount;
@@ -108,6 +109,7 @@ public class McRipper {
 		mcripped = new File(root, "mcripped");
 		mojang = new File(mcripped, "mojang");
 		jsonDir = new File(mojang, "jsons");
+		jsonOldMajor = new File(jsonDir, "oldmajors");
 		jsonMajor = new File(jsonDir, "major");
 		jsonMinor = new File(jsonDir, "minor");
 		jsonAssets = new File(jsonDir, "assets");
@@ -481,7 +483,7 @@ public class McRipper {
 				if(nodeHash == null || nodeStamp == null)
 				{
 					String timeErr = nodeStamp == null ? "time" : "";
-					System.err.println("skipping Node Element:" + nodeName + " reasons:" + timeErr  + (nodeHash == null ? (timeErr.isEmpty() ? "hash" : ",hash") : ""));
+					System.err.println("skipping Node Element:" + nodeName + " reasons:" + timeErr  + (nodeHash == null ? (timeErr.isEmpty() ? "hash" : ", hash") : ""));
 					continue;
 				}
 				long ms = Long.parseLong(nodeStamp.getTextContent()) * 1000L;
@@ -545,6 +547,72 @@ public class McRipper {
 		}
 	}
 	
+	public static void dlOldVersions() throws FileNotFoundException, IOException 
+	{
+		File oldJson = McRipper.dlMove("http://s3.amazonaws.com/Minecraft.Download/versions/versions.json", "Minecraft.Download/versions.json", new File(jsonOldMajor, "versions.json"));
+		checkOldMajor(oldJson);
+	}
+	
+	public static void checkOldMajor(File oldJson)
+	{
+		String urlBase = "http://s3.amazonaws.com/Minecraft.Download/";
+		File oldMcDir = new File(mcripped, "Minecraft.Download");
+		JSONObject json = RippedUtils.getJSON(oldJson);
+		JSONArray arr = json.getJSONArray("versions");
+		for(Object obj : arr)
+		{
+			JSONObject versionEntry = (JSONObject)obj;
+			String version = versionEntry.getString("id");
+			String type = versionEntry.getString("type");
+			String time = versionEntry.getString("time");
+			
+			String jsonPath = "versions/" + version + "/" + version + ".json";
+			String jarPath = "versions/" + version + "/" + version + ".jar";
+			String serverJarPath = "versions/" + version + "/" + "minecraft_server." + version + ".jar";
+			String serverJarExePath =  "versions/" + version + "/" + "minecraft_server." + version + ".exe";
+			
+			File jsonFile = new File(jsonMinor, type + "/" + version + ".json");
+			File jarFile = new File(oldMcDir, type + "/" + jarPath);
+			File serverJarFile = new File(oldMcDir, type + "/" + serverJarPath);
+			File serverExeFile = new File(oldMcDir, type + "/" + serverJarExePath);
+			
+			if(!jsonFile.exists())
+				McRipper.safeDlMove(urlBase + jsonPath, "Minecraft.Download/versions/" + jsonPath, jsonFile);
+			if(!jarFile.exists())
+				McRipper.safeDlMove(urlBase + jarPath, "Minecraft.Download/versions/" + jarPath, jarFile);
+			if(!serverJarFile.exists())
+				McRipper.safeDlMove(urlBase + serverJarPath, "Minecraft.Download/versions/" + serverJarPath, serverJarFile);
+			if(!serverExeFile.exists())
+				McRipper.safeDlMove(urlBase + serverJarExePath, "Minecraft.Download/versions/" + serverJarExePath, serverExeFile);
+		}
+		IOUtils.deleteDirectory(tmp);
+	}
+
+	private static File safeDlMove(String url, String path, File saveAs) 
+	{
+		try
+		{
+			File file = McRipper.dlMove(url, path, saveAs);
+			System.out.println(url);
+			return file;
+		}
+		catch(IOException io)
+		{
+			String msg = io.getMessage();
+			if(msg.contains("code: 403") || msg.contains("code: 404"))
+			{
+				System.err.println(msg);
+			}
+			else
+				io.printStackTrace();
+		}
+		catch(Exception e)
+		{
+			e.printStackTrace();
+		}
+		return null;
+	}
+
 	public static Document parseXML(File xmlFile) throws SAXException, IOException, ParserConfigurationException
 	{
 		DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
@@ -555,9 +623,9 @@ public class McRipper {
 	    return doc;
 	}
 	
+	private static final File tmp = new File(OSUtil.getAppData(), McRipper.appId + "/tmp");
 	public static File dlMove(String url, String path, File saveAs) throws FileNotFoundException, IOException
 	{
-		File tmp = new File(root, "tmp");
 		File tmpFile = McRipper.dlToFile(url, new File(tmp, path));
 		String hash = RippedUtils.getSHA1(tmpFile);
 		File moved = McRipper.dl(url, saveAs.getPath(), hash);
@@ -571,8 +639,21 @@ public class McRipper {
 		return arr[arr.length - 1];
 	}
 
-	public static void dlAmazonMcVersions(String string, String string2) 
+	public static void checkOmni() 
 	{
-		//TODO:
+		try 
+		{
+			McRipper.dlWebArchive("https://archive.org/download/Minecraft-JE-Pre-Classic", "Omniarchive/Pre-Classic");
+			McRipper.dlWebArchive("https://archive.org/download/Minecraft-JE-Classic", "Omniarchive/JE-Classic");
+			McRipper.dlWebArchive("https://archive.org/download/Minecraft-JE-Indev", "Omniarchive/JE-Indev");
+			McRipper.dlWebArchive("https://archive.org/download/Minecraft-JE-Infdev", "Omniarchive/JE-Infdev");
+			McRipper.dlWebArchive("https://archive.org/download/Minecraft-JE-Alpha", "Omniarchive/JE-Alpha");
+			McRipper.dlWebArchive("https://archive.org/download/Minecraft-JE-Beta", "Omniarchive/JE-Beta");
+			McRipper.dlWebArchive("https://archive.org/download/Minecraft-JE-Sounds", "Omniarchive/JE-Sounds");
+		}
+		catch (Exception e)
+		{
+			e.printStackTrace();
+		}
 	}
 }
