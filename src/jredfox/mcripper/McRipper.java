@@ -32,7 +32,7 @@ public class McRipper {
 	{
 		Command.get("");
 		Command.cmds.clear();
-		MCRipperCommands.load();
+		McRipperCommands.load();
 	}
 	
 	public static final String appId = "Mcripper";
@@ -64,7 +64,7 @@ public class McRipper {
 			long ms = System.currentTimeMillis();
 			loadCfg();
 			Command<?> cmd = Command.fromArgs(args.length == 0 ? new String[]{"checkMojang"} : args);
-			if(cmd != MCRipperCommands.recomputeHashes)
+			if(cmd != McRipperCommands.recomputeHashes)
 			{
 				parseHashes();
 				System.out.println("computed Hashes in:" + (System.currentTimeMillis() - ms) + "ms");
@@ -86,7 +86,12 @@ public class McRipper {
 		cfg.load();
 		appdir = new File(cfg.get(McRipper.appId + "Dir", appdir.getPath())).getAbsoluteFile();
 		cfg.save();
-		root = appdir;
+		setRoot(appdir);
+	}
+	
+	public static void setRoot(File appDir)
+	{
+		root = appDir;
 		hashFile = new File(root, "index.hash");
 		mcripped = new File(root, "mcripped");
 		mojang = new File(mcripped, "mojang");
@@ -254,7 +259,7 @@ public class McRipper {
 		minorCount++;
 		return aIndexFile.getAbsoluteFile();
 	}
-
+	
 	/**
 	 * NOTE: there is nothing to differentiate a snapshot only assets index and a non snapshot one. As types are not specified.
 	 * I got it working with checkMojang --skipSnaps but, that's because it uses only the return files it will fail with checkCustom --skipSnaps
@@ -319,11 +324,24 @@ public class McRipper {
 		return dl(url, path, System.currentTimeMillis(), hash);
 	}
 	
-	public static File dlFromMC(String url, String path, String hash) throws FileNotFoundException, IOException
+	public static File dlFromMc(File mcDir, String url, String path, File saveAs, String hash) throws FileNotFoundException, IOException
 	{
-		File cached = new File(mcDir, DeDuperUtil.getRealtivePath(mojang, new File(path).getAbsoluteFile()));
-		//dl will automatically handle libraries but, the rest has to be delt with by this method to prefer the disk
-		return !path.contains("libraries") && cached.exists() ? dl(cached.toURI().toURL().toString(), path, hash) : dl(url, path, hash);
+		File cached = new File(mcDir, path).getAbsoluteFile();
+		url = cached.exists() && hash.equals(RippedUtils.getSHA1(cached)) ? cached.toURI().toURL().toString() : url;
+		return dlToFile(url, saveAs, System.currentTimeMillis());
+	}
+	
+	public static File dlToFile(String url, File output, long timestamp) throws FileNotFoundException, IOException
+	{
+		URLConnection con = new URL(url).openConnection();
+		con.setConnectTimeout(1000 * 15);
+		con.setReadTimeout(Integer.MAX_VALUE / 2);
+		InputStream inputStream = con.getInputStream();
+		output.getParentFile().mkdirs();
+		IOUtils.copy(inputStream, new FileOutputStream(output));
+		output.setLastModified(timestamp);
+		System.out.println("dl:" + url + " to:" + output);
+		return output;
 	}
 	
 	/**
@@ -376,7 +394,7 @@ public class McRipper {
 			output.getParentFile().mkdirs();
 			IOUtils.copy(inputStream, new FileOutputStream(output));
 			output.setLastModified(timestamp);
-			System.out.println("dl:" + output + " in:" + (System.currentTimeMillis() - time) + "ms");
+			System.out.println("dl:" + output + " in:" + (System.currentTimeMillis() - time) + "ms" + " url:" + url);
 			return output;
 		}
 		catch(IOException io)
