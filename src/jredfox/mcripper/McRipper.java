@@ -566,24 +566,24 @@ public class McRipper {
 			String type = versionEntry.getString("type");
 			String time = versionEntry.getString("time");
 			
-			String jsonPath = "versions/" + version + "/" + version + ".json";
-			String jarPath = "versions/" + version + "/" + version + ".jar";
-			String serverJarPath = "versions/" + version + "/" + "minecraft_server." + version + ".jar";
-			String serverJarExePath =  "versions/" + version + "/" + "minecraft_server." + version + ".exe";
+			String jsonPath = "versions/" + type + "/" + version + "/" + version + ".json";
+			String jarPath ="versions/" + type + "/" + version + "/" + version + ".jar";
+			String serverPath = "versions/" + type + "/" + version + "/" + "minecraft_server." + version + ".jar";
+			String serverExePath = "versions/" + type + "/" + version + "/" + "minecraft_server." + version + ".exe";
 			
-			File jsonFile = new File(jsonMinor, type + "/" + version + ".json");
-			File jarFile = new File(oldMcDir, type + "/" + jarPath);
-			File serverJarFile = new File(oldMcDir, type + "/" + serverJarPath);
-			File serverExeFile = new File(oldMcDir, type + "/" + serverJarExePath);
+			File jsonFile = new File(jsonMinor, jsonPath);
+			File jarFile = new File(oldMcDir, jarPath);
+			File serverJarFile = new File(oldMcDir, serverPath);
+			File serverExeFile = new File(oldMcDir, serverExePath);
 			
 			if(!jsonFile.exists())
-				McRipper.safeDlMove(urlBase + jsonPath, "Minecraft.Download/versions/" + jsonPath, jsonFile);
+				McRipper.safeDlMove(urlBase + "versions/" + version + "/" + version + ".json", "Minecraft.Download/" + jsonPath, jsonFile);
 			if(!jarFile.exists())
-				McRipper.safeDlMove(urlBase + jarPath, "Minecraft.Download/versions/" + jarPath, jarFile);
+				McRipper.safeDlMove(urlBase + "versions/" + version + "/" + version + ".jar", "Minecraft.Download/" + jarPath, jarFile);
 			if(!serverJarFile.exists())
-				McRipper.safeDlMove(urlBase + serverJarPath, "Minecraft.Download/versions/" + serverJarPath, serverJarFile);
+				McRipper.safeDlMove(urlBase + "versions/" + version + "/" + "minecraft_server." + version + ".jar", "Minecraft.Download/" + serverPath, serverJarFile);
 			if(!serverExeFile.exists())
-				McRipper.safeDlMove(urlBase + serverJarExePath, "Minecraft.Download/versions/" + serverJarExePath, serverExeFile);
+				McRipper.safeDlMove(urlBase + "versions/" + version + "/" + "minecraft_server." + version + ".exe", "Minecraft.Download/" + serverExePath, serverExeFile);
 		}
 		IOUtils.deleteDirectory(tmp);
 	}
