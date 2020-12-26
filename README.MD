@@ -2,11 +2,11 @@ Rip Minecraft assets from mojang for archiving purposes. You will still need to 
 
 planned commands:
 - checkOldMc
-- checkOmni
 
 Done Commands
 - rip assetsIndex outputDir --mcDir=value
 - checkMojang --skipSnaps --mcDir=value
 - checkDisk --skipSnaps --mcDir=value --diskOnly
+- checkOmni
 - recomputeHashes
 - verify
