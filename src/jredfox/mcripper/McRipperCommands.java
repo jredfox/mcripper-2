@@ -1,8 +1,6 @@
 package jredfox.mcripper;
 
 import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.IOException;
 import java.util.Iterator;
 import java.util.Map;
 
@@ -57,21 +55,21 @@ public class McRipperCommands {
 		public void run(ParamList<Object> params)
 		{
 			McRipper.mcDir = params.hasFlag("mcDir") ? new File(params.getValue("mcDir")).getAbsoluteFile() : McRipper.mcDir;
-			McRipper.mcDir = McRipper.mcDefaultDir;
 			try 
 			{
 				McRipper.dlWebArchive("https://archive.org/download/Minecraft-JE-Pre-Classic", "Omniarchive/Pre-Classic");
-//				McRipper.dlWebArchive("https://archive.org/download/Minecraft-JE-Classic", "Omniarchive/JE-Classic");
-//				McRipper.dlWebArchive("https://archive.org/download/Minecraft-JE-Indev", "Omniarchive/JE-Indev");
-//				McRipper.dlWebArchive("https://archive.org/download/Minecraft-JE-Infdev", "Omniarchive/JE-Infdev");
-//				McRipper.dlWebArchive("https://archive.org/download/Minecraft-JE-Alpha", "Omniarchive/JE-Alpha");
-//				McRipper.dlWebArchive("https://archive.org/download/Minecraft-JE-Beta", "Omniarchive/JE-Beta");
-//				McRipper.dlWebArchive("https://archive.org/download/Minecraft-JE-Sounds", "Omniarchive/JE-Sounds");
+				McRipper.dlWebArchive("https://archive.org/download/Minecraft-JE-Classic", "Omniarchive/JE-Classic");
+				McRipper.dlWebArchive("https://archive.org/download/Minecraft-JE-Indev", "Omniarchive/JE-Indev");
+				McRipper.dlWebArchive("https://archive.org/download/Minecraft-JE-Infdev", "Omniarchive/JE-Infdev");
+				McRipper.dlWebArchive("https://archive.org/download/Minecraft-JE-Alpha", "Omniarchive/JE-Alpha");
+				McRipper.dlWebArchive("https://archive.org/download/Minecraft-JE-Beta", "Omniarchive/JE-Beta");
+				McRipper.dlWebArchive("https://archive.org/download/Minecraft-JE-Sounds", "Omniarchive/JE-Sounds");
 			}
 			catch (Exception e)
 			{
 				e.printStackTrace();
 			}
+			McRipper.mcDir = McRipper.mcDefaultDir;
 		}
 	};
 	

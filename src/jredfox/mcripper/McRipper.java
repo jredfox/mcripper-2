@@ -17,6 +17,16 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
+
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
+import org.xml.sax.SAXException;
+
 import com.jml.evilnotch.lib.json.JSONArray;
 import com.jml.evilnotch.lib.json.JSONObject;
 
@@ -56,7 +66,7 @@ public class McRipper {
 	public static int minorCount;
 	public static int assetsCount;
 	
-	public static void main(String[] args) throws FileNotFoundException, IOException
+	public static void main(String[] args) throws Exception
 	{
 		args = SelfCommandPrompt.wrapWithCMD("input a command: ", appId, appName, args, true, true);
 		System.out.println("starting:" + appName);
@@ -79,7 +89,7 @@ public class McRipper {
 		}
 		hashWriter.close();
 	}
-	
+
 	public static void loadCfg()
 	{
 		File appdir = new File(OSUtil.getAppData(), McRipper.appId);
@@ -437,14 +447,52 @@ public class McRipper {
 	 * dl an entire webArchive to the archive directory
 	 * @throws IOException 
 	 * @throws FileNotFoundException 
+	 * @throws ParserConfigurationException 
+	 * @throws SAXException 
 	 */
-	public static void dlWebArchive(String url, String dirPath) throws FileNotFoundException, IOException 
+	public static void dlWebArchive(String baseUrl, String dirPath) throws FileNotFoundException, IOException, SAXException, ParserConfigurationException 
 	{
-		String name = getLastSplit(url, "/");
-		url = url + "/" + name + "_files.xml";
+		String name = getLastSplit(baseUrl, "/");
 		File webDir = new File(mcripped, dirPath);
+		
+		//dl the index file
+		String xmlUrl = baseUrl + "/" + name + "_files.xml";
 		name = name + "_files.xml";
-		File xmlFile = dlMove(url, name, new File(webDir, name));
+		File xmlFile = dlMove(xmlUrl, name, new File(webDir, name));
+		
+		//start the dl process
+		Document doc = parseXML(xmlFile);
+		NodeList nlist = doc.getElementsByTagName("file");
+		for(int i=0; i < nlist.getLength(); i++)
+		{
+			Node node = nlist.item(i);
+			if(node.getNodeType() == Node.ELEMENT_NODE)
+			{
+				Element element = (Element) node;
+				String nodeName = element.getAttribute("name");
+				String source = element.getAttribute("source");
+				if(!source.equals("original"))
+					continue;
+				Node nodeHash = element.getElementsByTagName("sha1").item(0);
+				if(nodeHash == null)
+				{
+					System.err.println("null sha1 for skipping Node Element:" + nodeName);
+					continue;
+				}
+				String sha1 = nodeHash.getTextContent();
+				McRipper.dl(baseUrl + "/" + nodeName, new File(webDir, nodeName).getPath(), sha1);
+			}
+		}
+	}
+	
+	public static Document parseXML(File xmlFile) throws SAXException, IOException, ParserConfigurationException
+	{
+		DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
+		dbFactory.setNamespaceAware(true);
+	    DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
+	    Document doc = dBuilder.parse(xmlFile);
+	    doc.getDocumentElement().normalize();
+	    return doc;
 	}
 	
 	public static File dlMove(String url, String path, File saveAs) throws FileNotFoundException, IOException
