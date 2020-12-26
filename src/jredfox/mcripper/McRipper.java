@@ -8,6 +8,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintWriter;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
 import java.util.Collections;
@@ -36,7 +37,7 @@ public class McRipper {
 	}
 	
 	public static final String appId = "Mcripper";
-	public static final String version = "b.1.1.0";
+	public static final String version = "b.1.2.0";
 	public static final String appName = "MC Ripper 2 Build: " + version;
 	public static volatile Map<String, String> hashes;
 	public static volatile Set<File> checkJsons = new HashSet<>(100);
@@ -110,8 +111,12 @@ public class McRipper {
 	
 	public static void checkMojang(boolean skipSnaps) throws FileNotFoundException, IOException 
 	{
-		File major = dlMojang();
-		Set<File> minors = checkMajor(major, skipSnaps);
+		File[] majors = dlMojang();
+		Set<File> minors = new HashSet<>();
+		for(File major : majors)
+		{
+			minors.addAll(checkMajor(major, skipSnaps));
+		}
 		Set<File> assets = new HashSet<>(jsonAssets.listFiles().length);
 		for(File minor : minors)
 		{
@@ -165,9 +170,7 @@ public class McRipper {
 		{
 			JSONObject jsonVersion = (JSONObject)obj;
 			String url = jsonVersion.getString("url");
-			String[] urlArr = url.replace("\\", "/").split("/");
-			//download the minor versions from the version_manifest.json
-			String minorHash = urlArr[urlArr.length - 2].toLowerCase();
+			String minorHash = getHash(jsonVersion, url);
 			String version = jsonVersion.getString("id");
 			String type = jsonVersion.getString("type");
 			if(skipSnap && type.startsWith("snapshot"))
@@ -178,6 +181,15 @@ public class McRipper {
 		}
 		majorCount++;
 		return minors;
+	}
+
+	private static String getHash(JSONObject jsonVersion, String url) 
+	{
+		if(jsonVersion.containsKey("sha1"))
+			return jsonVersion.getString("sha1");
+		String[] urlArr = url.replace("\\", "/").split("/");
+		String minorHash = urlArr[urlArr.length - 2].toLowerCase();
+		return minorHash;
 	}
 
 	public static File checkMinor(File version, boolean skipSnap) throws FileNotFoundException, IOException 
@@ -312,11 +324,21 @@ public class McRipper {
 		return new File(OSUtil.getAppData(), OSUtil.isMac() ? "minecraft" : ".minecraft");
 	}
 
-	private static File dlMojang() throws FileNotFoundException, IOException 
+	public static File[] dlMojang() throws FileNotFoundException, IOException 
 	{
-		File master = dl("https://launchermeta.mojang.com/mc/game/version_manifest.json", new File(OSUtil.getAppData() + "/" + McRipper.appId, "mojang-versions.json").getPath(), "override");
+		return new File[]{dlMajor("version_manifest.json"), dlMajor("version_manifest_v2.json")};
+	}
+	
+	private static File dlMajor(String vname) throws FileNotFoundException, MalformedURLException, IOException
+	{
+		File master = dlToFile("https://launchermeta.mojang.com/mc/game/" + vname, new File(mojang, vname));
 		String sha1 = RippedUtils.getSHA1(master);
-		return dl(master.toURI().toURL().toString(), new File(jsonMajor, "version_manifest.json").getPath(), sha1);
+		return dl(toURL(master).toString(), new File(jsonMajor, vname).getPath(), sha1);
+	}
+
+	public static URL toURL(File file) throws MalformedURLException
+	{
+		return file.toURI().toURL();
 	}
 
 	public static File dl(String url, String path, String hash) throws FileNotFoundException, IOException
@@ -328,7 +350,12 @@ public class McRipper {
 	{
 		File cached = new File(mcDir, path).getAbsoluteFile();
 		url = cached.exists() && hash.equals(RippedUtils.getSHA1(cached)) ? cached.toURI().toURL().toString() : url;
-		return dlToFile(url, saveAs, System.currentTimeMillis());
+		return dlToFile(url, saveAs);
+	}
+	
+	public static File dlToFile(String url, File output) throws FileNotFoundException, IOException
+	{
+		return dlToFile(url, output, System.currentTimeMillis());
 	}
 	
 	public static File dlToFile(String url, File output, long timestamp) throws FileNotFoundException, IOException

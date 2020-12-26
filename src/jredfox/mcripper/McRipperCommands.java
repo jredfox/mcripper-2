@@ -1,8 +1,6 @@
 package jredfox.mcripper;
 
 import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.IOException;
 import java.util.Iterator;
 import java.util.Map;
 
@@ -10,7 +8,6 @@ import com.jml.evilnotch.lib.json.JSONObject;
 
 import jredfox.filededuper.command.Command;
 import jredfox.filededuper.command.ParamList;
-import jredfox.filededuper.util.DeDuperUtil;
 
 public class McRipperCommands {
 	
@@ -121,7 +118,7 @@ public class McRipperCommands {
 		}
 	};
 	
-	public static RunableCommand verify = new RunableCommand(new String[]{"--info"},"verify")
+	public static RunableCommand verify = new RunableCommand(new String[]{"--info"}, "verify")
 	{
 		@Override
 		public void run(ParamList<Object> params)
