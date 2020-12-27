@@ -143,11 +143,12 @@ public class McRipper {
 	public static File extractAf() throws FileNotFoundException, IOException 
 	{
 		InputStream in = McRipper.class.getResourceAsStream("/1.12.2-af-minor.json");
-		File jsonaf = new File(tmp, "release/1.12.2-af-minor.json").getAbsoluteFile();
+		String path = "release/1.12.2-af-minor.json";
+		File jsonaf = new File(tmp, path).getAbsoluteFile();
 		jsonaf.getParentFile().mkdirs();
 		IOUtils.copy(in, new FileOutputStream(jsonaf));
 		String sha1 = RippedUtils.getSHA1(jsonaf);
-		File actualaf = McRipper.dl(toURL(jsonaf).toString(), new File(jsonMinor, "release/1.12.2-af-minor.json").getAbsolutePath(), sha1);
+		File actualaf = McRipper.dl(toURL(jsonaf).toString(), new File(jsonMinor, path).getAbsolutePath(), sha1);
 		jsonaf.delete();
 		return actualaf;
 	}

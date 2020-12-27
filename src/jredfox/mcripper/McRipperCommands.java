@@ -75,7 +75,7 @@ public class McRipperCommands {
 		@Override
 		public String[] displayArgs() 
 		{
-			return new String[]{"assetsIndex.json & outputDir"};
+			return new String[]{"assetsIndex.json", "assetsIndex.json & outputDir", "assetsIndex.json & minecraft.jar & outputDir"};
 		}
 
 		@Override
@@ -110,7 +110,7 @@ public class McRipperCommands {
 				String assetUrl = "https://resources.download.minecraft.net/" + hpath;
 				try
 				{
-					McRipper.dlFromMc(McRipper.mojang, mcDir, assetUrl, pathBase + hpath, new File(outDir, key).getAbsoluteFile(), assetSha1);
+					McRipper.dlFromMc(McRipper.mojang, mcDir, assetUrl, pathBase + hpath, new File(outDir, (isAssetRoot(key) ? "" : "assets/") + key).getAbsoluteFile(), assetSha1);
 				}
 				catch (Exception e)
 				{
@@ -120,6 +120,11 @@ public class McRipperCommands {
 			System.out.println("completed ripping assets in:" + (System.currentTimeMillis() - ms) / 1000D + " seconds");
 		}
 	};
+	
+	public static boolean isAssetRoot(String key) 
+	{
+		return key.equals("pack.mcmeta") || key.equals("pack.png");
+	}
 	
 	public static RunableCommand recomputeHashes = new RunableCommand("recomputeHashes")
 	{
