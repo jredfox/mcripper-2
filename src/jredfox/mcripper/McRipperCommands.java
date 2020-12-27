@@ -111,7 +111,7 @@ public class McRipperCommands {
 				try
 				{
 					McRipper.dlFromMc(McRipper.mojang, mcDir, assetUrl, pathBase + hpath, new File(outDir, key).getAbsoluteFile(), assetSha1);
-				} 
+				}
 				catch (Exception e)
 				{
 					e.printStackTrace();

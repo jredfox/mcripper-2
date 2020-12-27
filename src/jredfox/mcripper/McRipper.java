@@ -369,9 +369,12 @@ public class McRipper {
 	{
 		File cached = new File(mcDir, path).getAbsoluteFile();
 		cached = cached.exists() ? cached : new File(altMcDir, path);
-		url = cached.exists() && hash.equals(RippedUtils.getSHA1(cached)) ? cached.toURI().toURL().toString() : url;
-		File f = dlToFile(url, saveAs);
-		System.out.println("dl:" + f.getPath() + " from:" + url);
+		boolean exists = cached.exists();
+		long timestamp = exists ? cached.lastModified() : System.currentTimeMillis();
+		url = exists && hash.equals(RippedUtils.getSHA1(cached)) ? cached.toURI().toURL().toString() : url;
+		File f = dlToFile(url, saveAs, timestamp);
+		if(!url.startsWith("file:"))
+			System.out.println("dl:" + f.getPath() + " from:" + url);
 		return f;
 	}
 	
