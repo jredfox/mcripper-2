@@ -13,6 +13,7 @@ import java.net.URL;
 import java.net.URLConnection;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -32,6 +33,7 @@ import com.jml.evilnotch.lib.json.JSONObject;
 
 import jredfox.filededuper.Main;
 import jredfox.filededuper.command.Command;
+import jredfox.filededuper.command.Commands;
 import jredfox.filededuper.config.simple.MapConfig;
 import jredfox.filededuper.util.DeDuperUtil;
 import jredfox.filededuper.util.IOUtils;
@@ -44,6 +46,7 @@ public class McRipper {
 	{
 		Command.get("");
 		Command.cmds.clear();
+		Command.cmds.put("help", Commands.help);
 		McRipperCommands.load();
 	}
 	
@@ -65,6 +68,7 @@ public class McRipper {
 	public static File hashFile;
 	public static PrintWriter hashWriter;
 	public static int majorCount;
+	public static int oldMajorCount;
 	public static int minorCount;
 	public static int assetsCount;
 	
@@ -77,19 +81,18 @@ public class McRipper {
 			long ms = System.currentTimeMillis();
 			loadCfg();
 			Command<?> cmd = Command.fromArgs(args.length == 0 ? new String[]{"checkMojang"} : args);
-			if(cmd != McRipperCommands.recomputeHashes)
-			{
+			boolean isNormal = cmd != McRipperCommands.recomputeHashes && cmd != Commands.help;
+			if(isNormal)
 				parseHashes();
-				System.out.println("computed Hashes in:" + (System.currentTimeMillis() - ms) + "ms");
-			}
 			cmd.run();
-			System.out.println("Done in:" + (System.currentTimeMillis() - ms) / 1000D + " seconds" + " major:" + majorCount + " minor:" + minorCount + " assets:" + assetsCount);
+			if(isNormal)
+				System.out.println("Done in:" + (System.currentTimeMillis() - ms) / 1000D + " seconds" + (oldMajorCount > 0 ? " oldMajor:" + oldMajorCount : "") + " major:" + majorCount + " minor:" + minorCount + " assets:" + assetsCount);
 		}
 		catch(Throwable t)
 		{
 			t.printStackTrace();
 		}
-		hashWriter.close();
+		IOUtils.close(hashWriter);
 	}
 
 	public static void loadCfg()
@@ -114,13 +117,6 @@ public class McRipper {
 		jsonMinor = new File(jsonDir, "minor");
 		jsonAssets = new File(jsonDir, "assets");
 	}
-
-	public static void checkCustom(boolean diskOnly, boolean skipSnap) throws FileNotFoundException, IOException
-	{
-		if(!diskOnly)
-			dlMojang();
-		checkDisk(skipSnap);
-	}
 	
 	public static void checkMojang(boolean skipSnaps) throws FileNotFoundException, IOException 
 	{
@@ -143,12 +139,18 @@ public class McRipper {
 		}
 	}
 
-	public static void checkDisk(boolean skipSnaps) throws FileNotFoundException, IOException
+	public static void checkDisk(boolean skipSnaps, boolean skipOldMajors, boolean forceDlCheck) throws FileNotFoundException, IOException
 	{
 		List<File> majors = DeDuperUtil.getDirFiles(jsonMajor);
 		for(File major : majors)
 		{
 			checkMajor(major, skipSnaps);
+		}
+		if(!skipOldMajors)
+		{
+			List<File> oldMajors = DeDuperUtil.getDirFiles(jsonOldMajor);
+			for(File oldMajor : oldMajors)
+				checkOldMajor(oldMajor, forceDlCheck);
 		}
 		List<File> minors = DeDuperUtil.getDirFiles(jsonMinor);
 		for(File minor : minors)
@@ -298,11 +300,13 @@ public class McRipper {
 
 	public static void parseHashes() throws IOException
 	{
+		long ms = System.currentTimeMillis();
 		if(!hashFile.exists())
 			computeHashes(mcripped);
 		else
 			hashes = RippedUtils.parseHashFile(IOUtils.getReader(hashFile));
 		hashWriter = new PrintWriter(new BufferedWriter(new FileWriter(hashFile, true)), true);
+		System.out.println("computed Hashes in:" + (System.currentTimeMillis() - ms) + "ms");
 	}
 	
 	private static void computeHashes(File dir)
@@ -551,7 +555,7 @@ public class McRipper {
 			File serverJarFile = new File(oldMcDir, serverPath);
 			File serverExeFile = new File(oldMcDir, serverExePath);
 			
-			//don't stop the json dlMove check as json could get re-uploaded
+			//don't stop the json dlMove check as json are expected to get modified and re-uploaded
 			McRipper.safeDlMove(urlBase + "versions/" + version + "/" + version + ".json", "Minecraft.Download/" + jsonPath, jsonFile);
 			if(!jarFile.exists() || forceDlCheck)
 				McRipper.safeDlMove(urlBase + "versions/" + version + "/" + version + ".jar", "Minecraft.Download/" + jarPath, jarFile);
@@ -560,7 +564,7 @@ public class McRipper {
 			if(!serverExeFile.exists() || forceDlCheck)
 				McRipper.safeDlMove(urlBase + "versions/" + version + "/" + "minecraft_server." + version + ".exe", "Minecraft.Download/" + serverExePath, serverExeFile);
 		}
-		IOUtils.deleteDirectory(tmp);
+		oldMajorCount++;
 	}
 
 	private static File safeDlMove(String url, String path, File saveAs) 

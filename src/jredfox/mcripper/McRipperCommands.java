@@ -1,8 +1,6 @@
 package jredfox.mcripper;
 
 import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.IOException;
 import java.util.Iterator;
 import java.util.Map;
 
@@ -13,7 +11,7 @@ import jredfox.filededuper.command.ParamList;
 
 public class McRipperCommands {
 	
-	public static RunableCommand checkDisk = new RunableCommand(new String[]{"--mcDir=value", "--diskOnly", "--skipSnaps"}, "checkDisk")
+	public static RunableCommand checkDisk = new RunableCommand(new String[]{"--mcDir=value", "--skipSnaps", "--skipOldMajors", "--forceDlCheck"}, "checkDisk")
 	{
 		@Override
 		public void run(ParamList<Object> params)
@@ -21,7 +19,7 @@ public class McRipperCommands {
 			try 
 			{
 				McRipper.mcDir = params.hasFlag("mcDir") ? new File(params.getValue("mcDir")).getAbsoluteFile() : McRipper.mcDir;
-				McRipper.checkCustom(params.hasFlag("diskOnly"), params.hasFlag("skipSnaps"));
+				McRipper.checkDisk(params.hasFlag("skipSnaps"), params.hasFlag("skipOldMajors"), params.hasFlag("forceDlCheck"));
 			}
 			catch (Exception e)
 			{
@@ -60,7 +58,7 @@ public class McRipperCommands {
 		}
 	};
 	
-	public static RunableCommand checkOldMc = new RunableCommand(new String[]{"--forceDlCheck","--mcDir=value"}, "checkOldMc", "checkOld")
+	public static RunableCommand checkOldMc = new RunableCommand(new String[]{"--forceDlCheck","--mcDir=value"}, "checkOld")
 	{
 		@Override
 		public void run(ParamList<Object> params)
