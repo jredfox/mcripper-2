@@ -13,7 +13,6 @@ import java.net.URL;
 import java.net.URLConnection;
 import java.util.Collections;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -31,8 +30,8 @@ import org.xml.sax.SAXException;
 import com.jml.evilnotch.lib.json.JSONArray;
 import com.jml.evilnotch.lib.json.JSONObject;
 
-import jredfox.filededuper.Main;
 import jredfox.filededuper.command.Command;
+import jredfox.filededuper.command.CommandInvalid;
 import jredfox.filededuper.command.Commands;
 import jredfox.filededuper.config.simple.MapConfig;
 import jredfox.filededuper.util.DeDuperUtil;
@@ -81,7 +80,7 @@ public class McRipper {
 			long ms = System.currentTimeMillis();
 			loadCfg();
 			Command<?> cmd = Command.fromArgs(args.length == 0 ? new String[]{"checkMojang"} : args);
-			boolean isNormal = cmd != McRipperCommands.recomputeHashes && cmd != Commands.help;
+			boolean isNormal = cmd != McRipperCommands.recomputeHashes && cmd != Commands.help && cmd != McRipperCommands.rip && !(cmd instanceof CommandInvalid);
 			if(isNormal)
 				parseHashes();
 			cmd.run();
@@ -126,7 +125,7 @@ public class McRipper {
 		{
 			minors.addAll(checkMajor(major, skipSnaps));
 		}
-		Set<File> assets = new HashSet<>(jsonAssets.listFiles().length);
+		Set<File> assets = new HashSet<>(jsonAssets.exists() ? jsonAssets.listFiles().length : 0);
 		for(File minor : minors)
 		{
 			File assetsIndex = checkMinor(minor, skipSnaps);
@@ -337,10 +336,9 @@ public class McRipper {
 	}
 	
 	private static File dlMajor(String vname) throws FileNotFoundException, MalformedURLException, IOException
-	{
-		File master = dlToFile("https://launchermeta.mojang.com/mc/game/" + vname, new File(mojang, vname));
-		String sha1 = RippedUtils.getSHA1(master);
-		return dl(toURL(master).toString(), new File(jsonMajor, vname).getPath(), sha1);
+	{ 
+		File saveAs = new File(jsonMajor, vname);
+		return McRipper.dlMove("https://launchermeta.mojang.com/mc/game/" + vname, vname, saveAs);
 	}
 
 	public static URL toURL(File file) throws MalformedURLException
@@ -357,7 +355,9 @@ public class McRipper {
 	{
 		File cached = new File(mcDir, path).getAbsoluteFile();
 		url = cached.exists() && hash.equals(RippedUtils.getSHA1(cached)) ? cached.toURI().toURL().toString() : url;
-		return dlToFile(url, saveAs);
+		File f = dlToFile(url, saveAs);
+		System.out.println("dl:" + f.getPath() + " from:" + url);
+		return f;
 	}
 	
 	public static File dlToFile(String url, File output) throws FileNotFoundException, IOException

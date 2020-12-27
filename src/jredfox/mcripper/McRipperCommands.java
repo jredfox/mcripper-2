@@ -8,6 +8,7 @@ import com.jml.evilnotch.lib.json.JSONObject;
 
 import jredfox.filededuper.command.Command;
 import jredfox.filededuper.command.ParamList;
+import jredfox.filededuper.util.DeDuperUtil;
 
 public class McRipperCommands {
 	
@@ -58,7 +59,7 @@ public class McRipperCommands {
 		}
 	};
 	
-	public static RunableCommand checkOldMc = new RunableCommand(new String[]{"--forceDlCheck","--mcDir=value"}, "checkOld")
+	public static RunableCommand checkOld = new RunableCommand(new String[]{"--forceDlCheck","--mcDir=value"}, "checkOld")
 	{
 		@Override
 		public void run(ParamList<Object> params)
@@ -92,8 +93,9 @@ public class McRipperCommands {
 		@Override
 		public void run(ParamList<File> params) 
 		{
+			long ms = System.currentTimeMillis();
 			File assetsIndex = params.get(0);
-			File outDir = params.get(1);
+			File outDir = new File(((File)params.get(1)).getPath(), DeDuperUtil.getTrueName(assetsIndex));
 			File mcDir = params.hasFlag("mcDir") ? new File(params.getValue("mcDir")).getAbsoluteFile() : McRipper.mcDir;
 			
 			JSONObject json = RippedUtils.getJSON(assetsIndex);
@@ -106,7 +108,7 @@ public class McRipperCommands {
 				String assetSha1Char = assetSha1.substring(0, 2);
 				String hpath = assetSha1Char + "/" + assetSha1;
 				String assetUrl = "https://resources.download.minecraft.net/" + hpath;
-				try 
+				try
 				{
 					McRipper.dlFromMc(mcDir, assetUrl, pathBase + hpath, new File(outDir, key).getAbsoluteFile(), assetSha1);
 				} 
@@ -115,6 +117,7 @@ public class McRipperCommands {
 					e.printStackTrace();
 				}
 			}
+			System.out.println("completed ripping assets in:" + (System.currentTimeMillis() - ms) / 1000D + " seconds");
 		}
 	};
 	
