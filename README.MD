@@ -5,6 +5,7 @@ Done Commands
 - checkMojang --skipSnaps --mcDir=value
 - checkDisk --skipSnaps --mcDir=value --diskOnly
 - checkOmni
-- checkOldMc
+- checkOld --forceDlCheck
 - recomputeHashes
 - verify
+- help
