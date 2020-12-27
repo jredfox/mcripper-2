@@ -12,6 +12,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -120,7 +121,8 @@ public class McRipper {
 	public static void checkMojang(boolean skipSnaps) throws FileNotFoundException, IOException 
 	{
 		File[] majors = dlMojang();
-		Set<File> minors = new HashSet<>();
+		Set<File> minors = new HashSet<>(534);//the default amount of versions is 534 grow if needed to past this
+		minors.add(extractAf());//since mojang no longer has this file on their servers we need embed it into the jar and extract it
 		for(File major : majors)
 		{
 			minors.addAll(checkMajor(major, skipSnaps));
@@ -136,6 +138,18 @@ public class McRipper {
 		{
 			checkAssets(asset);
 		}
+	}
+
+	public static File extractAf() throws FileNotFoundException, IOException 
+	{
+		InputStream in = McRipper.class.getResourceAsStream("/1.12.2-af-minor.json");
+		File jsonaf = new File(tmp, "af/1.12.2-af-minor.json").getAbsoluteFile();
+		jsonaf.getParentFile().mkdirs();
+		IOUtils.copy(in, new FileOutputStream(jsonaf));
+		String sha1 = RippedUtils.getSHA1(jsonaf);
+		File actualaf = McRipper.dl(toURL(jsonaf).toString(), new File(jsonMinor, "af/1.12.2-af-minor.json").getAbsolutePath(), sha1);
+		jsonaf.delete();
+		return actualaf;
 	}
 
 	public static void checkDisk(boolean skipSnaps, boolean skipOldMajors, boolean forceDlCheck) throws FileNotFoundException, IOException
