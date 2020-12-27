@@ -74,7 +74,7 @@ public class McRipper {
 	
 	public static void main(String[] args) throws Exception
 	{
-		args = SelfCommandPrompt.wrapWithCMD("input a command: ", appId, appName, args, true, true);
+		args = SelfCommandPrompt.wrapWithCMD("input a command: ", appId, appName, args, false, true);
 		System.out.println("starting:" + appName);
 		try
 		{
@@ -365,9 +365,10 @@ public class McRipper {
 		return dl(url, path, System.currentTimeMillis(), hash);
 	}
 	
-	public static File dlFromMc(File mcDir, String url, String path, File saveAs, String hash) throws FileNotFoundException, IOException
+	public static File dlFromMc(File altMcDir, File mcDir, String url, String path, File saveAs, String hash) throws FileNotFoundException, IOException
 	{
 		File cached = new File(mcDir, path).getAbsoluteFile();
+		cached = cached.exists() ? cached : new File(altMcDir, path);
 		url = cached.exists() && hash.equals(RippedUtils.getSHA1(cached)) ? cached.toURI().toURL().toString() : url;
 		File f = dlToFile(url, saveAs);
 		System.out.println("dl:" + f.getPath() + " from:" + url);

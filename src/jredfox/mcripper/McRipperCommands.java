@@ -110,7 +110,7 @@ public class McRipperCommands {
 				String assetUrl = "https://resources.download.minecraft.net/" + hpath;
 				try
 				{
-					McRipper.dlFromMc(mcDir, assetUrl, pathBase + hpath, new File(outDir, key).getAbsoluteFile(), assetSha1);
+					McRipper.dlFromMc(McRipper.mojang, mcDir, assetUrl, pathBase + hpath, new File(outDir, key).getAbsoluteFile(), assetSha1);
 				} 
 				catch (Exception e)
 				{
