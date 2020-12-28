@@ -216,6 +216,10 @@ public class McRipper {
 		if(!checkJsons.add(version.getAbsoluteFile()))
 			return version;
 		JSONObject json = RippedUtils.getJSON(version);
+		if(!json.containsKey("assetIndex"))
+		{
+			return checkOldMinor(version, json, false);
+		}
 		String versionName = json.getString("id");
 		String type = json.containsKey("type") ? json.getString("type") : DeDuperUtil.getTrueName(version.getParentFile());
 		if(skipSnap && type.startsWith("snapshot"))
@@ -291,6 +295,41 @@ public class McRipper {
 		return aIndexFile.getAbsoluteFile();
 	}
 	
+	public static File checkOldMinor(File versionFile, boolean forceDl) 
+	{
+		return checkOldMinor(versionFile, RippedUtils.getJSON(versionFile), forceDl);
+	}
+	
+	public static File checkOldMinor(File versionFile, JSONObject json, boolean forceDl) 
+	{
+		String urlBase = "http://s3.amazonaws.com/Minecraft.Download/";
+		File oldMcDir = new File(mcripped, "Minecraft.Download");
+		String assetsId = json.getString("assets");
+		String version = json.getString("id");
+		String type = json.getString("type");
+		
+		String assetsPath = assetsId + ".json";
+		String jarPath ="versions/" + type + "/" + version + "/" + version + ".jar";
+		String serverPath = "versions/" + type + "/" + version + "/" + "minecraft_server." + version + ".jar";
+		String serverExePath = "versions/" + type + "/" + version + "/" + "minecraft_server." + version + ".exe";
+		
+		File assetsFile = new File(jsonAssets, assetsPath);
+		File jarFile = new File(oldMcDir, jarPath);
+		File serverJarFile = new File(oldMcDir, serverPath);
+		File serverExeFile = new File(oldMcDir, serverExePath);
+		
+		File assetsIndex = McRipper.safeDlMove(urlBase + "indexes/" + assetsPath, "Minecraft.Download/" + assetsPath, assetsFile);
+		if(!jarFile.exists() || forceDl)
+			McRipper.safeDlMove(urlBase + "versions/" + version + "/" + version + ".jar", "Minecraft.Download/" + jarPath, jarFile);
+		if(!serverJarFile.exists() || forceDl)
+			McRipper.safeDlMove(urlBase + "versions/" + version + "/" + "minecraft_server." + version + ".jar", "Minecraft.Download/" + serverPath, serverJarFile);
+		if(!serverExeFile.exists() || forceDl)
+			McRipper.safeDlMove(urlBase + "versions/" + version + "/" + "minecraft_server." + version + ".exe", "Minecraft.Download/" + serverExePath, serverExeFile);
+		
+		minorCount++;
+		return assetsIndex;
+	}
+
 	/**
 	 * NOTE: there is nothing to differentiate a snapshot only assets index and a non snapshot one. As types are not specified.
 	 * I got it working with checkMojang --skipSnaps but, that's because it uses only the return files it will fail with checkCustom --skipSnaps
@@ -591,14 +630,13 @@ public class McRipper {
 	public static void checkOldVersions(boolean forceDlCheck) throws FileNotFoundException, IOException 
 	{
 		File oldJson = McRipper.dlMove("http://s3.amazonaws.com/Minecraft.Download/versions/versions.json", "Minecraft.Download/versions.json", new File(jsonOldMajor, "versions.json"));
-		Set[] sets = checkOldMajor(oldJson, forceDlCheck);
-		Set<File> oldMinors = sets[0];
-		Set<File> oldAssets = sets[1];
+		Set<File> oldMinors = checkOldMajor(oldJson, forceDlCheck);
+		Set<File> oldAssets = new HashSet<>(jsonAssets.exists() ? jsonAssets.listFiles().length : 0);
 		for(File oldMinor : oldMinors)
 		{
-			File assetsNew = checkMinor(oldMinor, false);
-			if(assetsNew != null)
-				oldAssets.add(assetsNew);//populate anything checking a minor may update
+			File assetsIndex = checkOldMinor(oldMinor, forceDlCheck);
+			if(assetsIndex != null)
+				oldAssets.add(assetsIndex);//populate anything checking a minor may update
 		}
 		for(File oldAsset : oldAssets)
 		{
@@ -606,16 +644,14 @@ public class McRipper {
 			checkAssets(oldAsset);
 		}
 	}
-	
+
 	@SuppressWarnings("rawtypes")
-	public static Set[] checkOldMajor(File oldJson, boolean forceDlCheck)
+	public static Set<File> checkOldMajor(File oldJson, boolean forceDlCheck)
 	{
 		String urlBase = "http://s3.amazonaws.com/Minecraft.Download/";
-		File oldMcDir = new File(mcripped, "Minecraft.Download");
 		JSONObject json = RippedUtils.getJSON(oldJson);
 		JSONArray arr = json.getJSONArray("versions");
 		Set<File> oldMinors = new HashSet<>(json.size());
-		Set<File> oldAssets = new HashSet<>(json.size());
 		for(Object obj : arr)
 		{
 			JSONObject versionEntry = (JSONObject)obj;
@@ -623,34 +659,14 @@ public class McRipper {
 			String type = versionEntry.getString("type");
 			String time = versionEntry.getString("time");
 			
-			String clientPath = "versions/" + type + "/" + version + ".json";
-			String assetsPath = version + ".json";
-			String jarPath ="versions/" + type + "/" + version + "/" + version + ".jar";
-			String serverPath = "versions/" + type + "/" + version + "/" + "minecraft_server." + version + ".jar";
-			String serverExePath = "versions/" + type + "/" + version + "/" + "minecraft_server." + version + ".exe";
-
+			String clientPath = type + "/" + version + ".json";
 			File clientFile = new File(jsonMinor, clientPath);
-			File assetsFile = new File(jsonAssets, assetsPath);
-			File jarFile = new File(oldMcDir, jarPath);
-			File serverJarFile = new File(oldMcDir, serverPath);
-			File serverExeFile = new File(oldMcDir, serverExePath);
-			
-			//don't stop the json dlMove check as json are expected to get modified and re-uploaded
-			File dlClient = McRipper.safeDlMove(urlBase + "versions/" + version + "/" + version + ".json", "Minecraft.Download/" + clientPath, clientFile);
+			File dlClient = McRipper.safeDlMove(urlBase + "versions/" + version + "/" + version + ".json", "Minecraft.Download/jsons/minor/" + clientPath, clientFile);
 			if(dlClient != null)
 				oldMinors.add(dlClient);
-			File dlIndex = McRipper.safeDlMove(urlBase + "indexes/" + assetsPath, "Minecraft.Download/" + assetsPath, assetsFile);
-			if(dlIndex != null)
-				oldAssets.add(dlIndex);
-//			if(!jarFile.exists() || forceDlCheck)
-//				McRipper.safeDlMove(urlBase + "versions/" + version + "/" + version + ".jar", "Minecraft.Download/" + jarPath, jarFile);
-//			if(!serverJarFile.exists() || forceDlCheck)
-//				McRipper.safeDlMove(urlBase + "versions/" + version + "/" + "minecraft_server." + version + ".jar", "Minecraft.Download/" + serverPath, serverJarFile);
-//			if(!serverExeFile.exists() || forceDlCheck)
-//				McRipper.safeDlMove(urlBase + "versions/" + version + "/" + "minecraft_server." + version + ".exe", "Minecraft.Download/" + serverExePath, serverExeFile);
 		}
 		oldMajorCount++;
-		return new Set[]{oldMinors, oldAssets};
+		return oldMinors;
 	}
 
 	private static File safeDlMove(String url, String path, File saveAs) 
@@ -658,7 +674,7 @@ public class McRipper {
 		try
 		{
 			File file = McRipper.dlMove(url, path, saveAs);
-			System.out.println("dl:" + url + " to:" + saveAs.getAbsolutePath());
+			System.out.println("dl:" + url + " to tmp");
 			return file;
 		}
 		catch(IOException io)
