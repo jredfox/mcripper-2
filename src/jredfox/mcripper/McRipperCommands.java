@@ -92,8 +92,8 @@ public class McRipperCommands {
 		{
 			if(this.hasScanner(inputs))
 			{
-				File jsonFile = this.nextFile("input the version.json/assetsIndex.json:");
-				File jarFile = !RippedUtils.getJSON(jsonFile).containsKey("assetIndex") ? this.nextFile("input the client jar:") : null;
+				File jsonFile = this.nextFile("input the dir/version.json/assetsIndex.json:");
+				File jarFile = !jsonFile.isDirectory() && !RippedUtils.getJSON(jsonFile).containsKey("assetIndex") ? this.nextFile("input the client jar:") : null;
 				File outDir = this.nextFile("input the directory of the output:");
 				return new File[]{jsonFile, jarFile, outDir};
 			}
@@ -105,26 +105,32 @@ public class McRipperCommands {
 		public void run(ParamList<File> params) 
 		{
 			long ms = System.currentTimeMillis();
-			File jsonFile = params.get(0);
-			File jarFile = params.get(1);
-			File out = params.get(2);
-			boolean isAssets = jarFile != null;
 			File mcDir = params.hasFlag("mcDir") ? new File(params.getValue("mcDir")).getAbsoluteFile() : McRipper.mcDir;
-			
-			JSONObject json = RippedUtils.getJSON(jsonFile);
-			File outDir = isAssets ? new File(out, DeDuperUtil.getTrueName(jsonFile)) : new File(out, json.getString("assets"));
-			try
+			File dir = params.get(0);
+			File rootOut = params.get(2);
+			List<File> files = DeDuperUtil.getDirFiles(dir, "json");
+			for(File jsonFile : files)
 			{
-				if(isAssets)
-					this.ripAssetsIndex(jarFile, json, mcDir, outDir);
-				else
-					this.ripMinor(json, mcDir, outDir);
-			}
-			catch(Exception e)
-			{
-				e.printStackTrace();
+				JSONObject json = RippedUtils.getJSON(jsonFile);
+				File out = new File(rootOut, DeDuperUtil.getTrueName(jsonFile));
+				try
+				{
+					if(this.isMinor(json))
+						this.ripMinor(json, mcDir, out);
+					else
+						this.ripAssetsIndex(null, json, mcDir, out);
+				}
+				catch(Exception e)
+				{
+					e.printStackTrace();
+				}
 			}
 			System.out.println("completed ripping assets in:" + (System.currentTimeMillis() - ms) / 1000D + " seconds");
+		}
+
+		private boolean isMinor(JSONObject json) 
+		{
+			return json.containsKey("assetIndex");
 		}
 
 		public void ripMinor(JSONObject json, File mcDir, File outDir) throws FileNotFoundException, IOException 
@@ -169,17 +175,20 @@ public class McRipperCommands {
 				}
 			}
 			
-			System.out.println("extracting missing files");
-			ZipFile zip = new ZipFile(jar);
-			List<ZipEntry> mcmetas = JarUtil.getEntriesFromDir(zip, "assets/", "mcmeta");
-			for(ZipEntry mcmeta : mcmetas)
+			if(jar != null)
 			{
-				String pathMeta = mcmeta.getName();
-				File file = new File(outDir, pathMeta);
-				if(!file.exists())
+				System.out.println("extracting missing files");
+				ZipFile zip = new ZipFile(jar);
+				List<ZipEntry> mcmetas = JarUtil.getEntriesFromDir(zip, "assets/", "mcmeta");
+				for(ZipEntry mcmeta : mcmetas)
 				{
-					JarUtil.unzip(zip, mcmeta, file);
-					System.out.println("extracted:" + pathMeta + " to:" + file);
+					String pathMeta = mcmeta.getName();
+					File file = new File(outDir, pathMeta);
+					if(!file.exists())
+					{
+						JarUtil.unzip(zip, mcmeta, file);
+						System.out.println("extracted:" + pathMeta + " to:" + file);
+					}
 				}
 			}
 		}
