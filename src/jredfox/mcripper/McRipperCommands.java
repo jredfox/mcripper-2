@@ -2,7 +2,6 @@ package jredfox.mcripper;
 
 import java.io.File;
 import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.Iterator;
 import java.util.List;
@@ -15,8 +14,8 @@ import com.jml.evilnotch.lib.json.JSONObject;
 
 import jredfox.filededuper.command.Command;
 import jredfox.filededuper.command.ParamList;
+import jredfox.filededuper.command.exception.CommandParseException;
 import jredfox.filededuper.util.DeDuperUtil;
-import jredfox.filededuper.util.IOUtils;
 import jredfox.filededuper.util.JarUtil;
 
 public class McRipperCommands {
@@ -79,12 +78,12 @@ public class McRipperCommands {
 		}
 	};
 	
-	public static Command<File> rip = new Command<File>(new String[]{"--mcDir=value"}, "rip")
+	public static Command<File> rip = new Command<File>(new String[]{"-s", "--mcDir=value"}, "rip")
 	{
 		@Override
 		public String[] displayArgs() 
 		{
-			return new String[]{"version.json/assetsIndex.json", "version.json/assetsIndex.json & outputDir", "assetsIndex.json & minecraft.jar & outputDir"};
+			return new String[]{"dir/version.json/assetsIndex.json & outputDir", "assetsIndex.json & minecraft.jar & outputDir"};
 		}
 
 		@Override
@@ -93,10 +92,17 @@ public class McRipperCommands {
 			if(this.hasScanner(inputs))
 			{
 				File jsonFile = this.nextFile("input the dir/version.json/assetsIndex.json:");
+				File jarFile = !jsonFile.isDirectory() && this.isMinor(RippedUtils.getJSON(jsonFile)) ? null : this.nextFile("input minecraft.jar:");
 				File outDir = this.nextFile("input the directory of the output:");
-				return new File[]{jsonFile, outDir};
+				return new File[]{jsonFile, jarFile, outDir};
 			}
-			return new File[]{new File(inputs[0]), new File(inputs[1])};
+			boolean hasJar = inputs.length == 3;
+			File jsonFile = new File(inputs[0]);
+			File jarFile =  hasJar ? new File(inputs[1]) : null;
+			File outDir = new File(inputs[hasJar ? 2 : 1]);
+			if(jarFile != null && jsonFile.isDirectory())
+				throw new CommandParseException("illegal state minecraft.jar cannot be assigned to a directory of assetsIndexes!");
+			return new File[]{jsonFile, jarFile, outDir};
 		}
 
 		@Override
@@ -105,7 +111,12 @@ public class McRipperCommands {
 			long ms = System.currentTimeMillis();
 			File mcDir = params.hasFlag("mcDir") ? new File(params.getValue("mcDir")).getAbsoluteFile() : McRipper.mcDir;
 			File dir = params.get(0);
-			File rootOut = params.get(1);
+			File jarFile = params.get(1);
+			File rootOut = params.get(2);
+			boolean skip = params.hasFlag('s');
+			boolean isFile = !dir.isDirectory();
+			if(skip)
+				System.err.println("WARNING: assetsIndex.json extraction will be missing .mcmetafiles which will break if you apply this to an rp pack");
 			List<File> files = DeDuperUtil.getDirFiles(dir, "json");
 			for(File jsonFile : files)
 			{
@@ -116,7 +127,10 @@ public class McRipperCommands {
 					if(this.isMinor(json))
 						this.ripMinor(json, mcDir, out);
 					else
-						this.ripAssetsIndex(null, json, mcDir, out);
+					{
+						File jar = skip ? null : isFile ? jarFile : this.nextFile("input minecraft.jar that uses assetsIndex " + jsonFile.getName() + ":");
+						this.ripAssetsIndex(jar, json, mcDir, out);
+					}
 				}
 				catch(Exception e)
 				{
@@ -155,7 +169,7 @@ public class McRipperCommands {
 
 		public void ripAssetsIndex(File jar, JSONObject json, File mcDir, File outDir) throws ZipException, IOException 
 		{
-			System.out.println("ripping assetsIndex");
+			System.out.println("ripping assetsIndex to: " + outDir);
 			JSONObject objects = json.getJSONObject("objects");
 			String pathBase = "assets/objects/";
 			for(String key : objects.keySet())
