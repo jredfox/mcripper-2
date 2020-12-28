@@ -116,7 +116,7 @@ public class McRipperCommands {
 			boolean skip = params.hasFlag('s');
 			boolean isFile = !dir.isDirectory();
 			if(skip)
-				System.err.println("WARNING: assetsIndex.json extraction will be missing .mcmetafiles which will break if you apply this to an rp pack");
+				System.out.println("WARNING: assetsIndex.json extraction will be missing .mcmetafiles which will break if you apply this to an rp pack");
 			List<File> files = DeDuperUtil.getDirFiles(dir, "json");
 			for(File jsonFile : files)
 			{
