@@ -135,12 +135,14 @@ public class McRipperCommands {
 
 		public void ripMinor(JSONObject json, File mcDir, File outDir) throws FileNotFoundException, IOException 
 		{
+			String type = json.getString("type");
+			
 			//fetch the assetsIndex json file
 			JSONObject assetsLoc = json.getJSONObject("assetIndex");
 			String idAssets = assetsLoc.getString("id");
-			String sha1Assets = assetsLoc.getString("8b054e43cf4edb69f78b1c96472a37c0b513d4d3");
+			String sha1Assets = assetsLoc.getString("sha1");
 			String urlAssets = assetsLoc.getString("url");
-			File assetsIndexFile = McRipper.dlFromMc(McRipper.mojang, mcDir, urlAssets, "assets/indexes/" + idAssets + ".json", new File(McRipper.tmp, "jsons/assets/" + idAssets + ".json"), sha1Assets);
+			File assetsIndexFile = McRipper.getFromMc(mcDir, urlAssets, type, "assets/indexes/" + idAssets + ".json", sha1Assets);
 			JSONObject assetsIndex = RippedUtils.getJSON(assetsIndexFile);
 			
 			//fetch the jar
@@ -149,7 +151,7 @@ public class McRipperCommands {
 			String idClient = json.getString("id");
 			String sha1Client = client.getString("sha1");
 			String urlClient = client.getString("url");
-			File jar = McRipper.dlFromMc(McRipper.mojang, mcDir, urlClient, "versions/" + idClient + ".jar", new File(McRipper.tmp, "versions/" + idClient + ".jar"), sha1Client);
+			File jar = McRipper.getFromMc(mcDir, urlClient, type, "versions/" + idClient + "/" + idClient + ".jar", sha1Client);
 			this.ripAssetsIndex(jar, assetsIndex, mcDir, outDir);
 		}
 
@@ -167,7 +169,7 @@ public class McRipperCommands {
 				String assetUrl = "https://resources.download.minecraft.net/" + hpath;
 				try
 				{
-					McRipper.dlFromMc(McRipper.mojang, mcDir, assetUrl, pathBase + hpath, new File(outDir, (isAssetRoot(key) ? "" : "assets/") + key).getAbsoluteFile(), assetSha1);
+					McRipper.dlFromMc(mcDir, assetUrl, pathBase + hpath, new File(outDir, (isAssetRoot(key) ? "" : "assets/") + key).getAbsoluteFile(), assetSha1);
 				}
 				catch (Exception e)
 				{

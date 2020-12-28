@@ -366,10 +366,22 @@ public class McRipper {
 		return dl(url, path, System.currentTimeMillis(), hash);
 	}
 	
-	public static File dlFromMc(File altMcDir, File mcDir, String url, String path, File saveAs, String hash) throws FileNotFoundException, IOException
+	/**
+	 * get a file from mc if it doesn't exist dl it
+	 */
+	public static File getFromMc(File mcDir, String url, String type, String path, String hash) throws FileNotFoundException, IOException
+	{
+		File cached = new File(mcDir, path);
+		cached = cached.exists() ? cached : new File(McRipper.mojang, toRipperPath(type, path));
+		boolean exists = cached.exists();
+		long timestamp = exists ? cached.lastModified() : System.currentTimeMillis();
+		return exists && hash.equals(RippedUtils.getSHA1(cached)) ? cached : McRipper.dlToFile(url, new File(mcDir, path), timestamp);
+	}
+	
+	public static File dlFromMc(File mcDir, String url, String path, File saveAs, String hash) throws FileNotFoundException, IOException
 	{
 		File cached = new File(mcDir, path).getAbsoluteFile();
-		cached = cached.exists() ? cached : new File(altMcDir, path);
+		cached = cached.exists() ? cached : new File(McRipper.mojang, path);
 		boolean exists = cached.exists();
 		long timestamp = exists ? cached.lastModified() : System.currentTimeMillis();
 		url = exists && hash.equals(RippedUtils.getSHA1(cached)) ? cached.toURI().toURL().toString() : url;
@@ -377,6 +389,19 @@ public class McRipper {
 		if(!url.startsWith("file:"))
 			System.out.println("dl:" + f.getPath() + " from:" + url);
 		return f;
+	}
+	
+	public static String toRipperPath(String type, String path) 
+	{
+		if(path.startsWith("versions/"))
+		{
+			path = type + "/" + path;
+		}
+		else if(path.startsWith("assets/indexes/"))
+		{
+			path = path.replaceFirst("assets/indexes/", "jsons/assets/");
+		}
+		return path;
 	}
 	
 	public static File dlToFile(String url, File output) throws FileNotFoundException, IOException
