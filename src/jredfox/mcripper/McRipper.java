@@ -51,13 +51,18 @@ public class McRipper {
 	}
 	
 	public static final String appId = "Mcripper";
-	public static final String version = "b.1.3.0";
+	public static final String version = "b.1.4.0";
 	public static final String appName = "MC Ripper 2 Build: " + version;
+	
 	public static volatile Map<String, String> hashes;
 	public static volatile Set<File> checkJsons = new HashSet<>(100);
+
 	public static final File mcDefaultDir = getMinecraftDir();
 	public static volatile File mcDir = mcDefaultDir;
+	
 	public static File root;
+	public static File hashFile;
+	public static PrintWriter hashWriter;
 	public static File mcripped;
 	public static File mojang;
 	public static File jsonDir;
@@ -65,12 +70,15 @@ public class McRipper {
 	public static File jsonMinor;
 	public static File jsonAssets;
 	public static File jsonOldMajor;
-	public static File hashFile;
-	public static PrintWriter hashWriter;
 	public static int majorCount;
 	public static int oldMajorCount;
 	public static int minorCount;
 	public static int assetsCount;
+	
+	//machine learning yes it's nessary
+	public static volatile Map<String, String> learnedPaths;
+	public static File learnedFile;
+	public static PrintWriter learned;
 	
 	public static void main(String[] args) throws Exception
 	{
@@ -109,6 +117,7 @@ public class McRipper {
 	{
 		root = appDir;
 		hashFile = new File(root, "index.hash");
+		learnedFile = new File(root, "learned.rhash");
 		mcripped = new File(root, "mcripped");
 		mojang = new File(mcripped, "mojang");
 		jsonDir = new File(mojang, "jsons");
@@ -318,16 +327,58 @@ public class McRipper {
 		File serverJarFile = new File(oldMcDir, serverPath);
 		File serverExeFile = new File(oldMcDir, serverExePath);
 		
-		File assetsIndex = McRipper.safeDlMove(urlBase + "indexes/" + assetsPath, "Minecraft.Download/" + assetsPath, assetsFile);
-		if(!jarFile.exists() || forceDl)
-			McRipper.safeDlMove(urlBase + "versions/" + version + "/" + version + ".jar", "Minecraft.Download/" + jarPath, jarFile);
-		if(!serverJarFile.exists() || forceDl)
-			McRipper.safeDlMove(urlBase + "versions/" + version + "/" + "minecraft_server." + version + ".jar", "Minecraft.Download/" + serverPath, serverJarFile);
-		if(!serverExeFile.exists() || forceDl)
-			McRipper.safeDlMove(urlBase + "versions/" + version + "/" + "minecraft_server." + version + ".exe", "Minecraft.Download/" + serverExePath, serverExeFile);
-		
+		File assetsIndex = McRipper.learnDl(urlBase + "indexes/" + assetsPath, "Minecraft.Download/" + assetsPath, assetsFile);
+		McRipper.learnDl(urlBase + "versions/" + version + "/" + version + ".jar", "Minecraft.Download/" + jarPath, jarFile);
+		McRipper.learnDl(urlBase + "versions/" + version + "/" + "minecraft_server." + version + ".jar", "Minecraft.Download/" + serverPath, serverJarFile);
+		McRipper.learnDl(urlBase + "versions/" + version + "/" + "minecraft_server." + version + ".exe", "Minecraft.Download/" + serverExePath, serverExeFile);
 		minorCount++;
 		return assetsIndex;
+	}
+
+	public static File learnDl(String url, String path, File saveAs) 
+	{
+		String cachedHash = learnedPaths.get(path);
+		//recall learning
+		if(cachedHash != null && hashes.containsKey(cachedHash))
+		{
+			return new File(root, hashes.get(cachedHash));
+		}
+		else if(cachedHash != null)
+		{
+			//if file doesn't exist recall hash and direct dl it here
+			try
+			{
+				return McRipper.dl(url, saveAs.getPath(), cachedHash);
+			}
+			catch(Exception e)
+			{
+				e.printStackTrace();
+			}
+		}
+		
+		//learn here
+		try
+		{
+			File tmpFile = McRipper.dlToFile(url, new File(tmp, path));
+			String hash = RippedUtils.getSHA1(tmpFile);
+			File moved = McRipper.dl(toURL(tmpFile).toString(), saveAs.getPath(), hash);
+			tmpFile.delete();
+			learn(path, hash, moved.lastModified());
+			return moved;
+		}
+		catch(IOException e)
+		{
+			String msg = e.getMessage();
+			if(msg.contains("code:"))
+				System.err.println(msg);
+			else
+				e.printStackTrace();
+		}
+		catch(Exception e)
+		{
+			e.printStackTrace();
+		}
+		return null;
 	}
 
 	/**
@@ -357,8 +408,10 @@ public class McRipper {
 		if(!hashFile.exists())
 			computeHashes(mcripped);
 		else
-			hashes = RippedUtils.parseHashFile(IOUtils.getReader(hashFile));
+			hashes = RippedUtils.parseHashFile(IOUtils.getReader(hashFile), false);
 		hashWriter = new PrintWriter(new BufferedWriter(new FileWriter(hashFile, true)), true);
+		learned = new PrintWriter(new BufferedWriter(new FileWriter(learnedFile, true)), true);
+		learnedPaths = RippedUtils.parseHashFile(IOUtils.getReader(learnedFile), true);
 		System.out.println("computed Hashes in:" + (System.currentTimeMillis() - ms) + "ms");
 	}
 	
@@ -374,6 +427,12 @@ public class McRipper {
 		String path = DeDuperUtil.getRealtivePath(root, output);
 		hashes.put(hash, path);
     	hashWriter.println(hash + "," + path);
+	}
+	
+	public static void learn(String path, String hash, long timestamp) 
+	{ 
+		learnedPaths.put(path, hash);
+    	learned.println(path + "," + hash + "," + timestamp);
 	}
 	
 	/**
@@ -601,7 +660,7 @@ public class McRipper {
 	 * @throws ParserConfigurationException 
 	 * @throws SAXException 
 	 */
-	public static void dlAmazonAws(String url, String path, boolean forceDlCheck) throws FileNotFoundException, IOException, SAXException, ParserConfigurationException
+	public static void dlAmazonAws(String url, String path) throws FileNotFoundException, IOException, SAXException, ParserConfigurationException
 	{
 		File oldMcDir = new File(mcripped, path);
 		File xmlFile = dlMove(url, path + "/" + path + ".xml", new File(oldMcDir, path + ".xml"));
@@ -620,8 +679,7 @@ public class McRipper {
 				String timestamp = element.getElementsByTagName("LastModified").item(0).getTextContent();
 				String fileUrl = url + "/" + key;
 				File saveAs = new File(oldMcDir, key);
-				if(!saveAs.exists() || forceDlCheck)
-					McRipper.safeDlMove(fileUrl, path + "/" + key, saveAs);
+				McRipper.learnDl(fileUrl, path + "/" + key, saveAs);
 			}
 		}
 	}
@@ -631,7 +689,7 @@ public class McRipper {
 	{
 		File oldJson = McRipper.dlMove("http://s3.amazonaws.com/Minecraft.Download/versions/versions.json", "Minecraft.Download/versions.json", new File(jsonOldMajor, "versions.json"));
 		Set<File> oldMinors = checkOldMajor(oldJson, forceDlCheck);
-		Set<File> oldAssets = new HashSet<>(jsonAssets.exists() ? jsonAssets.listFiles().length : 0);
+		Set<File> oldAssets = new HashSet<>(14);
 		for(File oldMinor : oldMinors)
 		{
 			File assetsIndex = checkOldMinor(oldMinor, forceDlCheck);
@@ -660,10 +718,10 @@ public class McRipper {
 			String time = versionEntry.getString("time");
 			
 			String clientPath = type + "/" + version + ".json";
-			File clientFile = new File(jsonMinor, clientPath);
-			File dlClient = McRipper.safeDlMove(urlBase + "versions/" + version + "/" + version + ".json", "Minecraft.Download/jsons/minor/" + clientPath, clientFile);
-			if(dlClient != null)
-				oldMinors.add(dlClient);
+			File minorFile = new File(jsonMinor, clientPath);
+			File dlMinor = McRipper.learnDl(urlBase + "versions/" + version + "/" + version + ".json", "Minecraft.Download/jsons/minor/" + clientPath, minorFile);
+			if(dlMinor != null)
+				oldMinors.add(dlMinor);
 		}
 		oldMajorCount++;
 		return oldMinors;

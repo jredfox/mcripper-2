@@ -40,7 +40,7 @@ public class RippedUtils {
 		return map.put(k, v) == null;
 	}
 	
-	public static Map<String, String> parseHashFile(BufferedReader reader) 
+	public static Map<String, String> parseHashFile(BufferedReader reader, boolean inverse) 
 	{
 		String path = McRipper.root.getPath();
 		Map<String, String> list = null;
@@ -52,7 +52,7 @@ public class RippedUtils {
 			
 			if(s != null)
 			{
-				parse(list, hsave, path, s);
+				parse(list, hsave, path, s, inverse);
 			}
 			
 			while(s != null)
@@ -60,7 +60,7 @@ public class RippedUtils {
 				s = reader.readLine();
 				if(s != null)
 				{
-					parse(list, hsave, path, s);
+					parse(list, hsave, path, s, inverse);
 				}
 			}
 		}
@@ -87,10 +87,11 @@ public class RippedUtils {
 		return list;
 	}
 	
-	private static void parse(Map<String, String> list, ModBoolean hsave, String root, String s) 
+	private static void parse(Map<String, String> list, ModBoolean hsave, String root, String s, boolean inverse) 
 	{
 		String[] arr = s.split(",");
-		String fname = arr[1].trim();
+		String hash = arr[inverse ? 1 : 0].trim();
+		String fname = arr[inverse ? 0 : 1].trim();
 		if(!new File(root, fname).exists())
 		{
 			System.out.println("deleting hash:" + s);
@@ -98,7 +99,7 @@ public class RippedUtils {
 			return;
 		}
 		if(!s.isEmpty())
-			list.put(arr[0].trim(), fname);
+			list.put(hash, fname);
 	}
 
 	public static void saveFileLines(Map<String, String> map, File f, boolean utf8)
