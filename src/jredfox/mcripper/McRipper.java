@@ -367,7 +367,7 @@ public class McRipper {
 	}
 	
 	/**
-	 * get a file from mc if it doesn't exist dl it
+	 * get a file from mc if it doesn't exist dl it to mc directory
 	 */
 	public static File getOrDlFromMc(File mcDir, String url, String type, String path, String hash) throws FileNotFoundException, IOException
 	{

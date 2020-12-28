@@ -92,7 +92,7 @@ public class McRipperCommands {
 			if(this.hasScanner(inputs))
 			{
 				File jsonFile = this.nextFile("input the dir/version.json/assetsIndex.json:");
-				File jarFile = !jsonFile.isDirectory() && this.isMinor(RippedUtils.getJSON(jsonFile)) ? null : this.nextFile("input minecraft.jar:");
+				File jarFile = jsonFile.isDirectory() || this.isMinor(RippedUtils.getJSON(jsonFile)) ? null : this.nextFile("input minecraft.jar:");
 				File outDir = this.nextFile("input the directory of the output:");
 				return new File[]{jsonFile, jarFile, outDir};
 			}
