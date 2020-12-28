@@ -621,7 +621,7 @@ public class McRipper {
 	    return doc;
 	}
 	
-	private static final File tmp = new File(OSUtil.getAppData(), McRipper.appId + "/tmp");
+	public static final File tmp = new File(OSUtil.getAppData(), McRipper.appId + "/tmp");
 	public static File dlMove(String url, String path, File saveAs) throws FileNotFoundException, IOException
 	{
 		File tmpFile = McRipper.dlToFile(url, new File(tmp, path));

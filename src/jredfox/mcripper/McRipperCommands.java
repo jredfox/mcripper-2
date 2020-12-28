@@ -1,14 +1,22 @@
 package jredfox.mcripper;
 
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipFile;
 
 import com.jml.evilnotch.lib.json.JSONObject;
 
 import jredfox.filededuper.command.Command;
 import jredfox.filededuper.command.ParamList;
 import jredfox.filededuper.util.DeDuperUtil;
+import jredfox.filededuper.util.IOUtils;
+import jredfox.filededuper.util.JarUtil;
 
 public class McRipperCommands {
 	
@@ -94,11 +102,63 @@ public class McRipperCommands {
 		public void run(ParamList<File> params) 
 		{
 			long ms = System.currentTimeMillis();
-			File assetsIndex = params.get(0);
-			File outDir = new File(((File)params.get(1)).getPath(), DeDuperUtil.getTrueName(assetsIndex));
+			File jsonFile = params.get(0);
+			File outDir = new File(((File)params.get(1)).getPath(), DeDuperUtil.getTrueName(jsonFile));
 			File mcDir = params.hasFlag("mcDir") ? new File(params.getValue("mcDir")).getAbsoluteFile() : McRipper.mcDir;
 			
-			JSONObject json = RippedUtils.getJSON(assetsIndex);
+			JSONObject json = RippedUtils.getJSON(jsonFile);
+			boolean isMinor = json.containsKey("assetIndex");
+			try
+			{
+				if(isMinor)
+					this.ripMinor(json, mcDir, outDir);
+				else
+					this.ripAssetsIndex(json, mcDir, outDir);
+			}
+			catch(Exception e)
+			{
+				e.printStackTrace();
+			}
+			System.out.println("completed ripping assets in:" + (System.currentTimeMillis() - ms) / 1000D + " seconds");
+		}
+
+		public void ripMinor(JSONObject json, File mcDir, File outDir) throws FileNotFoundException, IOException 
+		{
+			//rip the assets from the assets index
+			JSONObject assetsLoc = json.getJSONObject("assetIndex");
+			String idAssets = assetsLoc.getString("id");
+			String sha1Assets = assetsLoc.getString("8b054e43cf4edb69f78b1c96472a37c0b513d4d3");
+			String urlAssets = assetsLoc.getString("url");
+			File assetsIndexFile = McRipper.dlFromMc(McRipper.mojang, mcDir, urlAssets, "assets/indexes/" + idAssets + ".json", new File(McRipper.tmp, "jsons/assets/" + idAssets + ".json"), sha1Assets);
+			JSONObject assetsIndex = RippedUtils.getJSON(assetsIndexFile);
+			this.ripAssetsIndex(assetsIndex, mcDir, outDir);
+			
+			//rip the missing assets from the jar into the client
+			System.out.println("extracting missing files");
+			JSONObject downloads = json.getJSONObject("downloads");
+			JSONObject client = downloads.getJSONObject("client");
+			String idClient = json.getString("id");
+			String sha1Client = client.getString("sha1");
+			String urlClient = client.getString("url");
+			File jar = McRipper.dlFromMc(McRipper.mojang, mcDir, urlClient, "versions/" + idClient + ".jar", new File(McRipper.tmp, "versions/" + idClient + ".jar"), sha1Client);
+			
+			ZipFile zip = new ZipFile(jar);
+			List<ZipEntry> mcmetas = JarUtil.getEntriesFromDir(zip, "assets/", "mcmeta");
+			for(ZipEntry mcmeta : mcmetas)
+			{
+				String pathMeta = mcmeta.getName();
+				File file = new File(outDir, pathMeta);
+				if(!file.exists())
+				{
+					JarUtil.unzip(zip, mcmeta, file);
+					System.out.println("extracted:" + pathMeta + " to:" + file);
+				}
+			}
+		}
+
+		public void ripAssetsIndex(JSONObject json, File mcDir, File outDir) 
+		{
+			System.out.println("ripping assetsIndex");
 			JSONObject objects = json.getJSONObject("objects");
 			String pathBase = "assets/objects/";
 			for(String key : objects.keySet())
@@ -117,7 +177,6 @@ public class McRipperCommands {
 					e.printStackTrace();
 				}
 			}
-			System.out.println("completed ripping assets in:" + (System.currentTimeMillis() - ms) / 1000D + " seconds");
 		}
 	};
 	
