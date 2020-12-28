@@ -17,6 +17,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 
 import org.apache.commons.codec.digest.DigestUtils;
 
@@ -224,6 +225,53 @@ public class RippedUtils {
 			e.printStackTrace();
 		}
 		return null;
+	}
+
+	public static Set<String> parsePathsFile(BufferedReader reader) 
+	{
+		Set<String> set = null;
+		try
+		{
+			set = new LinkedHashSet<>();
+			String s = reader.readLine();
+			
+			if(s != null)
+			{
+				s = s.trim();
+				if(!s.isEmpty())
+					set.add(s);
+			}
+			
+			while(s != null)
+			{
+				s = reader.readLine();
+				if(s != null)
+				{
+					s = s.trim();
+					if(!s.isEmpty())
+						set.add(s);
+				}
+			}
+		}
+		catch(Exception e)
+		{
+			e.printStackTrace();
+		}
+		finally
+		{
+			if(reader != null)
+			{
+				try 
+				{
+					reader.close();
+				} 
+				catch (IOException e) 
+				{
+					System.out.println("Unable to Close InputStream this is bad");
+				}
+			}
+		}
+		return set;
 	}
 
 }

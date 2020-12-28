@@ -61,8 +61,6 @@ public class McRipper {
 	public static volatile File mcDir = mcDefaultDir;
 	
 	public static File root;
-	public static File hashFile;
-	public static PrintWriter hashWriter;
 	public static File mcripped;
 	public static File mojang;
 	public static File jsonDir;
@@ -77,8 +75,13 @@ public class McRipper {
 	
 	//machine learning yes it's nessary
 	public static volatile Map<String, String> learnedPaths;
+
+	public static File hashFile;
 	public static File learnedFile;
-	public static PrintWriter learned;
+	public static File badFile;
+	public static PrintWriter hashWriter;
+	public static PrintWriter learnedWriter;
+	public static PrintWriter badWriter;
 	
 	public static void main(String[] args) throws Exception
 	{
@@ -118,6 +121,7 @@ public class McRipper {
 		root = appDir;
 		hashFile = new File(root, "index.hash");
 		learnedFile = new File(root, "learned.rhash");
+		badFile = new File(root, "bad.paths");
 		mcripped = new File(root, "mcripped");
 		mojang = new File(mcripped, "mojang");
 		jsonDir = new File(mojang, "jsons");
@@ -375,7 +379,7 @@ public class McRipper {
 		return learnDl(url, path, saveAs, true);
 	}
 	
-	public static final Set<String> badPaths = new HashSet<>(100);
+	public static Set<String> badPaths = new HashSet<>(100);
 	public static File learnDl(String url, String path, File saveAs, boolean shouldRetain) 
 	{
 		//TODO: retain timestamps when applicable
@@ -416,7 +420,12 @@ public class McRipper {
 		{
 			String msg = e.getMessage();
 			if(msg.contains("HTTP response code:"))
+			{
 				System.err.println(msg);
+				//only return info for http error codes
+				if(shouldRetain)
+					badWriter.println(path);
+			}
 			else
 				e.printStackTrace();
 			badPaths.add(path);
@@ -453,12 +462,23 @@ public class McRipper {
 	{
 		long ms = System.currentTimeMillis();
 		if(!hashFile.exists())
+		{
+			//recompute the hashes
 			computeHashes(mcripped);
+		}
 		else
+		{
+			//parse the hashes
 			hashes = RippedUtils.parseHashFile(IOUtils.getReader(hashFile), false);
+		}
+		//create the printers
 		hashWriter = new PrintWriter(new BufferedWriter(new FileWriter(hashFile, true)), true);
-		learned = new PrintWriter(new BufferedWriter(new FileWriter(learnedFile, true)), true);
+		learnedWriter = new PrintWriter(new BufferedWriter(new FileWriter(learnedFile, true)), true);
+		badWriter = new PrintWriter(new BufferedWriter(new FileWriter(badFile, true)), true);
+		
+		//parse machine learning data
 		learnedPaths = RippedUtils.parseHashFile(IOUtils.getReader(learnedFile), true);
+		badPaths = RippedUtils.parsePathsFile(IOUtils.getReader(badFile));
 		System.out.println("computed Hashes in:" + (System.currentTimeMillis() - ms) + "ms");
 	}
 	
@@ -481,7 +501,7 @@ public class McRipper {
 		learnedPaths.put(path, hash);
 		//do not serialize if the information shouldn't be retained
 		if(shouldRetain)
-			learned.println(path + "," + hash + "," + timestamp);
+			learnedWriter.println(path + "," + hash + "," + timestamp);
 	}
 	
 	/**
