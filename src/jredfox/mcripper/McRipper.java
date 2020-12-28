@@ -309,7 +309,7 @@ public class McRipper {
 		return checkOldMinor(versionFile, RippedUtils.getJSON(versionFile), forceDl);
 	}
 	
-	public static File checkOldMinor(File versionFile, JSONObject json, boolean forceDl) 
+	public static File checkOldMinor(File versionFile, JSONObject json, boolean retainJson) 
 	{
 		String urlBase = "http://s3.amazonaws.com/Minecraft.Download/";
 		File oldMcDir = new File(mcripped, "Minecraft.Download");
@@ -327,16 +327,24 @@ public class McRipper {
 		File serverJarFile = new File(oldMcDir, serverPath);
 		File serverExeFile = new File(oldMcDir, serverExePath);
 		
-		File assetsIndex = McRipper.learnDl(urlBase + "indexes/" + assetsPath, "Minecraft.Download/" + assetsPath, assetsFile);
+		File assetsIndex = McRipper.learnDl(urlBase + "indexes/" + assetsPath, "Minecraft.Download/" + assetsPath, assetsFile, retainJson);
 		McRipper.learnDl(urlBase + "versions/" + version + "/" + version + ".jar", "Minecraft.Download/" + jarPath, jarFile);
 		McRipper.learnDl(urlBase + "versions/" + version + "/" + "minecraft_server." + version + ".jar", "Minecraft.Download/" + serverPath, serverJarFile);
 		McRipper.learnDl(urlBase + "versions/" + version + "/" + "minecraft_server." + version + ".exe", "Minecraft.Download/" + serverExePath, serverExeFile);
 		minorCount++;
 		return assetsIndex;
 	}
-
+	
 	public static File learnDl(String url, String path, File saveAs) 
 	{
+		return learnDl(url, path, saveAs, true);
+	}
+	
+	public static final Set<String> badPaths = new HashSet<>(100);
+	public static File learnDl(String url, String path, File saveAs, boolean shouldRetain) 
+	{
+		if(badPaths.contains(path))
+			return null;
 		String cachedHash = learnedPaths.get(path);
 		//recall learning
 		if(cachedHash != null && hashes.containsKey(cachedHash))
@@ -363,16 +371,18 @@ public class McRipper {
 			String hash = RippedUtils.getSHA1(tmpFile);
 			File moved = McRipper.dl(toURL(tmpFile).toString(), saveAs.getPath(), hash);
 			tmpFile.delete();
-			learn(path, hash, moved.lastModified());
+			learn(path, hash, moved.lastModified(), shouldRetain);
+			System.out.println("dl:" + url + " from path:" + path);
 			return moved;
 		}
 		catch(IOException e)
 		{
 			String msg = e.getMessage();
-			if(msg.contains("code:"))
+			if(msg.contains("HTTP response code:"))
 				System.err.println(msg);
 			else
 				e.printStackTrace();
+			badPaths.add(path);
 		}
 		catch(Exception e)
 		{
@@ -429,10 +439,12 @@ public class McRipper {
     	hashWriter.println(hash + "," + path);
 	}
 	
-	public static void learn(String path, String hash, long timestamp) 
+	public static void learn(String path, String hash, long timestamp, boolean shouldRetain) 
 	{ 
 		learnedPaths.put(path, hash);
-    	learned.println(path + "," + hash + "," + timestamp);
+		//do not serialize if the information shouldn't be retained
+		if(shouldRetain)
+			learned.println(path + "," + hash + "," + timestamp);
 	}
 	
 	/**
@@ -526,15 +538,24 @@ public class McRipper {
 	{
 		url = url.replaceAll(" ", "%20");
 		output = new File(output.getPath().replaceAll("%20", " "));
-		URLConnection con = new URL(url).openConnection();
-		con.setConnectTimeout(1000 * 15);
-		con.setReadTimeout(Integer.MAX_VALUE / 2);
-		InputStream inputStream = con.getInputStream();
-		output.getParentFile().mkdirs();
-		IOUtils.copy(inputStream, new FileOutputStream(output));
-		output.setLastModified(timestamp);
-		if(print)
-			System.out.println("dl:" + output + " from:" + url);
+		try
+		{
+			URLConnection con = new URL(url).openConnection();
+			con.setConnectTimeout(1000 * 15);
+			con.setReadTimeout(Integer.MAX_VALUE / 2);
+			InputStream inputStream = con.getInputStream();
+			output.getParentFile().mkdirs();
+			IOUtils.copy(inputStream, new FileOutputStream(output));
+			output.setLastModified(timestamp);
+			if(print)
+				System.out.println("dl:" + output + " from:" + url);
+		}
+		catch(IOException io)
+		{
+			if(output.exists())
+				output.delete();
+			throw io;
+		}
 		return output;
 	}
 	
@@ -685,26 +706,25 @@ public class McRipper {
 	}
 	
 	@SuppressWarnings("unchecked")
-	public static void checkOldVersions(boolean forceDlCheck) throws FileNotFoundException, IOException 
+	public static void checkOldVersions(boolean retainJson) throws FileNotFoundException, IOException 
 	{
 		File oldJson = McRipper.dlMove("http://s3.amazonaws.com/Minecraft.Download/versions/versions.json", "Minecraft.Download/versions.json", new File(jsonOldMajor, "versions.json"));
-		Set<File> oldMinors = checkOldMajor(oldJson, forceDlCheck);
+		Set<File> oldMinors = checkOldMajor(oldJson, retainJson);
 		Set<File> oldAssets = new HashSet<>(14);
 		for(File oldMinor : oldMinors)
 		{
-			File assetsIndex = checkOldMinor(oldMinor, forceDlCheck);
+			File assetsIndex = checkOldMinor(oldMinor, retainJson);
 			if(assetsIndex != null)
 				oldAssets.add(assetsIndex);//populate anything checking a minor may update
 		}
 		for(File oldAsset : oldAssets)
 		{
-			System.out.println("checking:" + oldAsset.getAbsolutePath());
 			checkAssets(oldAsset);
 		}
 	}
 
 	@SuppressWarnings("rawtypes")
-	public static Set<File> checkOldMajor(File oldJson, boolean forceDlCheck)
+	public static Set<File> checkOldMajor(File oldJson, boolean retainJson)
 	{
 		String urlBase = "http://s3.amazonaws.com/Minecraft.Download/";
 		JSONObject json = RippedUtils.getJSON(oldJson);
@@ -719,37 +739,12 @@ public class McRipper {
 			
 			String clientPath = type + "/" + version + ".json";
 			File minorFile = new File(jsonMinor, clientPath);
-			File dlMinor = McRipper.learnDl(urlBase + "versions/" + version + "/" + version + ".json", "Minecraft.Download/jsons/minor/" + clientPath, minorFile);
+			File dlMinor = McRipper.learnDl(urlBase + "versions/" + version + "/" + version + ".json", "Minecraft.Download/jsons/minor/" + clientPath, minorFile, retainJson);
 			if(dlMinor != null)
 				oldMinors.add(dlMinor);
 		}
 		oldMajorCount++;
 		return oldMinors;
-	}
-
-	private static File safeDlMove(String url, String path, File saveAs) 
-	{
-		try
-		{
-			File file = McRipper.dlMove(url, path, saveAs);
-			System.out.println("dl:" + url + " to tmp");
-			return file;
-		}
-		catch(IOException io)
-		{
-			String msg = io.getMessage();
-			if(msg.contains("code: 403") || msg.contains("code: 404"))
-			{
-				System.err.println(msg);
-			}
-			else
-				io.printStackTrace();
-		}
-		catch(Exception e)
-		{
-			e.printStackTrace();
-		}
-		return null;
 	}
 
 	public static Document parseXML(File xmlFile) throws SAXException, IOException, ParserConfigurationException
@@ -796,14 +791,14 @@ public class McRipper {
 		}
 	}
 
-	public static void checkOldMc(boolean forceDlCheck)
+	public static void checkOldMc(boolean retainJson)
 	{
 		try
 		{
 //			McRipper.dlAmazonAws("http://s3.amazonaws.com/MinecraftDownload", "MinecraftDownload");
 //			McRipper.dlAmazonAws("http://s3.amazonaws.com/MinecraftResources", "MinecraftResources");
 //			McRipper.dlAmazonAws("http://s3.amazonaws.com/MinecraftResources", "Minecraft.Resources");
-			McRipper.checkOldVersions(forceDlCheck);
+			McRipper.checkOldVersions(retainJson);
 		}
 		catch(Exception e) 
 		{

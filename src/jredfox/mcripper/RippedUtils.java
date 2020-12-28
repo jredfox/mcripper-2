@@ -87,19 +87,35 @@ public class RippedUtils {
 		return list;
 	}
 	
-	private static void parse(Map<String, String> list, ModBoolean hsave, String root, String s, boolean inverse) 
+	private static void inverseParse(Map<String, String> list, ModBoolean hsave, String root, String s) 
 	{
 		String[] arr = s.split(",");
-		String hash = arr[inverse ? 1 : 0].trim();
-		String fname = arr[inverse ? 0 : 1].trim();
+		String path = arr[0].trim();
+		if(path.isEmpty())
+			return;
+		String hash = arr[1].trim();
+		list.put(path, hash);
+	}
+	
+	private static void parse(Map<String, String> list, ModBoolean hsave, String root, String s, boolean inverse) 
+	{
+		if(inverse)
+		{
+			inverseParse(list, hsave, root, s);
+			return;
+		}
+		String[] arr = s.split(",");
+		String hash = arr[0].trim();
+		if(hash.isEmpty())
+			return;
+		String fname = arr[1].trim();
 		if(!new File(root, fname).exists())
 		{
 			System.out.println("deleting hash:" + s);
 			hsave.b = true;
 			return;
 		}
-		if(!s.isEmpty())
-			list.put(hash, fname);
+		list.put(hash, fname);
 	}
 
 	public static void saveFileLines(Map<String, String> map, File f, boolean utf8)
