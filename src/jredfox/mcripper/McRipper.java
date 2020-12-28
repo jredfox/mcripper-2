@@ -379,6 +379,7 @@ public class McRipper {
 	public static File learnDl(String url, String path, File saveAs, boolean shouldRetain) 
 	{
 		//TODO: retain timestamps when applicable
+		//TODO: retain bad paths if the response code is 403 or 404
 		if(badPaths.contains(path))
 			return null;
 		String cachedHash = learnedPaths.get(path);
