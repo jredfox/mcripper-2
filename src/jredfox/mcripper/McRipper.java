@@ -162,7 +162,7 @@ public class McRipper {
 		return actualaf;
 	}
 
-	public static void checkDisk(boolean skipSnaps, boolean skipOldMajors, boolean forceDlCheck) throws FileNotFoundException, IOException
+	public static void checkDisk(boolean skipSnaps, boolean skipOldMajors) throws FileNotFoundException, IOException
 	{
 		List<File> majors = DeDuperUtil.getDirFiles(jsonMajor);
 		for(File major : majors)
@@ -173,7 +173,7 @@ public class McRipper {
 		{
 			List<File> oldMajors = DeDuperUtil.getDirFiles(jsonOldMajor);
 			for(File oldMajor : oldMajors)
-				checkOldMajor(oldMajor, forceDlCheck);
+				checkOldMajor(oldMajor, false);
 		}
 		List<File> minors = DeDuperUtil.getDirFiles(jsonMinor);
 		for(File minor : minors)
@@ -184,6 +184,41 @@ public class McRipper {
 		for(File assets : assetsJsons)
 		{
 			checkAssets(assets);
+		}
+	}
+	
+	public static void checkOmni() 
+	{
+		try 
+		{
+			McRipper.dlWebArchive("https://archive.org/download/Minecraft-JE-Pre-Classic", "Omniarchive/Pre-Classic");
+			McRipper.dlWebArchive("https://archive.org/download/Minecraft-JE-Classic", "Omniarchive/JE-Classic");
+			McRipper.dlWebArchive("https://archive.org/download/Minecraft-JE-Indev", "Omniarchive/JE-Indev");
+			McRipper.dlWebArchive("https://archive.org/download/Minecraft-JE-Infdev", "Omniarchive/JE-Infdev");
+			McRipper.dlWebArchive("https://archive.org/download/Minecraft-JE-Alpha", "Omniarchive/JE-Alpha");
+			McRipper.dlWebArchive("https://archive.org/download/Minecraft-JE-Beta", "Omniarchive/JE-Beta");
+			McRipper.dlWebArchive("https://archive.org/download/Minecraft-JE-Sounds", "Omniarchive/JE-Sounds");
+		}
+		catch (Exception e)
+		{
+			e.printStackTrace();
+		}
+	}
+
+	/**
+	 * NOTE: http://s3.amazonaws.com/Minecraft.Resources hasn't existed since 2013
+	 */
+	public static void checkOldMc(boolean retainJson)
+	{
+		try
+		{
+			McRipper.dlAmazonAws("http://s3.amazonaws.com/MinecraftDownload", "MinecraftDownload");
+			McRipper.dlAmazonAws("http://s3.amazonaws.com/MinecraftResources", "MinecraftResources");
+			McRipper.checkOldVersions(retainJson);
+		}
+		catch(Exception e) 
+		{
+			e.printStackTrace();
 		}
 	}
 	
@@ -343,6 +378,7 @@ public class McRipper {
 	public static final Set<String> badPaths = new HashSet<>(100);
 	public static File learnDl(String url, String path, File saveAs, boolean shouldRetain) 
 	{
+		//TODO: retain timestamps when applicable
 		if(badPaths.contains(path))
 			return null;
 		String cachedHash = learnedPaths.get(path);
@@ -771,38 +807,5 @@ public class McRipper {
 	{
 		String[] arr = str.split(sep);
 		return arr[arr.length - 1];
-	}
-
-	public static void checkOmni() 
-	{
-		try 
-		{
-			McRipper.dlWebArchive("https://archive.org/download/Minecraft-JE-Pre-Classic", "Omniarchive/Pre-Classic");
-			McRipper.dlWebArchive("https://archive.org/download/Minecraft-JE-Classic", "Omniarchive/JE-Classic");
-			McRipper.dlWebArchive("https://archive.org/download/Minecraft-JE-Indev", "Omniarchive/JE-Indev");
-			McRipper.dlWebArchive("https://archive.org/download/Minecraft-JE-Infdev", "Omniarchive/JE-Infdev");
-			McRipper.dlWebArchive("https://archive.org/download/Minecraft-JE-Alpha", "Omniarchive/JE-Alpha");
-			McRipper.dlWebArchive("https://archive.org/download/Minecraft-JE-Beta", "Omniarchive/JE-Beta");
-			McRipper.dlWebArchive("https://archive.org/download/Minecraft-JE-Sounds", "Omniarchive/JE-Sounds");
-		}
-		catch (Exception e)
-		{
-			e.printStackTrace();
-		}
-	}
-
-	public static void checkOldMc(boolean retainJson)
-	{
-		try
-		{
-//			McRipper.dlAmazonAws("http://s3.amazonaws.com/MinecraftDownload", "MinecraftDownload");
-//			McRipper.dlAmazonAws("http://s3.amazonaws.com/MinecraftResources", "MinecraftResources");
-//			McRipper.dlAmazonAws("http://s3.amazonaws.com/MinecraftResources", "Minecraft.Resources");
-			McRipper.checkOldVersions(retainJson);
-		}
-		catch(Exception e) 
-		{
-			e.printStackTrace();
-		}
 	}
 }

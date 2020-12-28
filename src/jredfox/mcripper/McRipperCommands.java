@@ -20,7 +20,7 @@ import jredfox.filededuper.util.JarUtil;
 
 public class McRipperCommands {
 	
-	public static RunableCommand checkDisk = new RunableCommand(new String[]{"--mcDir=value", "--skipSnaps", "--skipOldMajors", "--forceDlCheck"}, "checkDisk")
+	public static RunableCommand checkDisk = new RunableCommand(new String[]{"--mcDir=value", "--skipSnaps", "--skipOldMajors"}, "checkDisk")
 	{
 		@Override
 		public void run(ParamList<Object> params)
@@ -28,7 +28,7 @@ public class McRipperCommands {
 			try 
 			{
 				McRipper.mcDir = params.hasFlag("mcDir") ? new File(params.getValue("mcDir")).getAbsoluteFile() : McRipper.mcDir;
-				McRipper.checkDisk(params.hasFlag("skipSnaps"), params.hasFlag("skipOldMajors"), params.hasFlag("forceDlCheck"));
+				McRipper.checkDisk(params.hasFlag("skipSnaps"), params.hasFlag("skipOldMajors"));
 			}
 			catch (Exception e)
 			{
