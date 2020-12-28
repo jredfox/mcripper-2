@@ -369,15 +369,20 @@ public class McRipper {
 	/**
 	 * get a file from mc if it doesn't exist dl it
 	 */
-	public static File getFromMc(File mcDir, String url, String type, String path, String hash) throws FileNotFoundException, IOException
+	public static File getOrDlFromMc(File mcDir, String url, String type, String path, String hash) throws FileNotFoundException, IOException
 	{
-		File cached = new File(mcDir, path);
-		cached = cached.exists() ? cached : new File(McRipper.mojang, toRipperPath(type, path));
+		File cached = getFromMc(mcDir, type, path);
 		boolean exists = cached.exists();
 		long timestamp = exists ? cached.lastModified() : System.currentTimeMillis();
-		return exists && hash.equals(RippedUtils.getSHA1(cached)) ? cached : McRipper.dlToFile(url, new File(mcDir, path), timestamp);
+		return exists && hash.equals(RippedUtils.getSHA1(cached)) ? cached : McRipper.dlToFile(url, new File(mcDir, path), timestamp, true);
 	}
 	
+	public static File getFromMc(File mcDir, String type, String path) 
+	{
+		File cached = new File(mcDir, path);
+		return cached.exists() ? cached : new File(McRipper.mojang, toRipperPath(type, path));
+	}
+
 	public static File dlFromMc(File mcDir, String url, String path, File saveAs, String hash) throws FileNotFoundException, IOException
 	{
 		File cached = new File(mcDir, path).getAbsoluteFile();
@@ -391,11 +396,16 @@ public class McRipper {
 		return f;
 	}
 	
-	public static String toRipperPath(String type, String path) 
+	/**
+	 * doesn't support server paths, or server mappings as mojang doesn't have a specified path for them as of yet
+	 */
+	public static String toRipperPath(String type, String path)
 	{
-		if(path.startsWith("versions/"))
+		if(path.startsWith("versions/") && !path.startsWith("versions/" + type))
 		{
-			path = type + "/" + path;
+			path = path.replaceFirst("versions/", "versions/" + type + "/");
+			String ext = DeDuperUtil.getExtension(path);
+			path = path.substring(0, path.length() - ext.length() -1) + "-client." + ext;
 		}
 		else if(path.startsWith("assets/indexes/"))
 		{
@@ -411,6 +421,11 @@ public class McRipper {
 	
 	public static File dlToFile(String url, File output, long timestamp) throws FileNotFoundException, IOException
 	{
+		return dlToFile(url, output, timestamp, false);
+	}
+	
+	public static File dlToFile(String url, File output, long timestamp, boolean print) throws FileNotFoundException, IOException
+	{
 		url = url.replaceAll(" ", "%20");
 		output = new File(output.getPath().replaceAll("%20", " "));
 		URLConnection con = new URL(url).openConnection();
@@ -420,6 +435,8 @@ public class McRipper {
 		output.getParentFile().mkdirs();
 		IOUtils.copy(inputStream, new FileOutputStream(output));
 		output.setLastModified(timestamp);
+		if(print)
+			System.out.println("dl:" + output + " from:" + url);
 		return output;
 	}
 	

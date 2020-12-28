@@ -93,12 +93,10 @@ public class McRipperCommands {
 			if(this.hasScanner(inputs))
 			{
 				File jsonFile = this.nextFile("input the dir/version.json/assetsIndex.json:");
-				File jarFile = !jsonFile.isDirectory() && !RippedUtils.getJSON(jsonFile).containsKey("assetIndex") ? this.nextFile("input the client jar:") : null;
 				File outDir = this.nextFile("input the directory of the output:");
-				return new File[]{jsonFile, jarFile, outDir};
+				return new File[]{jsonFile, outDir};
 			}
-			boolean hasJar = inputs.length == 3;
-			return new File[]{new File(inputs[0]), hasJar ? new File(inputs[1]) : null, new File(inputs[hasJar ? 2 : 1])};
+			return new File[]{new File(inputs[0]), new File(inputs[1])};
 		}
 
 		@Override
@@ -107,7 +105,7 @@ public class McRipperCommands {
 			long ms = System.currentTimeMillis();
 			File mcDir = params.hasFlag("mcDir") ? new File(params.getValue("mcDir")).getAbsoluteFile() : McRipper.mcDir;
 			File dir = params.get(0);
-			File rootOut = params.get(2);
+			File rootOut = params.get(1);
 			List<File> files = DeDuperUtil.getDirFiles(dir, "json");
 			for(File jsonFile : files)
 			{
@@ -142,7 +140,7 @@ public class McRipperCommands {
 			String idAssets = assetsLoc.getString("id");
 			String sha1Assets = assetsLoc.getString("sha1");
 			String urlAssets = assetsLoc.getString("url");
-			File assetsIndexFile = McRipper.getFromMc(mcDir, urlAssets, type, "assets/indexes/" + idAssets + ".json", sha1Assets);
+			File assetsIndexFile = McRipper.getOrDlFromMc(mcDir, urlAssets, type, "assets/indexes/" + idAssets + ".json", sha1Assets);
 			JSONObject assetsIndex = RippedUtils.getJSON(assetsIndexFile);
 			
 			//fetch the jar
@@ -151,7 +149,7 @@ public class McRipperCommands {
 			String idClient = json.getString("id");
 			String sha1Client = client.getString("sha1");
 			String urlClient = client.getString("url");
-			File jar = McRipper.getFromMc(mcDir, urlClient, type, "versions/" + idClient + "/" + idClient + ".jar", sha1Client);
+			File jar = McRipper.getOrDlFromMc(mcDir, urlClient, type, "versions/" + idClient + "/" + idClient + ".jar", sha1Client);
 			this.ripAssetsIndex(jar, assetsIndex, mcDir, outDir);
 		}
 
@@ -192,6 +190,7 @@ public class McRipperCommands {
 						System.out.println("extracted:" + pathMeta + " to:" + file);
 					}
 				}
+				zip.close();
 			}
 		}
 	};
