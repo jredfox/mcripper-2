@@ -12,5 +12,5 @@ Commands
 - help
 
 Notes:
-the `rip` command only requires the `minecraft.jar` if you only input the assetsIndex without the `-s` flag.
-the `rip` command requires user input in the `dir` varient when runnning the command without the `-s` flag
+- the `rip` command only requires the `minecraft.jar` if you only input the assetsIndex without the `-s` flag.
+- the `rip` command requires user input in the `dir` variant when runnning the command without the `-s` flag
