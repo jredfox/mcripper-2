@@ -1,24 +1,19 @@
 package jredfox.mcripper.utils;
 
-import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.PrintWriter;
 import java.net.MalformedURLException;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 import com.jml.evilnotch.lib.json.JSONArray;
 import com.jml.evilnotch.lib.json.JSONObject;
 
-import jredfox.filededuper.config.simple.MapConfig;
 import jredfox.filededuper.util.DeDuperUtil;
 import jredfox.filededuper.util.IOUtils;
 import jredfox.mcripper.McRipper;
@@ -106,22 +101,6 @@ public class McRipperChecker {
 		}
 	}
 	
-	public static void checkOldVersions() throws FileNotFoundException, IOException 
-	{
-		File oldJson = DLUtils.dlMove("http://s3.amazonaws.com/Minecraft.Download/versions/versions.json", "Minecraft.Download/versions.json", new File(jsonOldMajor, "versions.json"));
-		Set<File> oldMinors = checkOldMajor(oldJson);
-		Set<File> oldAssets = new FileSet(jsonAssets.exists() ? jsonAssets.listFiles().length + 10 : 20);
-		for(File oldMinor : oldMinors)
-		{
-			Set<File> assets = checkMinor(oldMinor, false, true);
-			oldAssets.addAll(assets);//populate anything checking a minor may update
-		}
-		for(File oldAsset : oldAssets)
-		{
-			checkAssets(oldAsset);
-		}
-	}
-	
 	public static void checkOmni() 
 	{
 		try 
@@ -154,6 +133,22 @@ public class McRipperChecker {
 		catch(Exception e) 
 		{
 			e.printStackTrace();
+		}
+	}
+	
+	public static void checkOldVersions() throws FileNotFoundException, IOException 
+	{
+		File oldJson = DLUtils.dlMove("http://s3.amazonaws.com/Minecraft.Download/versions/versions.json", "Minecraft.Download/versions.json", new File(jsonOldMajor, "versions.json"));
+		Set<File> oldMinors = checkOldMajor(oldJson);
+		Set<File> oldAssets = new FileSet(jsonAssets.exists() ? jsonAssets.listFiles().length + 10 : 20);
+		for(File oldMinor : oldMinors)
+		{
+			Set<File> assets = checkMinor(oldMinor, false, true);
+			oldAssets.addAll(assets);//populate anything checking a minor may update
+		}
+		for(File oldAsset : oldAssets)
+		{
+			checkAssets(oldAsset);
 		}
 	}
 	
@@ -399,7 +394,7 @@ public class McRipperChecker {
 		hash.load();
 		learner.load();
 		bad.load();
-		System.out.println("parsed hashes & data in:" + (System.currentTimeMillis()-ms) + "ms");
+		System.out.println("parsed hashes & data in:" + (System.currentTimeMillis() - ms) + "ms");
 	}
 
 }

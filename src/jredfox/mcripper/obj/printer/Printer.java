@@ -10,12 +10,16 @@ import java.io.IOException;
 import java.io.PrintWriter;
 
 import jredfox.filededuper.util.IOUtils;
+import jredfox.mcripper.utils.RippedUtils;
 
 public abstract class Printer implements Closeable{
 
+	//Object vars
 	public File root;
 	public String rootPath;
 	public boolean dirty;
+	
+	//what matters
 	public File log;
 	public PrintWriter out;
 	
@@ -32,7 +36,10 @@ public abstract class Printer implements Closeable{
 	public void load() throws IOException
 	{
 		if(!this.log.exists())
+		{
+			this.setPrintWriter();
 			return;
+		}
 		BufferedReader reader = IOUtils.getReader(this.log);
 		try
 		{
@@ -71,15 +78,20 @@ public abstract class Printer implements Closeable{
 		{
 			e.printStackTrace();
 		}
+		this.setPrintWriter();
+	}
+	
+	public void setPrintWriter() throws IOException 
+	{
 		this.out = new PrintWriter(new BufferedWriter(new FileWriter(this.log, true)), true);
 	}
-	
-	public void save() throws FileNotFoundException, IOException
+
+	public void save()
 	{
-		this.save(IOUtils.getWriter(this.log));
+		this.save(RippedUtils.getWriter(this.log));
 		this.dirty = false;
 	}
-	
+
 	public File getLog()
 	{
 		return this.log;

@@ -14,7 +14,7 @@ import jredfox.mcripper.utils.RippedUtils;
 
 public class HashPrinter extends Printer {
 
-	public Map<String, String> hashes;
+	public volatile Map<String, String> hashes;
 	
 	public HashPrinter(File root, File log, int capacity) throws IOException 
 	{
@@ -28,7 +28,7 @@ public class HashPrinter extends Printer {
 		String[] arr = line.split(",");
 		String hash = arr[0].trim();
 		String fname = arr[1].trim();
-		if(!new File(fname).exists())
+		if(!new File(this.root, fname).exists())
 		{
 			System.out.println("deleting hash:" + hash + "," + fname);
 			this.dirty = true;
@@ -39,7 +39,7 @@ public class HashPrinter extends Printer {
 	
 	public void append(String hash, File out)
 	{
-		String path = DeDuperUtil.getRealtivePath(this.root, out);
+		String path = DeDuperUtil.getRealtivePath(this.root, out.getAbsoluteFile());
 		this.hashes.put(hash, path);
 		this.println(hash + "," + path);
 	}
@@ -50,6 +50,7 @@ public class HashPrinter extends Printer {
 		if(!this.log.exists())
 		{
 			this.computeHashes();
+			this.setPrintWriter();
 		}
 		else
 			super.load();
@@ -57,13 +58,17 @@ public class HashPrinter extends Printer {
 
 	public void computeHashes() 
 	{
+		long ms = System.currentTimeMillis();
+		System.out.println("computing hashes this will take a while");
 		List<File> files = DeDuperUtil.getDirFiles(this.root);
+		System.out.println("fetched file list in:" + (System.currentTimeMillis() - ms) + "ms");
 		Map<String, String> hashes = new LinkedHashMap<String, String>(files.size());
 		for(File f : files)
 		{
 			String hash = RippedUtils.getUnsafeHash(f);
 			hashes.put(hash, DeDuperUtil.getRealtivePath(this.root, f));
 		}
+		this.save();
 	}
 	
 	@Override

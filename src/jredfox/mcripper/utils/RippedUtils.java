@@ -1,5 +1,6 @@
 package jredfox.mcripper.utils;
 
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -21,6 +22,7 @@ import com.jml.evilnotch.lib.json.JSONObject;
 import com.jml.evilnotch.lib.json.serialize.JSONSerializer;
 
 import jredfox.filededuper.util.DeDuperUtil;
+import jredfox.filededuper.util.IOUtils;
 import jredfox.selfcmd.util.OSUtil;
 
 /**
@@ -91,6 +93,19 @@ public class RippedUtils {
 			String hash = DigestUtils.sha1Hex(input);
 			input.close();
 			return hash;
+		}
+		catch(Exception e)
+		{
+			e.printStackTrace();
+		}
+		return null;
+	}
+	
+	public static BufferedWriter getWriter(File file)
+	{
+		try
+		{
+			return IOUtils.getWriter(file);
 		}
 		catch(Exception e)
 		{
