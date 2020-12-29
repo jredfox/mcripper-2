@@ -26,45 +26,43 @@ import jredfox.mcripper.utils.RippedUtils;
 
 public class McRipperCommands {
 	
-	public static RunableCommand checkDisk = new RunableCommand(new String[]{"--mcDir=value", "--skipSnaps", "--skipOldMajors"}, "checkDisk")
+	public static RipperCommand checkDisk = new RipperCommand(new String[]{"--mcDir=value", "--skipSnaps", "--skipOldMajors"}, "checkDisk")
 	{
 		@Override
 		public void run(ParamList<Object> params)
 		{
+			this.setMc(params);
 			try 
 			{
-				McRipperChecker.mcDir = params.hasFlag("mcDir") ? new File(params.getValue("mcDir")).getAbsoluteFile() : McRipperChecker.mcDir;
 				McRipperChecker.checkDisk(params.hasFlag("skipSnaps"), params.hasFlag("skipOldMajors"));
 			}
 			catch (Exception e)
 			{
 				e.printStackTrace();
 			}
-			McRipperChecker.checkJsons.clear();
-			McRipperChecker.mcDir = McRipperChecker.mcDefaultDir;
+			this.finish();
 		}
 	};
 	
-	public static RunableCommand checkMojang = new RunableCommand(new String[]{"--mcDir=value", "--skipSnaps"}, "checkMojang")
+	public static RipperCommand checkMojang = new RipperCommand(new String[]{"--mcDir=value", "--skipSnaps"}, "checkMojang")
 	{
 		@Override
 		public void run(ParamList<Object> params)
 		{
+			this.setMc(params);
 			try 
 			{
-				McRipperChecker.mcDir = params.hasFlag("mcDir") ? new File(params.getValue("mcDir")).getAbsoluteFile() : McRipperChecker.mcDir;
 				McRipperChecker.checkMojang(params.hasFlag("skipSnaps"));
 			}
 			catch (Exception e)
 			{
 				e.printStackTrace();
 			} 
-			McRipperChecker.checkJsons.clear();
-			McRipperChecker.mcDir = McRipperChecker.mcDefaultDir;
+			this.finish();
 		}
 	};
 	
-	public static RunableCommand checkOmni = new RunableCommand("checkOmni")
+	public static RipperCommand checkOmni = new RipperCommand("checkOmni")
 	{
 		@Override
 		public void run(ParamList<Object> params)
@@ -73,14 +71,14 @@ public class McRipperCommands {
 		}
 	};
 	
-	public static RunableCommand checkOld = new RunableCommand(new String[]{"--mcDir=value"}, "checkOld")
+	public static RipperCommand checkOld = new RipperCommand(new String[]{"--mcDir=value"}, "checkOld")
 	{
 		@Override
 		public void run(ParamList<Object> params)
 		{
-			McRipperChecker.mcDir = params.hasFlag("mcDir") ? new File(params.getValue("mcDir")).getAbsoluteFile() : McRipperChecker.mcDir;
+			this.setMc(params);
 			McRipperChecker.checkOldMc();
-			McRipperChecker.mcDir = McRipperChecker.mcDefaultDir;
+			this.finish();
 		}
 	};
 	
@@ -220,7 +218,7 @@ public class McRipperCommands {
 		return key.equals("pack.mcmeta") || key.equals("pack.png");
 	}
 	
-	public static RunableCommand recomputeHashes = new RunableCommand("recomputeHashes")
+	public static RipperCommand recomputeHashes = new RipperCommand("recomputeHashes")
 	{
 		@Override
 		public void run(ParamList<Object> params)
@@ -245,7 +243,7 @@ public class McRipperCommands {
 		}
 	};
 	
-	public static RunableCommand verify = new RunableCommand(new String[]{"--info"}, "verify")
+	public static RipperCommand verify = new RipperCommand(new String[]{"--info"}, "verify")
 	{
 		@Override
 		public void run(ParamList<Object> params)
@@ -273,7 +271,11 @@ public class McRipperCommands {
 					}
 				}
 				if(shouldSave)
+				{
+					IOUtils.close(McRipperChecker.hash);
 					McRipperChecker.hash.save();
+					McRipperChecker.hash.setPrintWriter();
+				}
 				else
 					System.out.println("All files have been verified with no errors");
 			}
