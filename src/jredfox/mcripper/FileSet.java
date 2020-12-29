@@ -4,7 +4,7 @@ import java.io.File;
 import java.util.HashSet;
 
 /**
- * create a set of files and ensure no duplicates by converting to absolute files before adding, contains, removing
+ * create a set of files and ensure no null and no duplicates by converting to absolute files before adding, contains, removing
  */
 public class FileSet extends HashSet<File>{
 	

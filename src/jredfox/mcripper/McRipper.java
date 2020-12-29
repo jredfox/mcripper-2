@@ -145,7 +145,7 @@ public class McRipper {
 		Set<File> assets = new HashSet<>(jsonAssets.exists() ? jsonAssets.listFiles().length : 0);
 		for(File minor : minors)
 		{
-			Set<File> assetsIndex = checkMinor(minor, skipSnaps);
+			Set<File> assetsIndex = checkMinor(minor, skipSnaps, false);
 			assets.addAll(assetsIndex);
 		}
 		for(File asset : assets)
@@ -170,6 +170,7 @@ public class McRipper {
 	public static void checkDisk(boolean skipSnaps, boolean skipOldMajors) throws FileNotFoundException, IOException
 	{
 		List<File> majors = DeDuperUtil.getDirFiles(jsonMajor);
+		Set<File> oldMinors = new FileSet(0);
 		for(File major : majors)
 		{
 			checkMajor(major, skipSnaps);
@@ -178,12 +179,12 @@ public class McRipper {
 		{
 			List<File> oldMajors = DeDuperUtil.getDirFiles(jsonOldMajor);
 			for(File oldMajor : oldMajors)
-				checkOldMajor(oldMajor);
+				oldMinors = checkOldMajor(oldMajor);
 		}
 		List<File> minors = DeDuperUtil.getDirFiles(jsonMinor);
 		for(File minor : minors)
 		{
-			checkMinor(minor, skipSnaps);
+			checkMinor(minor, skipSnaps, oldMinors.contains(minor));
 		}
 		List<File> assetsJsons = DeDuperUtil.getDirFiles(jsonAssets);
 		for(File assets : assetsJsons)
@@ -260,7 +261,7 @@ public class McRipper {
 		return minorHash;
 	}
 
-	public static Set<File> checkMinor(File version, boolean skipSnap) throws FileNotFoundException, IOException 
+	public static Set<File> checkMinor(File version, boolean skipSnap, boolean fCheckOld) throws FileNotFoundException, IOException 
 	{
 		if(!checkJsons.add(version))
 			return Collections.emptySet();
@@ -273,7 +274,8 @@ public class McRipper {
 			return null;
 		}
 		//check legacy assetsIndex
-		assets.addAll(checkOldMinor(json));
+		if(fCheckOld || !json.containsKey("assetIndex"))
+			assets.addAll(checkOldMinor(json));
 		
 		//download the asset indexes
 		JSONObject aIndex = json.getJSONObject("assetIndex");
@@ -770,7 +772,7 @@ public class McRipper {
 		Set<File> oldAssets = new FileSet(13);
 		for(File oldMinor : oldMinors)
 		{
-			Set<File> assets = checkMinor(oldMinor, false);
+			Set<File> assets = checkMinor(oldMinor, false, true);
 			oldAssets.addAll(assets);//populate anything checking a minor may update
 		}
 		for(File oldAsset : oldAssets)
