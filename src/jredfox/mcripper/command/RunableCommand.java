@@ -1,4 +1,4 @@
-package jredfox.mcripper;
+package jredfox.mcripper.command;
 
 import jredfox.filededuper.command.Command;
 

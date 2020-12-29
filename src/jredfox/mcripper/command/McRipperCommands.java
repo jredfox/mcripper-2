@@ -1,4 +1,4 @@
-package jredfox.mcripper;
+package jredfox.mcripper.command;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -18,6 +18,10 @@ import jredfox.filededuper.command.exception.CommandParseException;
 import jredfox.filededuper.util.DeDuperUtil;
 import jredfox.filededuper.util.IOUtils;
 import jredfox.filededuper.util.JarUtil;
+import jredfox.mcripper.McRipper;
+import jredfox.mcripper.obj.printer.Printer;
+import jredfox.mcripper.utils.McRipperChecker;
+import jredfox.mcripper.utils.RippedUtils;
 
 public class McRipperCommands {
 	
@@ -28,7 +32,7 @@ public class McRipperCommands {
 		{
 			try 
 			{
-				McRipper.mcDir = params.hasFlag("mcDir") ? new File(params.getValue("mcDir")).getAbsoluteFile() : McRipper.mcDir;
+				McRipperChecker.mcDir = params.hasFlag("mcDir") ? new File(params.getValue("mcDir")).getAbsoluteFile() : McRipper.mcDir;
 				McRipper.checkDisk(params.hasFlag("skipSnaps"), params.hasFlag("skipOldMajors"));
 			}
 			catch (Exception e)
@@ -143,7 +147,7 @@ public class McRipperCommands {
 
 		private boolean isMinor(JSONObject json) 
 		{
-			return json.containsKey("assetIndex");
+			return json.containsKey("libraries");
 		}
 
 		public void ripMinor(JSONObject json, File mcDir, File outDir) throws FileNotFoundException, IOException 
@@ -222,18 +226,21 @@ public class McRipperCommands {
 		{
 			try 
 			{
-				IOUtils.close(McRipper.hashWriter);
-				IOUtils.close(McRipper.learnedWriter);
-				IOUtils.close(McRipper.badWriter);
-				McRipper.hashFile.delete();
-				McRipper.learnedFile.delete();
-				McRipper.badFile.delete();
-				McRipper.parseHashes();
+				this.deletePrinter(McRipperChecker.hash);
+				this.deletePrinter(McRipperChecker.bad);
+				this.deletePrinter(McRipperChecker.learner);
+				McRipperChecker.parseHashes();
 			}
 			catch (Exception e)
 			{
 				e.printStackTrace();
 			}
+		}
+
+		private void deletePrinter(Printer p) throws IOException 
+		{
+			p.close();
+			p.log.delete();
 		}
 	};
 	

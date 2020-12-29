@@ -1,4 +1,4 @@
-package jredfox.mcripper;
+package jredfox.mcripper.obj;
 
 import java.io.File;
 import java.util.HashSet;
@@ -8,6 +8,8 @@ import java.util.HashSet;
  */
 public class FileSet extends HashSet<File>{
 	
+	private static final long serialVersionUID = -350432434229912L;
+
 	public FileSet()
 	{
 		super();

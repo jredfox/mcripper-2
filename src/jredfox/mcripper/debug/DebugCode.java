@@ -1,4 +1,4 @@
-package jredfox.mcripper;
+package jredfox.mcripper.debug;
 
 import java.io.File;
 import java.io.IOException;
@@ -12,7 +12,6 @@ public class DebugCode {
 	
 	public static void main(String[] args)
 	{
-		System.out.println(IOUtils.getReader(new File("a")));
 		
 	}
 

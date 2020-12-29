@@ -1,8 +1,8 @@
-package jredfox.mcripper;
+package jredfox.mcripper.obj;
 
 public class ModBoolean {
 	
-	public boolean b;
+	public boolean value;
 	
 	public ModBoolean()
 	{
@@ -11,7 +11,7 @@ public class ModBoolean {
 
 	public ModBoolean(boolean value) 
 	{
-		this.b = value;
+		this.value = value;
 	}
 
 }
