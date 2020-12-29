@@ -4,9 +4,9 @@ Commands
 - rip dir/version.json/assetsIndex.json outputDir --mcDir=value 
 - rip assetsIndex.json & minecraft.jar & outputDir
 - checkMojang --skipSnaps --mcDir=value
-- checkDisk --skipSnaps --mcDir=value --diskOnly
+- checkDisk --skipSnaps --skipOldMajors --mcDir=value
 - checkOmni
-- checkOld --forceDlCheck
+- checkOld
 - recomputeHashes
 - verify
 - help
