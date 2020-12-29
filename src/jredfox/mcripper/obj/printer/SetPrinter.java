@@ -18,7 +18,7 @@ public class SetPrinter extends Printer{
 	}
 
 	@Override
-	protected void parse(String line)
+	public void parse(String line)
 	{
 		this.set.add(line.trim());
 	}
@@ -39,6 +39,12 @@ public class SetPrinter extends Printer{
 		{
 			IOUtils.close(writer);
 		}
+	}
+
+	@Override
+	public boolean contains(String key) 
+	{
+		return this.set.contains(key);
 	}
 
 }

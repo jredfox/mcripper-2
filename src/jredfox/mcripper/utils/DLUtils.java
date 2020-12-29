@@ -19,6 +19,10 @@ import org.xml.sax.SAXException;
 import jredfox.filededuper.util.DeDuperUtil;
 import jredfox.filededuper.util.IOUtils;
 import jredfox.mcripper.McRipper;
+import jredfox.mcripper.obj.printer.CSVPrinter;
+import jredfox.mcripper.obj.printer.HashPrinter;
+import jredfox.mcripper.obj.printer.Printer;
+import jredfox.mcripper.obj.printer.SetPrinter;
 import jredfox.selfcmd.util.OSUtil;
 
 public class DLUtils {
@@ -28,11 +32,16 @@ public class DLUtils {
 		return dl(url, path, System.currentTimeMillis(), hash);
 	}
 	
+	public static File dl(String url, String path, long timestamp, String hash) throws FileNotFoundException, IOException, IllegalArgumentException
+	{
+		return dl(McRipperChecker.hash, url, path, timestamp, hash);
+	}
+	
 	/**
 	 * download a file to the path specified. With timestamp and hashing support. 
 	 * The hash is in case the file destination already exists. To allow override pass "override" as the hash
 	 */
-	public static File dl(String url, String path, long timestamp, String hash) throws FileNotFoundException, IOException, IllegalArgumentException
+	public static File dl(HashPrinter printer, String url, String path, long timestamp, String hash) throws FileNotFoundException, IOException, IllegalArgumentException
 	{
 		url = url.replaceAll(" ", "%20");
 		if(hash == null)
@@ -45,8 +54,8 @@ public class DLUtils {
 			output = OSUtil.toWinFile(new File(path.replaceAll("%20", " "))).getAbsoluteFile();
 			if(hasHash)
 			{
-				if(hashes.containsKey(hash))
-					return new File(root, hashes.get(hash));
+				if(printer.hashes.containsKey(hash))
+					return new File(printer.root, printer.hashes.get(hash));
 				else if(output.exists())
 				{
 					//prevent duplicate downloads
@@ -55,8 +64,8 @@ public class DLUtils {
 					if(hflag || hash.equals(RippedUtils.getSHA1(output)))
 					{
 						output = hflag ? hfile : output;
-						System.err.println("File is out of sync with " + hashFile.getName() + " skipping duplicate download:" + output);
-						add(hash, output);
+						System.err.println("File is out of sync with " + printer.log.getName() + " skipping duplicate download:" + output);
+						printer.append(hash, output);
 						return output;
 					}
 					output = hfile;
@@ -66,7 +75,7 @@ public class DLUtils {
 			//speed the process up for libraries as they are extremely slow
 			if(path.contains("libraries"))
 			{
-				File cached = new File(mcDir, DeDuperUtil.getRealtivePath(mojang, new File(path).getAbsoluteFile()));
+				File cached = new File(McRipperChecker.mcDir, DeDuperUtil.getRealtivePath(McRipperChecker.mojang, new File(path).getAbsoluteFile()));
 				if(cached.exists())
 					url = cached.toURI().toURL().toString();
 			}
@@ -78,7 +87,7 @@ public class DLUtils {
 			output.getParentFile().mkdirs();
 			IOUtils.copy(inputStream, new FileOutputStream(output));
 			output.setLastModified(timestamp);
-			add(hash, output);
+			printer.append(hash, output);
 			System.out.println("dl:" + output + " in:" + (System.currentTimeMillis() - time) + "ms");
 			return output;
 		}
@@ -86,7 +95,7 @@ public class DLUtils {
 		{
 			if(output.exists())
 				output.delete();
-			hashes.remove(hash);
+			printer.hashes.remove(hash);
 			throw io;
 		}
 	}
@@ -128,7 +137,7 @@ public class DLUtils {
 	
 	public static File dlMove(String url, String path, File saveAs) throws FileNotFoundException, IOException
 	{
-		File tmpFile = dlToFile(url, new File(tmp, path));
+		File tmpFile = dlToFile(url, new File(McRipperChecker.tmp, path));
 		String hash = RippedUtils.getSHA1(tmpFile);
 		File moved = dl(RippedUtils.toURL(tmpFile).toString(), saveAs.getPath(), hash);
 		tmpFile.delete();
@@ -138,7 +147,7 @@ public class DLUtils {
 	public static File dlFromMc(File mcDir, String url, String path, File saveAs, String hash) throws FileNotFoundException, IOException
 	{
 		File cached = new File(mcDir, path).getAbsoluteFile();
-		cached = cached.exists() ? cached : new File(McRipper.mojang, path);
+		cached = cached.exists() ? cached : new File(McRipperChecker.mojang, path);
 		boolean exists = cached.exists();
 		long timestamp = exists ? cached.lastModified() : System.currentTimeMillis();
 		url = exists && hash.equals(RippedUtils.getSHA1(cached)) ? cached.toURI().toURL().toString() : url;
@@ -158,22 +167,16 @@ public class DLUtils {
 		long timestamp = exists ? cached.lastModified() : System.currentTimeMillis();
 		return exists && hash.equals(RippedUtils.getSHA1(cached)) ? cached : dlToFile(url, new File(mcDir, path), timestamp, true);
 	}
-	
+
 	public static File learnDl(String url, String path, File saveAs) 
 	{
-		return learnDl(url, path, saveAs, true);
-	}
-
-	public static File learnDl(String url, String path, File saveAs, boolean shouldRetain) 
-	{
-		//TODO: retain timestamps when applicable
-		if(badPaths.contains(path))
+		if(McRipperChecker.bad.contains(path))
 			return null;
-		String cachedHash = learnedPaths.get(path);
+		String cachedHash = McRipperChecker.learner.get(path, 0);
 		//recall learning
-		if(cachedHash != null && hashes.containsKey(cachedHash))
+		if(cachedHash != null && McRipperChecker.hash.contains(cachedHash))
 		{
-			return new File(root, hashes.get(cachedHash));
+			return new File(McRipperChecker.root, McRipperChecker.hash.hashes.get(cachedHash));
 		}
 		else if(cachedHash != null)
 		{
@@ -191,11 +194,11 @@ public class DLUtils {
 		//learn here
 		try
 		{
-			File tmpFile = dlToFile(url, new File(tmp, path));
+			File tmpFile = dlToFile(url, new File(McRipperChecker.tmp, path));
 			String hash = RippedUtils.getSHA1(tmpFile);
 			File moved = dl(RippedUtils.toURL(tmpFile).toString(), saveAs.getPath(), hash);
 			tmpFile.delete();
-			learn(path, hash, moved.lastModified(), shouldRetain);
+			McRipperChecker.learner.append(path, hash, moved.lastModified());
 			System.out.println("dl:" + url + " from path:" + path);
 			return moved;
 		}
@@ -205,13 +208,13 @@ public class DLUtils {
 			if(msg.contains("HTTP response code:"))
 			{
 				System.err.println(msg);
-				//only return info for http error codes
-				if(shouldRetain)
-					badWriter.println(path);
+				McRipperChecker.bad.append(path);
 			}
 			else
+			{
 				e.printStackTrace();
-			badPaths.add(path);
+				McRipperChecker.bad.parse(path);
+			}
 		}
 		catch(Exception e)
 		{
@@ -229,7 +232,7 @@ public class DLUtils {
 	 */
 	public static void dlAmazonAws(String url, String path) throws FileNotFoundException, IOException, SAXException, ParserConfigurationException
 	{
-		File oldMcDir = new File(mcripped, path);
+		File oldMcDir = new File(McRipperChecker.mcripped, path);
 		File xmlFile = dlMove(url, path + "/" + path + ".xml", new File(oldMcDir, path + ".xml"));
 		Document doc = RippedUtils.parseXML(xmlFile);
 		NodeList nlist = doc.getElementsByTagName("Contents");
@@ -261,7 +264,7 @@ public class DLUtils {
 	public static void dlWebArchive(String baseUrl, String dirPath) throws FileNotFoundException, IOException, SAXException, ParserConfigurationException 
 	{
 		String name = RippedUtils.getLastSplit(baseUrl, "/");
-		File webDir = new File(mcripped, dirPath);
+		File webDir = new File(McRipperChecker.mcripped, dirPath);
 		
 		//dl the index file
 		String xmlUrl = baseUrl + "/" + name + "_files.xml";
@@ -306,7 +309,7 @@ public class DLUtils {
 	public static File getFromMc(File mcDir, String type, String path) 
 	{
 		File cached = new File(mcDir, path);
-		return cached.exists() ? cached : new File(McRipper.mojang, toRipperPath(type, path));
+		return cached.exists() ? cached : new File(McRipperChecker.mojang, toRipperPath(type, path));
 	}
 	
 	/**

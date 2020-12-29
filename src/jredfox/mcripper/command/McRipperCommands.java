@@ -20,6 +20,7 @@ import jredfox.filededuper.util.IOUtils;
 import jredfox.filededuper.util.JarUtil;
 import jredfox.mcripper.McRipper;
 import jredfox.mcripper.obj.printer.Printer;
+import jredfox.mcripper.utils.DLUtils;
 import jredfox.mcripper.utils.McRipperChecker;
 import jredfox.mcripper.utils.RippedUtils;
 
@@ -32,15 +33,15 @@ public class McRipperCommands {
 		{
 			try 
 			{
-				McRipperChecker.mcDir = params.hasFlag("mcDir") ? new File(params.getValue("mcDir")).getAbsoluteFile() : McRipper.mcDir;
-				McRipper.checkDisk(params.hasFlag("skipSnaps"), params.hasFlag("skipOldMajors"));
+				McRipperChecker.mcDir = params.hasFlag("mcDir") ? new File(params.getValue("mcDir")).getAbsoluteFile() : McRipperChecker.mcDir;
+				McRipperChecker.checkDisk(params.hasFlag("skipSnaps"), params.hasFlag("skipOldMajors"));
 			}
 			catch (Exception e)
 			{
 				e.printStackTrace();
 			}
-			McRipper.checkJsons.clear();
-			McRipper.mcDir = McRipper.mcDefaultDir;
+			McRipperChecker.checkJsons.clear();
+			McRipperChecker.mcDir = McRipperChecker.mcDefaultDir;
 		}
 	};
 	
@@ -51,15 +52,15 @@ public class McRipperCommands {
 		{
 			try 
 			{
-				McRipper.mcDir = params.hasFlag("mcDir") ? new File(params.getValue("mcDir")).getAbsoluteFile() : McRipper.mcDir;
-				McRipper.checkMojang(params.hasFlag("skipSnaps"));
+				McRipperChecker.mcDir = params.hasFlag("mcDir") ? new File(params.getValue("mcDir")).getAbsoluteFile() : McRipperChecker.mcDir;
+				McRipperChecker.checkMojang(params.hasFlag("skipSnaps"));
 			}
 			catch (Exception e)
 			{
 				e.printStackTrace();
 			} 
-			McRipper.checkJsons.clear();
-			McRipper.mcDir = McRipper.mcDefaultDir;
+			McRipperChecker.checkJsons.clear();
+			McRipperChecker.mcDir = McRipperChecker.mcDefaultDir;
 		}
 	};
 	
@@ -68,7 +69,7 @@ public class McRipperCommands {
 		@Override
 		public void run(ParamList<Object> params)
 		{
-			McRipper.checkOmni();
+			McRipperChecker.checkOmni();
 		}
 	};
 	
@@ -77,9 +78,9 @@ public class McRipperCommands {
 		@Override
 		public void run(ParamList<Object> params)
 		{
-			McRipper.mcDir = params.hasFlag("mcDir") ? new File(params.getValue("mcDir")).getAbsoluteFile() : McRipper.mcDir;
-			McRipper.checkOldMc();
-			McRipper.mcDir = McRipper.mcDefaultDir;
+			McRipperChecker.mcDir = params.hasFlag("mcDir") ? new File(params.getValue("mcDir")).getAbsoluteFile() : McRipperChecker.mcDir;
+			McRipperChecker.checkOldMc();
+			McRipperChecker.mcDir = McRipperChecker.mcDefaultDir;
 		}
 	};
 	
@@ -114,7 +115,7 @@ public class McRipperCommands {
 		public void run(ParamList<File> params) 
 		{
 			long ms = System.currentTimeMillis();
-			File mcDir = params.hasFlag("mcDir") ? new File(params.getValue("mcDir")).getAbsoluteFile() : McRipper.mcDir;
+			File mcDir = params.hasFlag("mcDir") ? new File(params.getValue("mcDir")).getAbsoluteFile() : McRipperChecker.mcDir;
 			File dir = params.get(0);
 			File jarFile = params.get(1);
 			File rootOut = params.get(2);
@@ -159,7 +160,7 @@ public class McRipperCommands {
 			String idAssets = assetsLoc.getString("id");
 			String sha1Assets = assetsLoc.getString("sha1");
 			String urlAssets = assetsLoc.getString("url");
-			File assetsIndexFile = McRipper.getOrDlFromMc(mcDir, urlAssets, type, "assets/indexes/" + idAssets + ".json", sha1Assets);
+			File assetsIndexFile = DLUtils.getOrDlFromMc(mcDir, urlAssets, type, "assets/indexes/" + idAssets + ".json", sha1Assets);
 			JSONObject assetsIndex = RippedUtils.getJSON(assetsIndexFile);
 			
 			//fetch the jar
@@ -168,7 +169,7 @@ public class McRipperCommands {
 			String idClient = json.getString("id");
 			String sha1Client = client.getString("sha1");
 			String urlClient = client.getString("url");
-			File jar = McRipper.getOrDlFromMc(mcDir, urlClient, type, "versions/" + idClient + "/" + idClient + ".jar", sha1Client);
+			File jar = DLUtils.getOrDlFromMc(mcDir, urlClient, type, "versions/" + idClient + "/" + idClient + ".jar", sha1Client);
 			this.ripAssetsIndex(jar, assetsIndex, mcDir, outDir);
 		}
 
@@ -186,7 +187,7 @@ public class McRipperCommands {
 				String assetUrl = "https://resources.download.minecraft.net/" + hpath;
 				try
 				{
-					McRipper.dlFromMc(mcDir, assetUrl, pathBase + hpath, new File(outDir, (isAssetRoot(key) ? "" : "assets/") + key).getAbsoluteFile(), assetSha1);
+					DLUtils.dlFromMc(mcDir, assetUrl, pathBase + hpath, new File(outDir, (isAssetRoot(key) ? "" : "assets/") + key).getAbsoluteFile(), assetSha1);
 				}
 				catch (Exception e)
 				{
@@ -253,13 +254,13 @@ public class McRipperCommands {
 			{
 				boolean delete = !params.hasFlag("info");
 				boolean shouldSave = false;
-				Iterator<Map.Entry<String, String>> it = McRipper.hashes.entrySet().iterator();
+				Iterator<Map.Entry<String, String>> it = McRipperChecker.hash.hashes.entrySet().iterator();
 				while(it.hasNext())
 				{
 					Map.Entry<String, String> p = it.next();
 					String h = p.getKey();
 					String path = p.getValue();
-					File f = new File(McRipper.root, path);
+					File f = new File(McRipperChecker.root, path);
 					if(!h.equals(RippedUtils.getSHA1(f)))
 					{
 						System.err.println("file has been modified removing:" + path);
@@ -272,7 +273,7 @@ public class McRipperCommands {
 					}
 				}
 				if(shouldSave)
-					RippedUtils.saveFileLines(McRipper.hashes, McRipper.hashFile, true);
+					McRipperChecker.hash.save();
 				else
 					System.out.println("All files have been verified with no errors");
 			}

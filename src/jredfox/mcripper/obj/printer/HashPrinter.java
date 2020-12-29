@@ -9,7 +9,6 @@ import java.util.Map;
 
 import jredfox.filededuper.util.DeDuperUtil;
 import jredfox.filededuper.util.IOUtils;
-import jredfox.mcripper.McRipper;
 import jredfox.mcripper.utils.RippedUtils;
 
 public class HashPrinter extends Printer {
@@ -23,7 +22,7 @@ public class HashPrinter extends Printer {
 	}
 
 	@Override
-	protected void parse(String line) 
+	public void parse(String line) 
 	{
 		String[] arr = line.split(",");
 		String hash = arr[0].trim();
@@ -35,6 +34,12 @@ public class HashPrinter extends Printer {
 			return;
 		}
 		this.hashes.put(hash, fname);
+	}
+	
+	@Override
+	public boolean contains(String key)
+	{
+		return this.hashes.containsKey(key);
 	}
 	
 	public void append(String hash, File out)

@@ -47,8 +47,8 @@ public class McRipperChecker {
 	
 	//printers
 	public static HashPrinter hash;
-	public static Printer learner;
-	public static Printer bad;
+	public static CSVPrinter learner;
+	public static SetPrinter bad;
 
 	//mc dirs
 	public static final File mcDefaultDir = RippedUtils.getMinecraftDir();
@@ -389,8 +389,8 @@ public class McRipperChecker {
 	{
 		long ms = System.currentTimeMillis();
 		hash = new HashPrinter(root, new File(root, "index.hash"), 10000);
-		learner = new SetPrinter(root, new File(root, "learned.rhash"), 250);
-		bad = new CSVPrinter(root, new File(root, "bad.paths"), 250);
+		learner = new CSVPrinter(root, new File(root, "learned.rhash"), 250);
+		bad = new SetPrinter(root, new File(root, "bad.paths"), 250);
 		hash.load();
 		learner.load();
 		bad.load();

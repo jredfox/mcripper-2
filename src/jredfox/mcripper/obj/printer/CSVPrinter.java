@@ -4,6 +4,7 @@ import java.io.BufferedWriter;
 import java.io.File;
 
 import jredfox.filededuper.config.csv.CSV;
+import jredfox.filededuper.util.DeDuperUtil;
 
 public class CSVPrinter extends Printer{
 
@@ -15,7 +16,7 @@ public class CSVPrinter extends Printer{
 	}
 
 	@Override
-	protected void parse(String line) 
+	public void parse(String line) 
 	{
 		this.csv.add(line);
 	}
@@ -24,6 +25,23 @@ public class CSVPrinter extends Printer{
 	public void save(BufferedWriter writer) 
 	{
 		this.csv.save();
+	}
+
+	@Override
+	public boolean contains(String key) 
+	{
+		return this.csv.getLine(key, 0) != null;
+	}
+	
+	public String get(String key, int colum)
+	{
+		String[] line = this.csv.getLine(key, colum);
+		return line == null ? null : line[colum];
+	}
+
+	public void append(Object... objs) 
+	{
+		this.csv.add(DeDuperUtil.toString(objs, ","));
 	}
 
 }

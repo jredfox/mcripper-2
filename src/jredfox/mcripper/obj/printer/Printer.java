@@ -30,8 +30,9 @@ public abstract class Printer implements Closeable{
 		this.log = log;
 	}
 	
-	protected abstract void parse(String line);
+	public abstract void parse(String line);
 	public abstract void save(BufferedWriter writer);
+	public abstract boolean contains(String key);
 	
 	public void load() throws IOException
 	{
@@ -81,15 +82,15 @@ public abstract class Printer implements Closeable{
 		this.setPrintWriter();
 	}
 	
-	public void setPrintWriter() throws IOException 
-	{
-		this.out = new PrintWriter(new BufferedWriter(new FileWriter(this.log, true)), true);
-	}
-
 	public void save()
 	{
 		this.save(RippedUtils.getWriter(this.log));
 		this.dirty = false;
+	}
+	
+	public void setPrintWriter() throws IOException 
+	{
+		this.out = new PrintWriter(new BufferedWriter(new FileWriter(this.log, true)), true);
 	}
 
 	public File getLog()
@@ -97,6 +98,9 @@ public abstract class Printer implements Closeable{
 		return this.log;
 	}
 	
+	/**
+	 * appends it in memory and prints it to the file
+	 */
 	public void append(String line)
 	{
 		this.parse(line);
