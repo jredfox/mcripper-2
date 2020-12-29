@@ -67,13 +67,13 @@ public class McRipperCommands {
 		}
 	};
 	
-	public static RunableCommand checkOld = new RunableCommand(new String[]{"-r","--mcDir=value"}, "checkOld")
+	public static RunableCommand checkOld = new RunableCommand(new String[]{"--mcDir=value"}, "checkOld")
 	{
 		@Override
 		public void run(ParamList<Object> params)
 		{
 			McRipper.mcDir = params.hasFlag("mcDir") ? new File(params.getValue("mcDir")).getAbsoluteFile() : McRipper.mcDir;
-			McRipper.checkOldMc(params.hasFlag('r'));
+			McRipper.checkOldMc();
 			McRipper.mcDir = McRipper.mcDefaultDir;
 		}
 	};

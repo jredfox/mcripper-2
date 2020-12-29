@@ -177,7 +177,7 @@ public class McRipper {
 		{
 			List<File> oldMajors = DeDuperUtil.getDirFiles(jsonOldMajor);
 			for(File oldMajor : oldMajors)
-				checkOldMajor(oldMajor, false);
+				checkOldMajor(oldMajor);
 		}
 		List<File> minors = DeDuperUtil.getDirFiles(jsonMinor);
 		for(File minor : minors)
@@ -212,13 +212,13 @@ public class McRipper {
 	/**
 	 * NOTE: http://s3.amazonaws.com/Minecraft.Resources hasn't existed since 2013
 	 */
-	public static void checkOldMc(boolean retainJson)
+	public static void checkOldMc()
 	{
 		try
 		{
 			McRipper.dlAmazonAws("http://s3.amazonaws.com/MinecraftDownload", "MinecraftDownload");
 			McRipper.dlAmazonAws("http://s3.amazonaws.com/MinecraftResources", "MinecraftResources");
-			McRipper.checkOldVersions(retainJson);
+			McRipper.checkOldVersions();
 		}
 		catch(Exception e) 
 		{
@@ -266,7 +266,7 @@ public class McRipper {
 		JSONObject json = RippedUtils.getJSON(version);
 		if(!json.containsKey("assetIndex"))
 		{
-			return checkOldMinor(version, json, false);
+			return checkOldMinor(version, json);
 		}
 		String versionName = json.getString("id");
 		String type = json.containsKey("type") ? json.getString("type") : DeDuperUtil.getTrueName(version.getParentFile());
@@ -343,12 +343,12 @@ public class McRipper {
 		return aIndexFile.getAbsoluteFile();
 	}
 	
-	public static File checkOldMinor(File versionFile, boolean forceDl) 
+	public static File checkOldMinor(File versionFile) 
 	{
-		return checkOldMinor(versionFile, RippedUtils.getJSON(versionFile), forceDl);
+		return checkOldMinor(versionFile, RippedUtils.getJSON(versionFile));
 	}
 	
-	public static File checkOldMinor(File versionFile, JSONObject json, boolean retainJson) 
+	public static File checkOldMinor(File versionFile, JSONObject json) 
 	{
 		String urlBase = "http://s3.amazonaws.com/Minecraft.Download/";
 		File oldMcDir = new File(mcripped, "Minecraft.Download");
@@ -356,17 +356,20 @@ public class McRipper {
 		String version = json.getString("id");
 		String type = json.getString("type");
 		
+		String checkPath = version + ".json";
 		String assetsPath = assetsId + ".json";
 		String jarPath ="versions/" + type + "/" + version + "/" + version + ".jar";
 		String serverPath = "versions/" + type + "/" + version + "/" + "minecraft_server." + version + ".jar";
 		String serverExePath = "versions/" + type + "/" + version + "/" + "minecraft_server." + version + ".exe";
 		
+		File checkFile = new File(jsonAssets, checkPath);
 		File assetsFile = new File(jsonAssets, assetsPath);
 		File jarFile = new File(oldMcDir, jarPath);
 		File serverJarFile = new File(oldMcDir, serverPath);
 		File serverExeFile = new File(oldMcDir, serverExePath);
 		
-		File assetsIndex = McRipper.learnDl(urlBase + "indexes/" + assetsPath, "Minecraft.Download/" + assetsPath, assetsFile, retainJson);
+		McRipper.learnDl(urlBase + "indexes/" + checkPath, "Minecraft.Download/" + checkPath, checkFile);
+		File assetsIndex = McRipper.learnDl(urlBase + "indexes/" + assetsPath, "Minecraft.Download/" + assetsPath, assetsFile);
 		McRipper.learnDl(urlBase + "versions/" + version + "/" + version + ".jar", "Minecraft.Download/" + jarPath, jarFile);
 		McRipper.learnDl(urlBase + "versions/" + version + "/" + "minecraft_server." + version + ".jar", "Minecraft.Download/" + serverPath, serverJarFile);
 		McRipper.learnDl(urlBase + "versions/" + version + "/" + "minecraft_server." + version + ".exe", "Minecraft.Download/" + serverExePath, serverExeFile);
@@ -762,14 +765,14 @@ public class McRipper {
 	}
 	
 	@SuppressWarnings("unchecked")
-	public static void checkOldVersions(boolean retainJson) throws FileNotFoundException, IOException 
+	public static void checkOldVersions() throws FileNotFoundException, IOException 
 	{
 		File oldJson = McRipper.dlMove("http://s3.amazonaws.com/Minecraft.Download/versions/versions.json", "Minecraft.Download/versions.json", new File(jsonOldMajor, "versions.json"));
-		Set<File> oldMinors = checkOldMajor(oldJson, retainJson);
+		Set<File> oldMinors = checkOldMajor(oldJson);
 		Set<File> oldAssets = new HashSet<>(14);
 		for(File oldMinor : oldMinors)
 		{
-			File assetsIndex = checkOldMinor(oldMinor, retainJson);
+			File assetsIndex = checkOldMinor(oldMinor);
 			if(assetsIndex != null)
 				oldAssets.add(assetsIndex);//populate anything checking a minor may update
 		}
@@ -780,7 +783,7 @@ public class McRipper {
 	}
 
 	@SuppressWarnings("rawtypes")
-	public static Set<File> checkOldMajor(File oldJson, boolean retainJson)
+	public static Set<File> checkOldMajor(File oldJson)
 	{
 		String urlBase = "http://s3.amazonaws.com/Minecraft.Download/";
 		JSONObject json = RippedUtils.getJSON(oldJson);
@@ -795,7 +798,7 @@ public class McRipper {
 			
 			String clientPath = type + "/" + version + ".json";
 			File minorFile = new File(jsonMinor, clientPath);
-			File dlMinor = McRipper.learnDl(urlBase + "versions/" + version + "/" + version + ".json", "Minecraft.Download/jsons/minor/" + clientPath, minorFile, retainJson);
+			File dlMinor = McRipper.learnDl(urlBase + "versions/" + version + "/" + version + ".json", "Minecraft.Download/jsons/minor/" + clientPath, minorFile);
 			if(dlMinor != null)
 				oldMinors.add(dlMinor);
 		}
