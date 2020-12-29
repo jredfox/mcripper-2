@@ -168,7 +168,7 @@ public class DLUtils {
 	{
 		if(McChecker.bad.contains(path))
 			return null;
-		String cachedHash = McChecker.learner.get(path, 0);
+		String cachedHash = McChecker.learner.get(path, 1);
 		//recall learning
 		if(cachedHash != null && McChecker.hash.contains(cachedHash))
 		{

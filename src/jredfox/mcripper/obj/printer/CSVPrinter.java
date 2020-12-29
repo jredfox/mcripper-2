@@ -33,10 +33,10 @@ public class CSVPrinter extends Printer{
 		return this.csv.getLine(key, 0) != null;
 	}
 	
-	public String get(String key, int colum)
+	public String get(String key, int section)
 	{
-		String[] line = this.csv.getLine(key, colum);
-		return line == null ? null : line[colum];
+		String[] line = this.csv.getLine(key, 0);
+		return line == null ? null : line[section];
 	}
 
 	public void append(Object... objs) 
