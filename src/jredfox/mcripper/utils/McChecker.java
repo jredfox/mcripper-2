@@ -20,11 +20,10 @@ import jredfox.mcripper.McRipper;
 import jredfox.mcripper.obj.FileSet;
 import jredfox.mcripper.obj.printer.CSVPrinter;
 import jredfox.mcripper.obj.printer.HashPrinter;
-import jredfox.mcripper.obj.printer.Printer;
 import jredfox.mcripper.obj.printer.SetPrinter;
 import jredfox.selfcmd.util.OSUtil;
 
-public class McRipperChecker {
+public class McChecker {
 	
 	//global vars
 	public static final Set<File> checkJsons = new FileSet(2 + 534 + 11);

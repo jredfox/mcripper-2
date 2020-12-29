@@ -18,11 +18,7 @@ import org.xml.sax.SAXException;
 
 import jredfox.filededuper.util.DeDuperUtil;
 import jredfox.filededuper.util.IOUtils;
-import jredfox.mcripper.McRipper;
-import jredfox.mcripper.obj.printer.CSVPrinter;
 import jredfox.mcripper.obj.printer.HashPrinter;
-import jredfox.mcripper.obj.printer.Printer;
-import jredfox.mcripper.obj.printer.SetPrinter;
 import jredfox.selfcmd.util.OSUtil;
 
 public class DLUtils {
@@ -34,7 +30,7 @@ public class DLUtils {
 	
 	public static File dl(String url, String path, long timestamp, String hash) throws FileNotFoundException, IOException, IllegalArgumentException
 	{
-		return dl(McRipperChecker.hash, url, path, timestamp, hash);
+		return dl(McChecker.hash, url, path, timestamp, hash);
 	}
 	
 	/**
@@ -75,7 +71,7 @@ public class DLUtils {
 			//speed the process up for libraries as they are extremely slow
 			if(path.contains("libraries"))
 			{
-				File cached = new File(McRipperChecker.mcDir, DeDuperUtil.getRealtivePath(McRipperChecker.mojang, new File(path).getAbsoluteFile()));
+				File cached = new File(McChecker.mcDir, DeDuperUtil.getRealtivePath(McChecker.mojang, new File(path).getAbsoluteFile()));
 				if(cached.exists())
 					url = cached.toURI().toURL().toString();
 			}
@@ -137,7 +133,7 @@ public class DLUtils {
 	
 	public static File dlMove(String url, String path, File saveAs) throws FileNotFoundException, IOException
 	{
-		File tmpFile = dlToFile(url, new File(McRipperChecker.tmp, path));
+		File tmpFile = dlToFile(url, new File(McChecker.tmp, path));
 		String hash = RippedUtils.getSHA1(tmpFile);
 		File moved = dl(RippedUtils.toURL(tmpFile).toString(), saveAs.getPath(), hash);
 		tmpFile.delete();
@@ -147,7 +143,7 @@ public class DLUtils {
 	public static File dlFromMc(File mcDir, String url, String path, File saveAs, String hash) throws FileNotFoundException, IOException
 	{
 		File cached = new File(mcDir, path).getAbsoluteFile();
-		cached = cached.exists() ? cached : new File(McRipperChecker.mojang, path);
+		cached = cached.exists() ? cached : new File(McChecker.mojang, path);
 		boolean exists = cached.exists();
 		long timestamp = exists ? cached.lastModified() : System.currentTimeMillis();
 		url = exists && hash.equals(RippedUtils.getSHA1(cached)) ? cached.toURI().toURL().toString() : url;
@@ -170,13 +166,13 @@ public class DLUtils {
 
 	public static File learnDl(String url, String path, File saveAs) 
 	{
-		if(McRipperChecker.bad.contains(path))
+		if(McChecker.bad.contains(path))
 			return null;
-		String cachedHash = McRipperChecker.learner.get(path, 0);
+		String cachedHash = McChecker.learner.get(path, 0);
 		//recall learning
-		if(cachedHash != null && McRipperChecker.hash.contains(cachedHash))
+		if(cachedHash != null && McChecker.hash.contains(cachedHash))
 		{
-			return new File(McRipperChecker.root, McRipperChecker.hash.hashes.get(cachedHash));
+			return new File(McChecker.root, McChecker.hash.hashes.get(cachedHash));
 		}
 		else if(cachedHash != null)
 		{
@@ -194,11 +190,11 @@ public class DLUtils {
 		//learn here
 		try
 		{
-			File tmpFile = dlToFile(url, new File(McRipperChecker.tmp, path));
+			File tmpFile = dlToFile(url, new File(McChecker.tmp, path));
 			String hash = RippedUtils.getSHA1(tmpFile);
 			File moved = dl(RippedUtils.toURL(tmpFile).toString(), saveAs.getPath(), hash);
 			tmpFile.delete();
-			McRipperChecker.learner.append(path, hash, moved.lastModified());
+			McChecker.learner.append(path, hash, moved.lastModified());
 			System.out.println("dl:" + url + " from path:" + path);
 			return moved;
 		}
@@ -208,12 +204,12 @@ public class DLUtils {
 			if(msg.contains("HTTP response code:"))
 			{
 				System.err.println(msg);
-				McRipperChecker.bad.append(path);
+				McChecker.bad.append(path);
 			}
 			else
 			{
 				e.printStackTrace();
-				McRipperChecker.bad.parse(path);
+				McChecker.bad.parse(path);
 			}
 		}
 		catch(Exception e)
@@ -232,7 +228,7 @@ public class DLUtils {
 	 */
 	public static void dlAmazonAws(String url, String path) throws FileNotFoundException, IOException, SAXException, ParserConfigurationException
 	{
-		File oldMcDir = new File(McRipperChecker.mcripped, path);
+		File oldMcDir = new File(McChecker.mcripped, path);
 		File xmlFile = dlMove(url, path + "/" + path + ".xml", new File(oldMcDir, path + ".xml"));
 		Document doc = RippedUtils.parseXML(xmlFile);
 		NodeList nlist = doc.getElementsByTagName("Contents");
@@ -264,7 +260,7 @@ public class DLUtils {
 	public static void dlWebArchive(String baseUrl, String dirPath) throws FileNotFoundException, IOException, SAXException, ParserConfigurationException 
 	{
 		String name = RippedUtils.getLastSplit(baseUrl, "/");
-		File webDir = new File(McRipperChecker.mcripped, dirPath);
+		File webDir = new File(McChecker.mcripped, dirPath);
 		
 		//dl the index file
 		String xmlUrl = baseUrl + "/" + name + "_files.xml";
@@ -309,7 +305,7 @@ public class DLUtils {
 	public static File getFromMc(File mcDir, String type, String path) 
 	{
 		File cached = new File(mcDir, path);
-		return cached.exists() ? cached : new File(McRipperChecker.mojang, toRipperPath(type, path));
+		return cached.exists() ? cached : new File(McChecker.mojang, toRipperPath(type, path));
 	}
 	
 	/**

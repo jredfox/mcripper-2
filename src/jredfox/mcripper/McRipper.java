@@ -7,7 +7,7 @@ import jredfox.filededuper.command.Command;
 import jredfox.filededuper.command.Commands;
 import jredfox.filededuper.config.simple.MapConfig;
 import jredfox.mcripper.command.McRipperCommands;
-import jredfox.mcripper.utils.McRipperChecker;
+import jredfox.mcripper.utils.McChecker;
 import jredfox.selfcmd.SelfCommandPrompt;
 import jredfox.selfcmd.util.OSUtil;
 
@@ -42,7 +42,7 @@ public class McRipper {
 		cfg.load();
 		appdir = new File(cfg.get(McRipper.appId + "Dir", appdir.getPath())).getAbsoluteFile();
 		cfg.save();
-		McRipperChecker.setRoot(appdir);
+		McChecker.setRoot(appdir);
 	}
 
 }

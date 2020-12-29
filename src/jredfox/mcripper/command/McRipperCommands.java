@@ -21,7 +21,7 @@ import jredfox.filededuper.util.JarUtil;
 import jredfox.mcripper.McRipper;
 import jredfox.mcripper.obj.printer.Printer;
 import jredfox.mcripper.utils.DLUtils;
-import jredfox.mcripper.utils.McRipperChecker;
+import jredfox.mcripper.utils.McChecker;
 import jredfox.mcripper.utils.RippedUtils;
 
 public class McRipperCommands {
@@ -34,7 +34,7 @@ public class McRipperCommands {
 			this.setMc(params);
 			try 
 			{
-				McRipperChecker.checkDisk(params.hasFlag("skipSnaps"), params.hasFlag("skipOldMajors"));
+				McChecker.checkDisk(params.hasFlag("skipSnaps"), params.hasFlag("skipOldMajors"));
 			}
 			catch (Exception e)
 			{
@@ -52,7 +52,7 @@ public class McRipperCommands {
 			this.setMc(params);
 			try 
 			{
-				McRipperChecker.checkMojang(params.hasFlag("skipSnaps"));
+				McChecker.checkMojang(params.hasFlag("skipSnaps"));
 			}
 			catch (Exception e)
 			{
@@ -67,7 +67,7 @@ public class McRipperCommands {
 		@Override
 		public void run(ParamList<Object> params)
 		{
-			McRipperChecker.checkOmni();
+			McChecker.checkOmni();
 		}
 	};
 	
@@ -77,7 +77,7 @@ public class McRipperCommands {
 		public void run(ParamList<Object> params)
 		{
 			this.setMc(params);
-			McRipperChecker.checkOldMc();
+			McChecker.checkOldMc();
 			this.finish();
 		}
 	};
@@ -113,7 +113,7 @@ public class McRipperCommands {
 		public void run(ParamList<File> params) 
 		{
 			long ms = System.currentTimeMillis();
-			File mcDir = params.hasFlag("mcDir") ? new File(params.getValue("mcDir")).getAbsoluteFile() : McRipperChecker.mcDir;
+			File mcDir = params.hasFlag("mcDir") ? new File(params.getValue("mcDir")).getAbsoluteFile() : McChecker.mcDir;
 			File dir = params.get(0);
 			File jarFile = params.get(1);
 			File rootOut = params.get(2);
@@ -225,10 +225,10 @@ public class McRipperCommands {
 		{
 			try 
 			{
-				this.deletePrinter(McRipperChecker.hash);
-				this.deletePrinter(McRipperChecker.bad);
-				this.deletePrinter(McRipperChecker.learner);
-				McRipperChecker.parseHashes();
+				this.deletePrinter(McChecker.hash);
+				this.deletePrinter(McChecker.bad);
+				this.deletePrinter(McChecker.learner);
+				McChecker.parseHashes();
 			}
 			catch (Exception e)
 			{
@@ -252,13 +252,13 @@ public class McRipperCommands {
 			{
 				boolean delete = !params.hasFlag("info");
 				boolean shouldSave = false;
-				Iterator<Map.Entry<String, String>> it = McRipperChecker.hash.hashes.entrySet().iterator();
+				Iterator<Map.Entry<String, String>> it = McChecker.hash.hashes.entrySet().iterator();
 				while(it.hasNext())
 				{
 					Map.Entry<String, String> p = it.next();
 					String h = p.getKey();
 					String path = p.getValue();
-					File f = new File(McRipperChecker.root, path);
+					File f = new File(McChecker.root, path);
 					if(!h.equals(RippedUtils.getSHA1(f)))
 					{
 						System.err.println("file has been modified removing:" + path);
@@ -272,9 +272,9 @@ public class McRipperCommands {
 				}
 				if(shouldSave)
 				{
-					IOUtils.close(McRipperChecker.hash);
-					McRipperChecker.hash.save();
-					McRipperChecker.hash.setPrintWriter();
+					IOUtils.close(McChecker.hash);
+					McChecker.hash.save();
+					McChecker.hash.setPrintWriter();
 				}
 				else
 					System.out.println("All files have been verified with no errors");

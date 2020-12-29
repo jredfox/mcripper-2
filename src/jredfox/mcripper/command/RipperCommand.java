@@ -4,7 +4,7 @@ import java.io.File;
 
 import jredfox.filededuper.command.Command;
 import jredfox.filededuper.command.ParamList;
-import jredfox.mcripper.utils.McRipperChecker;
+import jredfox.mcripper.utils.McChecker;
 
 public abstract class RipperCommand extends Command<Object>{
 	
@@ -30,18 +30,18 @@ public abstract class RipperCommand extends Command<Object>{
 	
 	public void setMc(ParamList<?> params)
 	{
-		McRipperChecker.mcDir = params.hasFlag("mcDir") ? new File(params.getValue("mcDir")).getAbsoluteFile() : McRipperChecker.mcDir;
+		McChecker.mcDir = params.hasFlag("mcDir") ? new File(params.getValue("mcDir")).getAbsoluteFile() : McChecker.mcDir;
+	}
+	
+	public void setMcDefault()
+	{
+		McChecker.mcDir = McChecker.mcDefaultDir;
 	}
 	
 	public void finish()
 	{
 		this.setMcDefault();
-		McRipperChecker.checkJsons.clear();
-	}
-	
-	public void setMcDefault()
-	{
-		McRipperChecker.mcDir = McRipperChecker.mcDefaultDir;
+		McChecker.checkJsons.clear();
 	}
 
 }
