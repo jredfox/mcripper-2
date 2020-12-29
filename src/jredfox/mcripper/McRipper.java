@@ -356,19 +356,16 @@ public class McRipper {
 		String version = json.getString("id");
 		String type = json.getString("type");
 		
-		String checkPath = version + ".json";
 		String assetsPath = assetsId + ".json";
 		String jarPath ="versions/" + type + "/" + version + "/" + version + ".jar";
 		String serverPath = "versions/" + type + "/" + version + "/" + "minecraft_server." + version + ".jar";
 		String serverExePath = "versions/" + type + "/" + version + "/" + "minecraft_server." + version + ".exe";
 		
-		File checkFile = new File(jsonAssets, checkPath);
 		File assetsFile = new File(jsonAssets, assetsPath);
 		File jarFile = new File(oldMcDir, jarPath);
 		File serverJarFile = new File(oldMcDir, serverPath);
 		File serverExeFile = new File(oldMcDir, serverExePath);
 		
-		McRipper.learnDl(urlBase + "indexes/" + checkPath, "Minecraft.Download/" + checkPath, checkFile);
 		File assetsIndex = McRipper.learnDl(urlBase + "indexes/" + assetsPath, "Minecraft.Download/" + assetsPath, assetsFile);
 		McRipper.learnDl(urlBase + "versions/" + version + "/" + version + ".jar", "Minecraft.Download/" + jarPath, jarFile);
 		McRipper.learnDl(urlBase + "versions/" + version + "/" + "minecraft_server." + version + ".jar", "Minecraft.Download/" + serverPath, serverJarFile);
@@ -768,8 +765,9 @@ public class McRipper {
 	public static void checkOldVersions() throws FileNotFoundException, IOException 
 	{
 		File oldJson = McRipper.dlMove("http://s3.amazonaws.com/Minecraft.Download/versions/versions.json", "Minecraft.Download/versions.json", new File(jsonOldMajor, "versions.json"));
-		Set<File> oldMinors = checkOldMajor(oldJson);
-		Set<File> oldAssets = new HashSet<>(14);
+		Set[] sets = checkOldMajor(oldJson);
+		Set<File> oldMinors = sets[0];
+		Set<File> oldAssets = sets[1];
 		for(File oldMinor : oldMinors)
 		{
 			File assetsIndex = checkOldMinor(oldMinor);
@@ -783,12 +781,13 @@ public class McRipper {
 	}
 
 	@SuppressWarnings("rawtypes")
-	public static Set<File> checkOldMajor(File oldJson)
+	public static Set[] checkOldMajor(File oldJson)
 	{
 		String urlBase = "http://s3.amazonaws.com/Minecraft.Download/";
 		JSONObject json = RippedUtils.getJSON(oldJson);
 		JSONArray arr = json.getJSONArray("versions");
 		Set<File> oldMinors = new HashSet<>(json.size());
+		Set<File> assets = new HashSet<>(12);
 		for(Object obj : arr)
 		{
 			JSONObject versionEntry = (JSONObject)obj;
@@ -801,9 +800,15 @@ public class McRipper {
 			File dlMinor = McRipper.learnDl(urlBase + "versions/" + version + "/" + version + ".json", "Minecraft.Download/jsons/minor/" + clientPath, minorFile);
 			if(dlMinor != null)
 				oldMinors.add(dlMinor);
+			
+			String checkPath = version + ".json";
+			File checkFile = new File(jsonAssets, checkPath);
+			File checkedIndex = McRipper.learnDl(urlBase + "indexes/" + checkPath, "Minecraft.Download/" + checkPath, checkFile);
+			if(checkedIndex != null)
+				assets.add(checkedIndex);
 		}
 		oldMajorCount++;
-		return oldMinors;
+		return new Set[]{oldMinors, assets};
 	}
 
 	public static Document parseXML(File xmlFile) throws SAXException, IOException, ParserConfigurationException
