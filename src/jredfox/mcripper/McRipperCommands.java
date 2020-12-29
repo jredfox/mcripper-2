@@ -16,6 +16,7 @@ import jredfox.filededuper.command.Command;
 import jredfox.filededuper.command.ParamList;
 import jredfox.filededuper.command.exception.CommandParseException;
 import jredfox.filededuper.util.DeDuperUtil;
+import jredfox.filededuper.util.IOUtils;
 import jredfox.filededuper.util.JarUtil;
 
 public class McRipperCommands {
@@ -221,10 +222,12 @@ public class McRipperCommands {
 		{
 			try 
 			{
-				if(McRipper.hashWriter != null)
-					McRipper.hashWriter.close();
-				if(McRipper.hashFile.exists())
-					McRipper.hashFile.delete();
+				IOUtils.close(McRipper.hashWriter);
+				IOUtils.close(McRipper.learnedWriter);
+				IOUtils.close(McRipper.badWriter);
+				McRipper.hashFile.delete();
+				McRipper.learnedFile.delete();
+				McRipper.badFile.delete();
 				McRipper.parseHashes();
 			}
 			catch (Exception e)
