@@ -86,7 +86,7 @@ public class McChecker {
 		{
 			List<File> oldMajors = DeDuperUtil.getDirFiles(jsonOldMajor);
 			for(File oldMajor : oldMajors)
-				oldMinors = checkOldMajor(oldMajor);
+				oldMinors = checkOldMajor(oldMajor, skipSnaps);
 		}
 		List<File> minors = DeDuperUtil.getDirFiles(jsonMinor);
 		for(File minor : minors)
@@ -121,13 +121,13 @@ public class McChecker {
 	/**
 	 * NOTE: http://s3.amazonaws.com/Minecraft.Resources hasn't existed since 2013 and appears to have no new audio files from MinecraftResources
 	 */
-	public static void checkOldMc()
+	public static void checkOldMc(boolean skipSnaps)
 	{
 		try
 		{
 			DLUtils.dlAmazonAws("http://s3.amazonaws.com/MinecraftDownload", "MinecraftDownload");
 			DLUtils.dlAmazonAws("http://s3.amazonaws.com/MinecraftResources", "MinecraftResources");
-			checkOldVersions();
+			checkOldVersions(skipSnaps);
 		}
 		catch(Exception e) 
 		{
@@ -135,14 +135,14 @@ public class McChecker {
 		}
 	}
 	
-	public static void checkOldVersions() throws FileNotFoundException, IOException 
+	public static void checkOldVersions(boolean skipSnaps) throws FileNotFoundException, IOException 
 	{
 		File oldJson = DLUtils.dlMove("http://s3.amazonaws.com/Minecraft.Download/versions/versions.json", "Minecraft.Download/versions.json", new File(jsonOldMajor, "versions.json"));
-		Set<File> oldMinors = checkOldMajor(oldJson);
+		Set<File> oldMinors = checkOldMajor(oldJson, skipSnaps);
 		Set<File> oldAssets = new FileSet(jsonAssets.exists() ? jsonAssets.listFiles().length + 10 : 20);
 		for(File oldMinor : oldMinors)
 		{
-			Set<File> assets = checkMinor(oldMinor, false, true);
+			Set<File> assets = checkMinor(oldMinor, skipSnaps, true);
 			oldAssets.addAll(assets);//populate anything checking a minor may update
 		}
 		for(File oldAsset : oldAssets)
@@ -176,7 +176,7 @@ public class McChecker {
 	}
 	
 	@SuppressWarnings("rawtypes")
-	public static Set<File> checkOldMajor(File oldJson)
+	public static Set<File> checkOldMajor(File oldJson, boolean skipSnaps)
 	{
 		String urlBase = "http://s3.amazonaws.com/Minecraft.Download/";
 		JSONObject json = RippedUtils.getJSON(oldJson);
@@ -187,6 +187,8 @@ public class McChecker {
 			JSONObject versionEntry = (JSONObject)obj;
 			String version = versionEntry.getString("id");
 			String type = versionEntry.getString("type");
+			if(skipSnaps && type.startsWith("snapshot"))
+				continue;
 			String time = versionEntry.getString("time");
 			
 			String clientPath = type + "/" + version + ".json";
@@ -296,7 +298,7 @@ public class McChecker {
 					String libPath = arr[0] + "/" + arr[1] + "/" + arr[2] + "/" + arr[1] + "-" + arr[2] + ".jar";
 					if(libUrl.endsWith("/"))
 						libUrl += libPath;
-					DLUtils.learnDl(libUrl, libPath, new File(mojang, libPath));
+					DLUtils.learnDl(libUrl, "libraries/" + libPath, new File(mojang, "libraries/" + libPath));
 				}
 			}
 		}

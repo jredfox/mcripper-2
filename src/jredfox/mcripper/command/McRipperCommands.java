@@ -70,13 +70,13 @@ public class McRipperCommands {
 		}
 	};
 	
-	public static RipperCommand checkOld = new RipperCommand(new String[]{"--mcDir=value"}, "checkOld")
+	public static RipperCommand checkOld = new RipperCommand(new String[]{"--mcDir=value", "--skipSnaps"}, "checkOld")
 	{
 		@Override
 		public void run(ParamList<Object> params)
 		{
 			this.start(params);
-			McChecker.checkOldMc();
+			McChecker.checkOldMc(params.hasFlag("skipSnaps"));
 			this.finish();
 		}
 	};
