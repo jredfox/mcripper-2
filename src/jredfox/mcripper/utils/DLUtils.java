@@ -239,9 +239,8 @@ public class DLUtils {
 			{
 				Element element = (Element) node;
 				String key = RippedUtils.getText(element, "Key");
-				//skip directories
 				if(key.endsWith("/"))
-					continue;
+					continue;//skip the directories
 				String timestamp = RippedUtils.getText(element, "LastModified");
 				String fileUrl = url + "/" + key;
 				File saveAs = new File(oldMcDir, key);

@@ -10,11 +10,6 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipException;
 import java.util.zip.ZipFile;
 
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
-
 import com.jml.evilnotch.lib.json.JSONObject;
 
 import jredfox.filededuper.command.Command;
@@ -24,7 +19,6 @@ import jredfox.filededuper.util.DeDuperUtil;
 import jredfox.filededuper.util.IOUtils;
 import jredfox.filededuper.util.JarUtil;
 import jredfox.mcripper.printer.Printer;
-import jredfox.mcripper.printer.SetPrinter;
 import jredfox.mcripper.utils.DLUtils;
 import jredfox.mcripper.utils.McChecker;
 import jredfox.mcripper.utils.RippedUtils;
@@ -87,7 +81,7 @@ public class McRipperCommands {
 		}
 	};
 	
-	public static Command<File> rip = new Command<File>(new String[]{"-s", "--mcDir=value"}, "rip")
+	public static Command<File> rip = new Command<File>(new String[]{"-s", "-a", "--mcDir=value"}, "rip")
 	{
 		@Override
 		public String[] displayArgs() 
@@ -123,6 +117,7 @@ public class McRipperCommands {
 			File jarFile = params.get(1);
 			File rootOut = params.get(2);
 			boolean skip = params.hasFlag('s');
+			boolean ripAll = params.hasFlag('a');
 			boolean isFile = !dir.isDirectory();
 			if(skip)
 				System.out.println("WARNING: assetsIndex.json extraction will be missing .mcmetafiles which will break if you apply this to an rp pack");
@@ -134,11 +129,11 @@ public class McRipperCommands {
 				try
 				{
 					if(this.isMinor(json))
-						this.ripMinor(json, mcDir, out);
+						this.ripMinor(json, mcDir, out, ripAll);
 					else
 					{
 						File jar = skip ? null : isFile ? jarFile : this.nextFile("input minecraft.jar that uses assetsIndex " + jsonFile.getName() + ":");
-						this.ripAssetsIndex(jar, json, mcDir, out);
+						this.ripAssetsIndex(jar, json, mcDir, out, ripAll);
 					}
 				}
 				catch(Exception e)
@@ -154,7 +149,7 @@ public class McRipperCommands {
 			return json.containsKey("libraries");
 		}
 
-		public void ripMinor(JSONObject json, File mcDir, File outDir) throws FileNotFoundException, IOException 
+		public void ripMinor(JSONObject json, File mcDir, File outDir, boolean all) throws FileNotFoundException, IOException 
 		{
 			String type = json.getString("type");
 			
@@ -173,10 +168,10 @@ public class McRipperCommands {
 			String sha1Client = client.getString("sha1");
 			String urlClient = client.getString("url");
 			File jar = DLUtils.getOrDlFromMc(mcDir, urlClient, type, "versions/" + idClient + "/" + idClient + ".jar", sha1Client);
-			this.ripAssetsIndex(jar, assetsIndex, mcDir, outDir);
+			this.ripAssetsIndex(jar, assetsIndex, mcDir, outDir, all);
 		}
 
-		public void ripAssetsIndex(File jar, JSONObject json, File mcDir, File outDir) throws ZipException, IOException 
+		public void ripAssetsIndex(File jar, JSONObject json, File mcDir, File outDir, boolean all) throws ZipException, IOException 
 		{
 			System.out.println("ripping assetsIndex to: " + outDir);
 			JSONObject objects = json.getJSONObject("objects");
@@ -202,7 +197,7 @@ public class McRipperCommands {
 			{
 				System.out.println("extracting missing files");
 				ZipFile zip = new ZipFile(jar);
-				List<ZipEntry> mcmetas = JarUtil.getEntriesFromDir(zip, "assets/", "mcmeta");
+				List<ZipEntry> mcmetas = JarUtil.getEntriesFromDir(zip, "assets/", all ? "*" : "mcmeta");
 				for(ZipEntry mcmeta : mcmetas)
 				{
 					String pathMeta = mcmeta.getName();
