@@ -201,7 +201,7 @@ public class DLUtils {
 		catch(IOException e)
 		{
 			String msg = e.getMessage();
-			if(msg.contains("HTTP response code:"))
+			if(e instanceof FileNotFoundException || msg.contains("HTTP response code:"))
 			{
 				System.err.println(msg);
 				McChecker.bad.append(path);

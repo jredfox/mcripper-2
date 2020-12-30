@@ -215,11 +215,14 @@ public class McChecker {
 			assets.addAll(checkOldMinor(json));
 		
 		//download the asset indexes
-		JSONObject aIndex = json.getJSONObject("assetIndex");
-		String id = aIndex.getString("id");
-		String sha1 = aIndex.getString("sha1").toLowerCase();
-		String url = aIndex.getString("url");
-		assets.add(DLUtils.dl(url, new File(jsonAssets, id + ".json").getPath(), sha1));
+		if(json.containsKey("assetIndex"))
+		{
+			JSONObject aIndex = json.getJSONObject("assetIndex");
+			String id = aIndex.getString("id");
+			String sha1 = aIndex.getString("sha1").toLowerCase();
+			String url = aIndex.getString("url");
+			assets.add(DLUtils.dl(url, new File(jsonAssets, id + ".json").getPath(), sha1));
+		}
 		
 		//download the logging
 		if(json.containsKey("logging"))
@@ -237,45 +240,63 @@ public class McChecker {
 		}
 		
 		//download the client data versions, mappings, servers
-		JSONObject clientData = json.getJSONObject("downloads");
-		for(String key : clientData.keySet())
+		if(json.containsKey("downloads"))
 		{
-			JSONObject data = clientData.getJSONObject(key);
-			String dataSha1 = data.getString("sha1").toLowerCase();
-			String dataUrl = data.getString("url");
-			String[] dataUrlSplit = dataUrl.replace("\\", "/").split("/");
-			String name = dataUrlSplit[dataUrlSplit.length - 1];
-			DLUtils.dl(dataUrl, new File(mojang, "versions/" + type + "/" + versionName + "/" + versionName + "-" + name).getPath(), dataSha1);
+			JSONObject clientData = json.getJSONObject("downloads");
+			for(String key : clientData.keySet())
+			{
+				JSONObject data = clientData.getJSONObject(key);
+				String dataSha1 = data.getString("sha1").toLowerCase();
+				String dataUrl = data.getString("url");
+				String[] dataUrlSplit = dataUrl.replace("\\", "/").split("/");
+				String name = dataUrlSplit[dataUrlSplit.length - 1];
+				DLUtils.dl(dataUrl, new File(mojang, "versions/" + type + "/" + versionName + "/" + versionName + "-" + name).getPath(), dataSha1);
+			}
 		}
 		
 		//download the libs classifier's
-		JSONArray libs = json.getJSONArray("libraries");
-		for(Object obj : libs)
+		if(json.containsKey("libraries"))
 		{
-			JSONObject entry = (JSONObject)obj;
-			JSONObject downloads = entry.getJSONObject("downloads");
-			
-			//download the artifacts
-			if(downloads.containsKey("artifact"))
+			JSONArray libs = json.getJSONArray("libraries");
+			for(Object obj : libs)
 			{
-				JSONObject artifact = downloads.getJSONObject("artifact");
-				String libPath = artifact.getString("path");
-				String libSha1 = artifact.getString("sha1");
-				String libUrl = artifact.getString("url");
-				DLUtils.dl(libUrl, new File(mojang, "libraries/" + libPath).getPath(), libSha1);
-			}
-			
-			//download the classifiers
-			if(downloads.containsKey("classifiers"))
-			{
-				JSONObject classifiers = downloads.getJSONObject("classifiers");
-				for(String key : classifiers.keySet())
+				JSONObject entry = (JSONObject)obj;
+				if(json.containsKey("downloads"))
 				{
-					JSONObject cl = classifiers.getJSONObject(key);
-					String clPath = cl.getString("path");
-					String clSha1 = cl.getString("sha1");
-					String clUrl = cl.getString("url");
-					DLUtils.dl(clUrl, new File(mojang, "libraries/" + clPath).getPath(), clSha1);
+					JSONObject downloads = entry.getJSONObject("downloads");
+					//download the artifacts
+					if(downloads.containsKey("artifact"))
+					{
+						JSONObject artifact = downloads.getJSONObject("artifact");
+						String libPath = artifact.getString("path");
+						String libSha1 = artifact.getString("sha1");
+						String libUrl = artifact.getString("url");
+						DLUtils.dl(libUrl, new File(mojang, "libraries/" + libPath).getPath(), libSha1);
+					}
+					//download the classifiers
+					if(downloads.containsKey("classifiers"))
+					{
+						JSONObject classifiers = downloads.getJSONObject("classifiers");
+						for(String key : classifiers.keySet())
+						{
+							JSONObject cl = classifiers.getJSONObject(key);
+							String clPath = cl.getString("path");
+							String clSha1 = cl.getString("sha1");
+							String clUrl = cl.getString("url");
+							DLUtils.dl(clUrl, new File(mojang, "libraries/" + clPath).getPath(), clSha1);
+						}
+					}
+				}
+				else
+				{
+					String libUrl = entry.containsKey("url") ? entry.getString("url") : "https://libraries.minecraft.net/";
+					String name = entry.getString("name");
+					String[] arr = name.split(":");
+					arr[0] = arr[0].replaceAll("\\.", "/");
+					String libPath = arr[0] + "/" + arr[1] + "/" + arr[2] + "/" + arr[1] + "-" + arr[2] + ".jar";
+					if(libUrl.endsWith("/"))
+						libUrl += libPath;
+					DLUtils.learnDl(libUrl, libPath, new File(mojang, libPath));
 				}
 			}
 		}

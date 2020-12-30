@@ -24,12 +24,12 @@ public class McRipper {
 	}
 	
 	public static final String appId = "Mcripper";
-	public static final String version = "b.1.5.0";
+	public static final String version = "rc.1";
 	public static final String appName = "MC Ripper 2 Build: " + version;
 	
 	public static void main(String[] args) throws Exception
 	{
-		args = SelfCommandPrompt.wrapWithCMD("input a command: ", appId, appName, args, false, true);
+		args = SelfCommandPrompt.wrapWithCMD("input a command: ", appId, appName, args, true, true);
 		System.out.println("starting:" + appName);
 		loadCfg();
 		args = args.length == 0 ? new String[]{"rip"} : args;
