@@ -1,4 +1,4 @@
-package jredfox.mcripper.obj;
+package jredfox.mcripper.data;
 
 import java.io.File;
 import java.util.HashSet;

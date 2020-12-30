@@ -1,4 +1,4 @@
-package jredfox.mcripper.obj.printer;
+package jredfox.mcripper.printer;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;

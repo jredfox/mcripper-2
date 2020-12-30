@@ -18,7 +18,7 @@ import org.xml.sax.SAXException;
 
 import jredfox.filededuper.util.DeDuperUtil;
 import jredfox.filededuper.util.IOUtils;
-import jredfox.mcripper.obj.printer.HashPrinter;
+import jredfox.mcripper.printer.HashPrinter;
 import jredfox.selfcmd.util.OSUtil;
 
 public class DLUtils {
@@ -195,7 +195,7 @@ public class DLUtils {
 			File moved = dl(RippedUtils.toURL(tmpFile).toString(), saveAs.getPath(), hash);
 			tmpFile.delete();
 			McChecker.learner.append(path, hash, moved.lastModified());
-			System.out.println("dl:" + url + " from path:" + path);
+			System.out.println("dl tmp:" + path + " from:" + url);
 			return moved;
 		}
 		catch(IOException e)

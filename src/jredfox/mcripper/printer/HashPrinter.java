@@ -1,4 +1,4 @@
-package jredfox.mcripper.obj.printer;
+package jredfox.mcripper.printer;
 
 import java.io.BufferedWriter;
 import java.io.File;
@@ -9,6 +9,7 @@ import java.util.Map;
 
 import jredfox.filededuper.util.DeDuperUtil;
 import jredfox.filededuper.util.IOUtils;
+import jredfox.mcripper.utils.McChecker;
 import jredfox.mcripper.utils.RippedUtils;
 
 public class HashPrinter extends Printer {
@@ -28,6 +29,7 @@ public class HashPrinter extends Printer {
 		{
 			this.computeHashes();
 			this.setPrintWriter();
+			System.exit(0);
 		}
 		else
 			super.load();
@@ -64,9 +66,8 @@ public class HashPrinter extends Printer {
 	public void computeHashes() 
 	{
 		long ms = System.currentTimeMillis();
-		System.out.println("computing hashes this will take a while");
-		List<File> files = DeDuperUtil.getDirFiles(this.root);
-		System.out.println("fetched file list in:" + (System.currentTimeMillis() - ms) + "ms");
+		System.out.println("computing hashes this will take a while. Unless it's your first launch");
+		List<File> files = DeDuperUtil.getDirFiles(McChecker.mcripped);
 		Map<String, String> hashes = new LinkedHashMap<String, String>(files.size());
 		for(File f : files)
 		{
@@ -74,6 +75,7 @@ public class HashPrinter extends Printer {
 			hashes.put(hash, DeDuperUtil.getRealtivePath(this.root, f));
 		}
 		this.save();
+		System.out.println("finished computing & saving hashes in:" + (System.currentTimeMillis() - ms) / 1000D + " seconds");
 	}
 	
 	@Override

@@ -36,6 +36,7 @@ public class McRipper {
 		if(!(cmd instanceof CommandInvalid) && cmd != McRipperCommands.recomputeHashes && cmd != McRipperCommands.verify)
 			McChecker.parseHashes();
 		cmd.run();
+		McChecker.closePrinters();
 	}
 	
 	public static void loadCfg() throws IOException

@@ -17,10 +17,10 @@ import com.jml.evilnotch.lib.json.JSONObject;
 import jredfox.filededuper.util.DeDuperUtil;
 import jredfox.filededuper.util.IOUtils;
 import jredfox.mcripper.McRipper;
-import jredfox.mcripper.obj.FileSet;
-import jredfox.mcripper.obj.printer.CSVPrinter;
-import jredfox.mcripper.obj.printer.HashPrinter;
-import jredfox.mcripper.obj.printer.SetPrinter;
+import jredfox.mcripper.data.FileSet;
+import jredfox.mcripper.printer.CSVPrinter;
+import jredfox.mcripper.printer.HashPrinter;
+import jredfox.mcripper.printer.SetPrinter;
 import jredfox.selfcmd.util.OSUtil;
 
 public class McChecker {
@@ -394,6 +394,13 @@ public class McChecker {
 		learner.load();
 		bad.load();
 		System.out.println("parsed hashes & data in:" + (System.currentTimeMillis() - ms) + "ms");
+	}
+
+	public static void closePrinters()
+	{
+		IOUtils.close(hash);
+		IOUtils.close(learner);
+		IOUtils.close(bad);
 	}
 
 }
