@@ -305,7 +305,7 @@ public class McChecker {
 		File serverExeFile = new File(oldMcDir, serverExePath);
 		
 		//dl the assetIndexes
-		assets.add(DLUtils.learnDl(urlBase + "indexes/" + checkPath, "Minecraft.Download/" + checkPath, checkFile));
+		assets.add(DLUtils.learnDl(urlBase + "indexes/" + checkPath, "Minecraft.Download/jsons/assets/" + checkPath, checkFile));
 		assets.add(DLUtils.learnDl(urlBase + "indexes/" + assetsPath, "Minecraft.Download/jsons/assets/" + assetsPath, assetsFile));
 		
 		DLUtils.learnDl(urlBase + "versions/" + version + "/" + version + ".jar", "Minecraft.Download/" + jarPath, jarFile);
@@ -388,8 +388,8 @@ public class McChecker {
 	{
 		long ms = System.currentTimeMillis();
 		hash = new HashPrinter(root, new File(root, "index.hash"), 10000);
-		learner = new CSVPrinter(root, new File(root, "learned.rhash"), 250);
-		bad = new SetPrinter(root, new File(root, "bad.paths"), 250);
+		learner = new CSVPrinter(root, new File(root, "learned.rhash"), 600);
+		bad = new SetPrinter(root, new File(root, "bad.paths"), 300);
 		hash.load();
 		learner.load();
 		bad.load();

@@ -18,7 +18,6 @@ import jredfox.filededuper.command.exception.CommandParseException;
 import jredfox.filededuper.util.DeDuperUtil;
 import jredfox.filededuper.util.IOUtils;
 import jredfox.filededuper.util.JarUtil;
-import jredfox.mcripper.McRipper;
 import jredfox.mcripper.obj.printer.Printer;
 import jredfox.mcripper.utils.DLUtils;
 import jredfox.mcripper.utils.McChecker;
@@ -31,7 +30,7 @@ public class McRipperCommands {
 		@Override
 		public void run(ParamList<Object> params)
 		{
-			this.setMc(params);
+			this.start(params);
 			try 
 			{
 				McChecker.checkDisk(params.hasFlag("skipSnaps"), params.hasFlag("skipOldMajors"));
@@ -49,7 +48,7 @@ public class McRipperCommands {
 		@Override
 		public void run(ParamList<Object> params)
 		{
-			this.setMc(params);
+			this.start(params);
 			try 
 			{
 				McChecker.checkMojang(params.hasFlag("skipSnaps"));
@@ -76,7 +75,7 @@ public class McRipperCommands {
 		@Override
 		public void run(ParamList<Object> params)
 		{
-			this.setMc(params);
+			this.start(params);
 			McChecker.checkOldMc();
 			this.finish();
 		}

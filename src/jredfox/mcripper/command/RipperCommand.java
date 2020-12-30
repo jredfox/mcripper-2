@@ -8,6 +8,8 @@ import jredfox.mcripper.utils.McChecker;
 
 public abstract class RipperCommand extends Command<Object>{
 	
+	public long ms;
+	
 	public RipperCommand(String[] options, String... ids)
 	{
 		super(options, ids);
@@ -28,20 +30,21 @@ public abstract class RipperCommand extends Command<Object>{
 		return null;
 	}
 	
-	public void setMc(ParamList<?> params)
+	public void start(ParamList<?> params)
 	{
+		this.ms = System.currentTimeMillis();
 		McChecker.mcDir = params.hasFlag("mcDir") ? new File(params.getValue("mcDir")).getAbsoluteFile() : McChecker.mcDir;
-	}
-	
-	public void setMcDefault()
-	{
-		McChecker.mcDir = McChecker.mcDefaultDir;
 	}
 	
 	public void finish()
 	{
 		this.setMcDefault();
 		McChecker.checkJsons.clear();
+		System.out.println("Done in:" + (System.currentTimeMillis() - ms) / 1000D + " seconds" + (McChecker.oldMajorCount > 0 ? " oldMajor:" + McChecker.oldMajorCount : "") + " major:" + McChecker.majorCount + (McChecker.oldMinor > 0 ? " oldMinor:" + McChecker.oldMinor : "") + " minor:" + McChecker.minorCount + " assets:" + McChecker.assetsCount);
 	}
-
+	
+	public void setMcDefault()
+	{
+		McChecker.mcDir = McChecker.mcDefaultDir;
+	}
 }
