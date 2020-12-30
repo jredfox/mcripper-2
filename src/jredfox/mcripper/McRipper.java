@@ -43,6 +43,7 @@ public class McRipper {
 		appdir = new File(cfg.get(McRipper.appId + "Dir", appdir.getPath())).getAbsoluteFile();
 		cfg.save();
 		McChecker.setRoot(appdir);
+		McChecker.parseHashes();
 	}
 
 }

@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 import javax.xml.parsers.DocumentBuilder;
@@ -148,6 +149,16 @@ public class RippedUtils {
 	{
 		String[] arr = str.split(sep);
 		return arr[arr.length - 1];
+	}
+	
+	private <K,V> Map.Entry<K, V> getLast(LinkedHashMap<K, V> map) 
+	{
+		Map.Entry<K, V> e = null;
+		for(Map.Entry<K, V> entry : map.entrySet())
+		{
+			e = entry;
+		}
+		return e;
 	}
 
 }

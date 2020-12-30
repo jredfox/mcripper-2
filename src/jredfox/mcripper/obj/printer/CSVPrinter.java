@@ -5,6 +5,7 @@ import java.io.File;
 
 import jredfox.filededuper.config.csv.CSV;
 import jredfox.filededuper.util.DeDuperUtil;
+import jredfox.filededuper.util.IOUtils;
 
 public class CSVPrinter extends Printer{
 
@@ -22,9 +23,17 @@ public class CSVPrinter extends Printer{
 	}
 
 	@Override
+	public void save()
+	{
+		this.save(null);
+		this.dirty = false;
+	}
+	
+	@Override
 	public void save(BufferedWriter writer) 
 	{
 		this.csv.save();
+		IOUtils.close(writer);
 	}
 
 	@Override
@@ -41,7 +50,9 @@ public class CSVPrinter extends Printer{
 
 	public void append(Object... objs) 
 	{
-		this.csv.add(DeDuperUtil.toString(objs, ","));
+		String line = DeDuperUtil.toString(objs, ",");
+		this.csv.add(line);
+		this.println(line);
 	}
 
 }

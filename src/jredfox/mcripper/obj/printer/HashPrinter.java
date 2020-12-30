@@ -20,6 +20,18 @@ public class HashPrinter extends Printer {
 		super(root, log);
 		this.hashes = new LinkedHashMap<>(capacity);
 	}
+	
+	@Override
+	public void load() throws IOException
+	{
+		if(!this.log.exists())
+		{
+			this.computeHashes();
+			this.setPrintWriter();
+		}
+		else
+			super.load();
+	}
 
 	@Override
 	public void parse(String line) 
@@ -47,18 +59,6 @@ public class HashPrinter extends Printer {
 		String path = DeDuperUtil.getRealtivePath(this.root, out.getAbsoluteFile());
 		this.hashes.put(hash, path);
 		this.println(hash + "," + path);
-	}
-	
-	@Override
-	public void load() throws IOException
-	{
-		if(!this.log.exists())
-		{
-			this.computeHashes();
-			this.setPrintWriter();
-		}
-		else
-			super.load();
 	}
 
 	public void computeHashes() 
