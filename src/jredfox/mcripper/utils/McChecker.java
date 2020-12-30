@@ -151,7 +151,7 @@ public class McChecker {
 		}
 	}
 	
-	public static Set<File> checkMajor(File master, boolean skipSnap) throws FileNotFoundException, IOException
+	public static Set<File> checkMajor(File master, boolean skipSnaps) throws FileNotFoundException, IOException
 	{
 		if(!checkJsons.add(master))
 			return Collections.emptySet();
@@ -165,7 +165,7 @@ public class McChecker {
 			String minorHash = getMinorHash(jsonVersion, url);
 			String version = jsonVersion.getString("id");
 			String type = jsonVersion.getString("type");
-			if(skipSnap && type.startsWith("snapshot"))
+			if(skipSnaps && type.startsWith("snapshot"))
 				continue;
 			String time = jsonVersion.getString("time");
 			File minor = DLUtils.dl(url, jsonMinor + "/" + type + "/" + version + ".json", minorHash);
@@ -200,7 +200,7 @@ public class McChecker {
 		return oldMinors;
 	}
 	
-	public static Set<File> checkMinor(File version, boolean skipSnap, boolean fCheckOld) throws FileNotFoundException, IOException 
+	public static Set<File> checkMinor(File version, boolean skipSnaps, boolean fCheckOld) throws FileNotFoundException, IOException 
 	{
 		if(!checkJsons.add(version))
 			return Collections.emptySet();
@@ -208,7 +208,7 @@ public class McChecker {
 		JSONObject json = RippedUtils.getJSON(version);
 		String versionName = json.getString("id");
 		String type = json.getString("type");
-		if(skipSnap && type.startsWith("snapshot"))
+		if(skipSnaps && type.startsWith("snapshot"))
 		{
 			return null;
 		}
@@ -291,6 +291,7 @@ public class McChecker {
 				}
 				else
 				{
+					//start legacy library download support with machine learning dl to speed up the process for the next launch
 					String libUrl = entry.containsKey("url") ? entry.getString("url") : "https://libraries.minecraft.net/";
 					String name = entry.getString("name");
 					String[] arr = name.split(":");
