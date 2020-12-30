@@ -6,7 +6,7 @@ Commands
 - checkMojang --skipSnaps --mcDir=value
 - checkDisk --skipSnaps --skipOldMajors --mcDir=value
 - checkOmni
-- checkOld
+- checkOld --mcDir=value --skipSnaps
 - recomputeHashes
 - verify
 - help
