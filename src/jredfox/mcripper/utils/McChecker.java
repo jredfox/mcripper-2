@@ -119,7 +119,7 @@ public class McChecker {
 	}
 
 	/**
-	 * NOTE: http://s3.amazonaws.com/Minecraft.Resources hasn't existed since 2013
+	 * NOTE: http://s3.amazonaws.com/Minecraft.Resources hasn't existed since 2013 and appears to have no new audio files from MinecraftResources
 	 */
 	public static void checkOldMc()
 	{

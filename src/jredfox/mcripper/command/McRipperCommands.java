@@ -10,6 +10,11 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipException;
 import java.util.zip.ZipFile;
 
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
+
 import com.jml.evilnotch.lib.json.JSONObject;
 
 import jredfox.filededuper.command.Command;
@@ -19,6 +24,7 @@ import jredfox.filededuper.util.DeDuperUtil;
 import jredfox.filededuper.util.IOUtils;
 import jredfox.filededuper.util.JarUtil;
 import jredfox.mcripper.printer.Printer;
+import jredfox.mcripper.printer.SetPrinter;
 import jredfox.mcripper.utils.DLUtils;
 import jredfox.mcripper.utils.McChecker;
 import jredfox.mcripper.utils.RippedUtils;

@@ -231,18 +231,18 @@ public class DLUtils {
 		File oldMcDir = new File(McChecker.mcripped, path);
 		File xmlFile = dlMove(url, path + "/" + path + ".xml", new File(oldMcDir, path + ".xml"));
 		Document doc = RippedUtils.parseXML(xmlFile);
-		NodeList nlist = doc.getElementsByTagName("Contents");
+		NodeList nlist = RippedUtils.getElementSafely(doc, "Contents");
 		for(int i=0; i < nlist.getLength(); i++)
 		{
 			Node node = nlist.item(i);
 			if(node.getNodeType() == Node.ELEMENT_NODE)
 			{
 				Element element = (Element) node;
-				String key = element.getElementsByTagName("Key").item(0).getTextContent();
+				String key = RippedUtils.getText(element, "Key");
 				//skip directories
 				if(key.endsWith("/"))
 					continue;
-				String timestamp = element.getElementsByTagName("LastModified").item(0).getTextContent();
+				String timestamp = RippedUtils.getText(element, "LastModified");
 				String fileUrl = url + "/" + key;
 				File saveAs = new File(oldMcDir, key);
 				learnDl(fileUrl, path + "/" + key, saveAs);

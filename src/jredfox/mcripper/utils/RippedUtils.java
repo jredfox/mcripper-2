@@ -16,6 +16,8 @@ import javax.xml.parsers.ParserConfigurationException;
 
 import org.apache.commons.codec.digest.DigestUtils;
 import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
 import com.jml.evilnotch.lib.JavaUtil;
@@ -159,6 +161,42 @@ public class RippedUtils {
 			e = entry;
 		}
 		return e;
+	}
+	
+	public static NodeList getElementSafely(Document d, String... keys) 
+	{
+		for(String key : keys)
+		{
+			NodeList l = d.getElementsByTagName(key);
+			if(l == null)
+				l = d.getElementsByTagName(key.toLowerCase());
+			if(l != null)
+				return l;
+		}
+		return null;
+	}
+
+	public static NodeList getElementSafely(Element elment, String... keys) 
+	{
+		for(String key : keys)
+		{
+			NodeList l = elment.getElementsByTagName(key);
+			if(l == null)
+				l = elment.getElementsByTagName(key.toLowerCase());
+			if(l != null)
+				return l;
+		}
+		return null;
+	}
+	
+	public static String getText(Element e, String key)
+	{
+		return getElementSafely(e, key).item(0).getTextContent();
+	}
+	
+	public static String getText(NodeList l)
+	{
+		return l.item(0).getTextContent();
 	}
 
 }

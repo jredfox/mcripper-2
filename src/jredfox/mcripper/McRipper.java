@@ -7,6 +7,7 @@ import jredfox.filededuper.command.Command;
 import jredfox.filededuper.command.CommandInvalid;
 import jredfox.filededuper.command.Commands;
 import jredfox.filededuper.config.simple.MapConfig;
+import jredfox.filededuper.util.IOUtils;
 import jredfox.mcripper.command.McRipperCommands;
 import jredfox.mcripper.utils.McChecker;
 import jredfox.selfcmd.SelfCommandPrompt;
@@ -37,6 +38,7 @@ public class McRipper {
 			McChecker.parseHashes();
 		cmd.run();
 		McChecker.closePrinters();
+		IOUtils.deleteDirectory(McChecker.tmp);
 	}
 	
 	public static void loadCfg() throws IOException
