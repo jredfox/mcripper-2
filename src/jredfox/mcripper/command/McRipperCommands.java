@@ -90,16 +90,17 @@ public class McRipperCommands {
 		}
 
 		@Override
-		public File[] parse(String... inputs)
+		public File[] parse(ParamList<File> paramOptions, String... inputs)
 		{
+			boolean skip = paramOptions.hasFlag('s');
 			if(this.hasScanner(inputs))
 			{
 				File jsonFile = this.nextFile("input the dir/version.json/assetsIndex.json:");
-				File jarFile = jsonFile.isDirectory() || this.isMinor(RippedUtils.getJSON(jsonFile)) ? null : this.nextFile("input minecraft.jar:");
+				File jarFile = skip || jsonFile.isDirectory() || this.isMinor(RippedUtils.getJSON(jsonFile)) ? null : this.nextFile("input minecraft.jar:");
 				File outDir = this.nextFile("input the directory of the output:");
 				return new File[]{jsonFile, jarFile, outDir};
 			}
-			boolean hasJar = inputs.length == 3;
+			boolean hasJar = inputs.length == 3 && !skip;
 			File jsonFile = new File(inputs[0]);
 			File jarFile =  hasJar ? new File(inputs[1]) : null;
 			File outDir = new File(inputs[hasJar ? 2 : 1]);
@@ -115,7 +116,7 @@ public class McRipperCommands {
 			File mcDir = params.hasFlag("mcDir") ? new File(params.getValue("mcDir")).getAbsoluteFile() : McChecker.mcDir;
 			File dir = params.get(0);
 			File jarFile = params.get(1);
-			File rootOut = params.get(2);
+			File rootOut = ((File) params.get(2)).getAbsoluteFile();
 			boolean skip = params.hasFlag('s');
 			boolean ripAll = params.hasFlag('a');
 			boolean isFile = !dir.isDirectory();

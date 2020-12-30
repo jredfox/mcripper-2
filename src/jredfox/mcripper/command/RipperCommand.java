@@ -26,7 +26,7 @@ public abstract class RipperCommand extends Command<Object>{
 	}
 
 	@Override
-	public Object[] parse(String... inputs) {
+	public Object[] parse(ParamList<Object> optionAcess, String... inputs) {
 		return null;
 	}
 	
