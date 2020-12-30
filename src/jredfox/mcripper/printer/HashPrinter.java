@@ -29,7 +29,6 @@ public class HashPrinter extends Printer {
 		{
 			this.computeHashes();
 			this.setPrintWriter();
-			System.exit(0);
 		}
 		else
 			super.load();
@@ -68,11 +67,10 @@ public class HashPrinter extends Printer {
 		long ms = System.currentTimeMillis();
 		System.out.println("computing hashes this will take a while. Unless it's your first launch");
 		List<File> files = DeDuperUtil.getDirFiles(McChecker.mcripped);
-		Map<String, String> hashes = new LinkedHashMap<String, String>(files.size());
 		for(File f : files)
 		{
 			String hash = RippedUtils.getUnsafeHash(f);
-			hashes.put(hash, DeDuperUtil.getRealtivePath(this.root, f));
+			this.hashes.put(hash, DeDuperUtil.getRealtivePath(this.root, f));
 		}
 		this.save();
 		System.out.println("finished computing & saving hashes in:" + (System.currentTimeMillis() - ms) / 1000D + " seconds");
