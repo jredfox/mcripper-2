@@ -129,7 +129,7 @@ public class McChecker {
 			DLUtils.dlAmazonAws("http://s3.amazonaws.com/MinecraftResources", "MinecraftResources");
 			checkOldVersions(skipSnaps);
 		}
-		catch(Exception e) 
+		catch(Exception e)
 		{
 			e.printStackTrace();
 		}
