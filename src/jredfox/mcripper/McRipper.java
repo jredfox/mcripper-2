@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.IOException;
 
 import jredfox.filededuper.command.Command;
+import jredfox.filededuper.command.CommandInvalid;
 import jredfox.filededuper.command.Commands;
 import jredfox.filededuper.config.simple.MapConfig;
 import jredfox.mcripper.command.McRipperCommands;
@@ -32,6 +33,8 @@ public class McRipper {
 		loadCfg();
 		args = args.length == 0 ? new String[]{"rip"} : args;
 		Command<?> cmd = Command.fromArgs(args);
+		if(!(cmd instanceof CommandInvalid) && cmd != McRipperCommands.recomputeHashes && cmd != McRipperCommands.verify)
+			McChecker.parseHashes();
 		cmd.run();
 	}
 	
@@ -43,7 +46,6 @@ public class McRipper {
 		appdir = new File(cfg.get(McRipper.appId + "Dir", appdir.getPath())).getAbsoluteFile();
 		cfg.save();
 		McChecker.setRoot(appdir);
-		McChecker.parseHashes();
 	}
 
 }
