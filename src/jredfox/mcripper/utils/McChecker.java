@@ -292,14 +292,57 @@ public class McChecker {
 				else
 				{
 					//start legacy library download support with machine learning dl to speed up the process for the next launch
-					String libUrl = entry.containsKey("url") ? entry.getString("url") : "https://libraries.minecraft.net/";
+					String libBaseUrl = entry.containsKey("url") ? entry.getString("url") : "https://libraries.minecraft.net/";
 					String name = entry.getString("name");
 					String[] arr = name.split(":");
 					arr[0] = arr[0].replaceAll("\\.", "/");
-					String libPath = arr[0] + "/" + arr[1] + "/" + arr[2] + "/" + arr[1] + "-" + arr[2] + ".jar";
-					if(libUrl.endsWith("/"))
-						libUrl += libPath;
-					DLUtils.learnDl(libUrl, "libraries/" + libPath, new File(mojang, "libraries/" + libPath));
+					String lBasePath = arr[0] + "/" + arr[1] + "/" + arr[2] + "/" + arr[1] + "-" + arr[2];
+					String lpath = lBasePath + ".jar";
+					String lUrl = libBaseUrl + lpath;
+					
+					if(libBaseUrl.trim().isEmpty())
+					{
+						System.err.println("Library URL is empty skipping:" + lpath);
+						continue;
+					}
+					
+					if(!libBaseUrl.endsWith("/"))
+					{
+						DLUtils.learnDl(libBaseUrl, "libraries/" + lpath, new File(mojang, "libraries/" + lpath));
+					}
+					else if(!entry.containsKey("natives"))
+					{
+						DLUtils.learnDl(lUrl, "libraries/" + lpath, new File(mojang, "libraries/" + lpath));
+					}
+					else
+					{
+						JSONObject natives = entry.getJSONObject("natives");
+						for(String nname : natives.keySet())
+						{
+							String nvalue = natives.getString(nname);
+							boolean bits = false;
+							if(nvalue.contains("${arch}"))
+							{
+								nvalue = nvalue.replaceAll("\\$\\{arch\\}", "");
+								bits = true;
+							}
+							if(bits)
+							{
+								String path32 = lBasePath + "-" + nvalue + "32.jar";
+								String path64 = lBasePath + "-" + nvalue + "64.jar";
+								String libURL32 = libBaseUrl + path32;
+								String libURL64 = libBaseUrl + path64;
+								DLUtils.learnDl(libURL32, "libraries/" + path32, new File(mojang, "libraries/" + path32));
+								DLUtils.learnDl(libURL64, "libraries/" + path64, new File(mojang, "libraries/" + path64));
+							}
+							else
+							{	
+								String npath = lBasePath + "-" + nvalue + ".jar";
+								String nUrl = libBaseUrl + npath;
+								DLUtils.learnDl(nUrl, "libraries/" + npath, new File(mojang, "libraries/" + npath));
+							}
+						}
+					}
 				}
 			}
 		}
