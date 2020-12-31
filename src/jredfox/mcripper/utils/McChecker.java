@@ -404,13 +404,16 @@ public class McChecker {
 	
 	public static File extractAf() throws FileNotFoundException, IOException 
 	{
-		InputStream in = McRipper.class.getResourceAsStream("/1.12.2-af-minor.json");
 		String path = "release/1.12.2-af-minor.json";
+		File saveAs = new File(jsonMinor, path);
+		if(saveAs.exists())
+			return saveAs;
+		InputStream in = McRipper.class.getResourceAsStream("/1.12.2-af-minor.json");
 		File jsonaf = new File(tmp, path).getAbsoluteFile();
 		jsonaf.getParentFile().mkdirs();
 		IOUtils.copy(in, new FileOutputStream(jsonaf));
 		String sha1 = RippedUtils.getSHA1(jsonaf);
-		File actualaf = DLUtils.dl(RippedUtils.toURL(jsonaf).toString(), new File(jsonMinor, path).getAbsolutePath(), sha1);
+		File actualaf = DLUtils.dl(RippedUtils.toURL(jsonaf).toString(), saveAs.getAbsolutePath(), sha1);
 		jsonaf.delete();
 		return actualaf;
 	}
