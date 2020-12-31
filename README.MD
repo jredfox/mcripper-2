@@ -31,4 +31,7 @@ Links / API notes:
 - Old Version: http://s3.amazonaws.com/Minecraft.Download/versions/<version>/<version>.jar
 - Old Server: http://s3.amazonaws.com/Minecraft.Download/versions/<version>/minecraft_server.<version>.jar
 - Old Server Exe: http://s3.amazonaws.com/Minecraft.Download/versions/<version>/minecraft_server.<version>.exe
+- Old Resources: http://s3.amazonaws.com/MinecraftResources
+- Old 2012 and below Resources: http://s3.amazonaws.com/Minecraft.Resources
+- Old < 1.6 Downloads: http://s3.amazonaws.com/MinecraftDownload
 ```
