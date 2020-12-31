@@ -28,17 +28,13 @@ public class DLUtils {
 		return dl(url, path, System.currentTimeMillis(), hash);
 	}
 	
-	public static File dl(String url, String path, long timestamp, String hash) throws FileNotFoundException, IOException, IllegalArgumentException
-	{
-		return dl(McChecker.hash, url, path, timestamp, hash);
-	}
-	
 	/**
 	 * download a file to the path specified. With timestamp and hashing support. 
 	 * The hash is in case the file destination already exists. To allow override pass "override" as the hash
 	 */
-	public static File dl(HashPrinter printer, String url, String path, long timestamp, String hash) throws FileNotFoundException, IOException, IllegalArgumentException
+	public static File dl(String url, String path, long timestamp, String hash) throws FileNotFoundException, IOException, IllegalArgumentException
 	{
+		HashPrinter printer = McChecker.hash;
 		url = url.replaceAll(" ", "%20");
 		if(hash == null)
 			throw new IllegalArgumentException("hash cannot be null!");

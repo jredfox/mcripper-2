@@ -7,7 +7,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -56,13 +55,13 @@ public class McChecker {
 	public static void checkMojang(boolean skipSnaps) throws FileNotFoundException, IOException 
 	{
 		File[] majors = dlMojang();
-		Set<File> minors = new HashSet<>(534);//the default amount of versions is 534 grow if needed to past this
+		Set<File> minors = new FileSet(534);//the default amount of versions is 534 grow if needed to past this
 		minors.add(extractAf());//since mojang no longer has this file on their servers we need embed it into the jar and extract it
 		for(File major : majors)
 		{
 			minors.addAll(checkMajor(major, skipSnaps));
 		}
-		Set<File> assets = new HashSet<>(jsonAssets.exists() ? jsonAssets.listFiles().length + 10 : 20);
+		Set<File> assets = new FileSet(jsonAssets.exists() ? jsonAssets.listFiles().length + 10 : 20);
 		for(File minor : minors)
 		{
 			Set<File> assetsIndex = checkMinor(minor, skipSnaps, false);
@@ -157,7 +156,7 @@ public class McChecker {
 			return Collections.emptySet();
 		JSONObject mjson = RippedUtils.getJSON(master);
 		JSONArray arr = (JSONArray) mjson.get("versions");
-		Set<File> minors = new HashSet<>(arr.size());
+		Set<File> minors = new FileSet(arr.size());
 		for(Object obj : arr)
 		{
 			JSONObject jsonVersion = (JSONObject)obj;
