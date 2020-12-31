@@ -68,14 +68,6 @@ public class DLUtils {
 				}
 			}
 			
-			//speed the process up for libraries as they are extremely slow
-			if(path.contains("libraries"))
-			{
-				File cached = new File(McChecker.mcDir, DeDuperUtil.getRealtivePath(McChecker.mojang, new File(path).getAbsoluteFile()));
-				if(cached.exists())
-					url = cached.toURI().toURL().toString();
-			}
-			
 			URLConnection con = new URL(url).openConnection();
 			con.setConnectTimeout(1000 * 15);
 			con.setReadTimeout(Integer.MAX_VALUE / 2);
