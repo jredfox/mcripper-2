@@ -22,6 +22,7 @@ Details:
 - `recomputeHashes` use this command after the verify command to recompute your index.hash and reset your machine learned data
 
 Links / API notes:
+```
 - New Major V1: https://launchermeta.mojang.com/mc/game/version_manifest.json
 - New Major V2: https://launchermeta.mojang.com/mc/game/version_manifest_v2.json
 - Old Major: http://s3.amazonaws.com/Minecraft.Download/versions/versions.json
@@ -30,3 +31,4 @@ Links / API notes:
 - Old Version: http://s3.amazonaws.com/Minecraft.Download/versions/<version>/<version>.jar
 - Old Server: http://s3.amazonaws.com/Minecraft.Download/versions/<version>/minecraft_server.<version>.jar
 - Old Server Exe: http://s3.amazonaws.com/Minecraft.Download/versions/<version>/minecraft_server.<version>.exe
+```
