@@ -25,7 +25,7 @@ import jredfox.selfcmd.util.OSUtil;
 public class McChecker {
 	
 	//global vars
-	public static final Set<File> checkJsons = new FileSet(2 + 534 + 11);
+	public static final FileSet checkJsons = new FileSet(2 + 534 + 11);
 	public static final File tmp =  new File(OSUtil.getAppData(), McRipper.appId + "/tmp");
 	public static File root;
 	public static File mcripped;
@@ -117,16 +117,14 @@ public class McChecker {
 		}
 	}
 
-	/**
-	 * NOTE: http://s3.amazonaws.com/Minecraft.Resources hasn't existed since 2013 and appears to have no new audio files from MinecraftResources
-	 */
 	public static void checkOldMc(boolean skipSnaps)
 	{
 		try
 		{
-			DLUtils.dlAmazonAws("http://s3.amazonaws.com/MinecraftDownload", "MinecraftDownload");
-			DLUtils.dlAmazonAws("http://s3.amazonaws.com/MinecraftResources", "MinecraftResources");
-			checkOldVersions(skipSnaps);
+//			DLUtils.dlAmazonAws("http://s3.amazonaws.com/MinecraftDownload", "MinecraftDownload");
+//			DLUtils.dlAmazonAws("http://s3.amazonaws.com/MinecraftResources", "MinecraftResources");
+			DLUtils.dlAmazonAws("http://s3.amazonaws.com/Minecraft.Resources", "Minecraft.Resources");
+//			checkOldVersions(skipSnaps);
 		}
 		catch(Exception e)
 		{

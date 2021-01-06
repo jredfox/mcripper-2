@@ -98,9 +98,10 @@ public class DLUtils {
 	{
 		url = url.replaceAll(" ", "%20");
 		output = new File(output.getPath().replaceAll("%20", " "));
+		URLConnection con = null;
 		try
 		{
-			URLConnection con = new URL(url).openConnection();
+			con = new URL(url).openConnection();
 			con.setConnectTimeout(1000 * 15);
 			con.setReadTimeout(Integer.MAX_VALUE / 2);
 			InputStream inputStream = con.getInputStream();
@@ -217,7 +218,9 @@ public class DLUtils {
 	public static void dlAmazonAws(String url, String path) throws FileNotFoundException, IOException, SAXException, ParserConfigurationException
 	{
 		File oldMcDir = new File(McChecker.mcripped, path);
-		File xmlFile = dlMove(url, path + "/" + path + ".xml", new File(oldMcDir, path + ".xml"));
+		File xmlFile = safeDlMove(url, path + "/" + path + ".xml", new File(oldMcDir, path + ".xml"));
+		if(xmlFile == null)
+			return;
 		Document doc = RippedUtils.parseXML(xmlFile);
 		NodeList nlist = RippedUtils.getElementSafely(doc, "Contents");
 		for(int i=0; i < nlist.getLength(); i++)
@@ -237,6 +240,26 @@ public class DLUtils {
 		}
 	}
 	
+	public static File safeDlMove(String url, String path, File saveAs) 
+	{
+		try
+		{
+			return DLUtils.dlMove(url, path, saveAs);
+		}
+		catch(IOException io)
+		{
+			if(!(io instanceof FileNotFoundException))
+				System.err.println(io.getMessage());
+			else
+				System.err.println("HTTP 404:" + url);
+		}
+		catch(Exception e)
+		{
+			e.printStackTrace();
+		}
+		return null;
+	}
+
 	/**
 	 * dl an entire webArchive to the archive directory
 	 * @throws IOException 
