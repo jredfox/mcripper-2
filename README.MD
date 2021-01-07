@@ -23,6 +23,7 @@ Details:
 
 Links / API notes:
 ```
+JSON/Web APIS:
 - New Major V1: https://launchermeta.mojang.com/mc/game/version_manifest.json
 - New Major V2: https://launchermeta.mojang.com/mc/game/version_manifest_v2.json
 - Old Major: http://s3.amazonaws.com/Minecraft.Download/versions/versions.json
@@ -34,6 +35,7 @@ Links / API notes:
 - Old < 1.6: http://assets.minecraft.net/<version>.replaceAll("\\.","_")/minecraft.jar
 - Old < 1.6: http://assets.minecraft.net/<version>.replaceAll("\\.","_")/minecraft_server.jar
 - Old < 1.6: http://assets.minecraft.net/<version>.replaceAll("\\.","_")/Minecraft_Server.exe
+
 Amazon Aws indexes:
 - http://assets.minecraft.net uses the same index as regular amazonaws however it's currently down so it's embedded into this project now
 - http://s3.amazonaws.com/MinecraftResources
