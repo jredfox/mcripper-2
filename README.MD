@@ -33,5 +33,8 @@ Links / API notes:
 - Old Server Exe: http://s3.amazonaws.com/Minecraft.Download/versions/<version>/minecraft_server.<version>.exe
 - Old Resources: http://s3.amazonaws.com/MinecraftResources
 - Old 2012 and below Resources: http://s3.amazonaws.com/Minecraft.Resources
-- Old < 1.6 Downloads: http://s3.amazonaws.com/MinecraftDownload
+- Old: http://s3.amazonaws.com/MinecraftDownload
+- Old < 1.6: http://assets.minecraft.net/<version>.replaceAll("\\.","_")/minecraft.jar
+- Old < 1.6: http://assets.minecraft.net/<version>.replaceAll("\\.","_")/minecraft_server.jar
+- Old < 1.6: http://assets.minecraft.net/<version>.replaceAll("\\.","_")/Minecraft_Server.exe
 ```
