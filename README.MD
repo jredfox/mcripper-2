@@ -35,7 +35,7 @@ Links / API notes:
 - Old < 1.6: http://assets.minecraft.net/<version>.replaceAll("\\.","_")/minecraft_server.jar
 - Old < 1.6: http://assets.minecraft.net/<version>.replaceAll("\\.","_")/Minecraft_Server.exe
 Amazon Aws indexes:
-- assets.minecraft.net uses the same index as regular amazonaws however it's currently down so it's embedded into this project now
+- http://assets.minecraft.net uses the same index as regular amazonaws however it's currently down so it's embedded into this project now
 - http://s3.amazonaws.com/MinecraftResources
 - Old 2012 and below Resources: http://s3.amazonaws.com/Minecraft.Resources
 - Old: http://s3.amazonaws.com/MinecraftDownload
