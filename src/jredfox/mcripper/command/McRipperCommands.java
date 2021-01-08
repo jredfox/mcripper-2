@@ -239,7 +239,7 @@ public class McRipperCommands {
 
 		private void deletePrinter(Printer p) throws IOException 
 		{
-			p.close();
+			IOUtils.close(p);
 			p.log.delete();
 		}
 	};

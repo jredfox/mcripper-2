@@ -9,6 +9,9 @@ import jredfox.filededuper.command.Commands;
 import jredfox.filededuper.config.simple.MapConfig;
 import jredfox.filededuper.util.IOUtils;
 import jredfox.mcripper.command.McRipperCommands;
+import jredfox.mcripper.printer.CSVPrinter;
+import jredfox.mcripper.printer.HashPrinter;
+import jredfox.mcripper.printer.SetPrinter;
 import jredfox.mcripper.utils.McChecker;
 import jredfox.selfcmd.SelfCommandPrompt;
 import jredfox.selfcmd.util.OSUtil;
@@ -34,7 +37,7 @@ public class McRipper {
 		loadCfg();
 		args = args.length == 0 ? new String[]{"rip"} : args;
 		Command<?> cmd = Command.fromArgs(args);
-		if(!(cmd instanceof CommandInvalid) && cmd != McRipperCommands.recomputeHashes && cmd != McRipperCommands.verify)
+		if(!(cmd instanceof CommandInvalid) && cmd != McRipperCommands.recomputeHashes)
 			McChecker.parseHashes();
 		cmd.run();
 		McChecker.closePrinters();

@@ -120,7 +120,7 @@ public abstract class Printer implements Closeable{
 	@Override
 	public void close() throws IOException 
 	{
-		this.out.close();
+		IOUtils.close(this.out);
 	}
 
 }

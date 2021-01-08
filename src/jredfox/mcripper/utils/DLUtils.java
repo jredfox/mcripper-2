@@ -82,7 +82,7 @@ public class DLUtils {
 	
 	public static File learnExtractDL(Class<?> clazz, String path, File saveAs)
 	{
-		return DLUtils.learnDl(clazz.getClassLoader().getResource(path).toString(), path, saveAs);
+		return DLUtils.learnDl(clazz.getClassLoader().getResource(path).toString(), saveAs);
 	}
 	
 	/**
@@ -179,8 +179,9 @@ public class DLUtils {
 		return exists && hash.equals(RippedUtils.getSHA1(cached)) ? cached : dlToFile(url, new File(mcDir, path), timestamp, true);
 	}
 
-	public static File learnDl(String url, String path, File saveAs) 
+	public static File learnDl(String url, File saveAs) 
 	{
+		String path = DeDuperUtil.getRealtivePath(McChecker.mcripped, saveAs.getAbsoluteFile());
 		if(McChecker.bad.contains(path))
 			return null;
 		String cachedHash = McChecker.learner.get(path, 1);
@@ -246,10 +247,10 @@ public class DLUtils {
 		File baseDir = new File(McChecker.mcripped, path);
 		String xname = DeDuperUtil.getTrueName(baseDir) + ".xml";
 		File xmlFile = safeDlMove(url, path + "/" + xname, new File(baseDir, xname));
-		dlAmazonAws(url, path, baseDir, xmlFile);
+		dlAmazonAws(url, baseDir, xmlFile);
 	}
 	
-	public static void dlAmazonAws(String baseUrl, String basePath, File baseDir, File xmlFile) throws SAXException, IOException, ParserConfigurationException
+	public static void dlAmazonAws(String baseUrl, File baseDir, File xmlFile) throws SAXException, IOException, ParserConfigurationException
 	{
 		if(xmlFile == null)
 		{
@@ -270,7 +271,7 @@ public class DLUtils {
 				String timestamp = RippedUtils.getText(element, "LastModified");
 				String fileUrl = baseUrl + "/" + key;
 				File saveAs = new File(baseDir, key);
-				learnDl(fileUrl, basePath + "/" + key, saveAs);
+				learnDl(fileUrl, saveAs);
 			}
 		}
 	}

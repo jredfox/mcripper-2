@@ -189,7 +189,7 @@ public class McChecker {
 			
 			String clientPath = type + "/" + version + ".json";
 			File minorFile = new File(jsonMinor, clientPath);
-			File dlMinor = DLUtils.learnDl(urlBase + "versions/" + version + "/" + version + ".json", "old/Minecraft.Download/jsons/minor/" + clientPath, minorFile);
+			File dlMinor = DLUtils.learnDl(urlBase + "versions/" + version + "/" + version + ".json", minorFile);
 			oldMinors.add(dlMinor);
 		}
 		oldMajorCount++;
@@ -304,11 +304,11 @@ public class McChecker {
 					
 					if(!libBaseUrl.endsWith("/"))
 					{
-						DLUtils.learnDl(libBaseUrl, "libraries/" + lpath, new File(mojang, "libraries/" + lpath));
+						DLUtils.learnDl(libBaseUrl, new File(mojang, "libraries/" + lpath));
 					}
 					else if(!entry.containsKey("natives"))
 					{
-						DLUtils.learnDl(lUrl, "libraries/" + lpath, new File(mojang, "libraries/" + lpath));
+						DLUtils.learnDl(lUrl, new File(mojang, "libraries/" + lpath));
 					}
 					else
 					{
@@ -328,14 +328,14 @@ public class McChecker {
 								String path64 = lBasePath + "-" + nvalue + "64.jar";
 								String libURL32 = libBaseUrl + path32;
 								String libURL64 = libBaseUrl + path64;
-								DLUtils.learnDl(libURL32, "libraries/" + path32, new File(mojang, "libraries/" + path32));
-								DLUtils.learnDl(libURL64, "libraries/" + path64, new File(mojang, "libraries/" + path64));
+								DLUtils.learnDl(libURL32, new File(mojang, "libraries/" + path32));
+								DLUtils.learnDl(libURL64, new File(mojang, "libraries/" + path64));
 							}
 							else
 							{	
 								String npath = lBasePath + "-" + nvalue + ".jar";
 								String nUrl = libBaseUrl + npath;
-								DLUtils.learnDl(nUrl, "libraries/" + npath, new File(mojang, "libraries/" + npath));
+								DLUtils.learnDl(nUrl, new File(mojang, "libraries/" + npath));
 							}
 						}
 					}
@@ -368,12 +368,12 @@ public class McChecker {
 		File serverExeFile = new File(oldMcDir, serverExePath);
 		
 		//dl the assetIndexes
-		assets.add(DLUtils.learnDl(urlBase + "indexes/" + checkPath, "old/Minecraft.Download/jsons/assets/" + checkPath, checkFile));
-		assets.add(DLUtils.learnDl(urlBase + "indexes/" + assetsPath, "old/Minecraft.Download/jsons/assets/" + assetsPath, assetsFile));
+		assets.add(DLUtils.learnDl(urlBase + "indexes/" + checkPath, checkFile));
+		assets.add(DLUtils.learnDl(urlBase + "indexes/" + assetsPath, assetsFile));
 		
-		DLUtils.learnDl(urlBase + "versions/" + version + "/" + version + ".jar", "old/Minecraft.Download/" + jarPath, jarFile);
-		DLUtils.learnDl(urlBase + "versions/" + version + "/" + "minecraft_server." + version + ".jar", "old/Minecraft.Download/" + serverPath, serverJarFile);
-		DLUtils.learnDl(urlBase + "versions/" + version + "/" + "minecraft_server." + version + ".exe", "old/Minecraft.Download/" + serverExePath, serverExeFile);
+		DLUtils.learnDl(urlBase + "versions/" + version + "/" + version + ".jar", jarFile);
+		DLUtils.learnDl(urlBase + "versions/" + version + "/" + "minecraft_server." + version + ".jar", serverJarFile);
+		DLUtils.learnDl(urlBase + "versions/" + version + "/" + "minecraft_server." + version + ".exe", serverExeFile);
 		oldMinor++;
 		return assets;
 	}
@@ -427,7 +427,7 @@ public class McChecker {
 		return DLUtils.dlMove("https://launchermeta.mojang.com/mc/game/" + vname, vname, saveAs);
 	}
 	
-	public static void setRoot(File appDir)
+	public static void setRoot(File appDir) throws IOException
 	{
 		root = appDir;
 		mcripped = new File(root, "mcripped");
@@ -437,14 +437,15 @@ public class McChecker {
 		jsonMajor = new File(jsonDir, "major");
 		jsonMinor = new File(jsonDir, "minor");
 		jsonAssets = new File(jsonDir, "assets");
+		
+		hash = new HashPrinter(root, new File(root, "index.hash"), 10000);
+		learner = new CSVPrinter(root, new File(root, "learned.rhash"), 600);
+		bad = new SetPrinter(root, new File(root, "bad.paths"), 300);
 	}
 
 	public static void parseHashes() throws IOException
 	{
 		long ms = System.currentTimeMillis();
-		hash = new HashPrinter(root, new File(root, "index.hash"), 10000);
-		learner = new CSVPrinter(root, new File(root, "learned.rhash"), 600);
-		bad = new SetPrinter(root, new File(root, "bad.paths"), 300);
 		hash.load();
 		learner.load();
 		bad.load();
