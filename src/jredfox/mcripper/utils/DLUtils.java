@@ -96,6 +96,8 @@ public class DLUtils {
 			saveAs = hfile;
 		}
 		directDL(clazz.getClassLoader().getResourceAsStream(path), saveAs, timestamp);
+		printer.append(hash, saveAs);
+		System.out.println("extracted:" + RippedUtils.getSimplePath(saveAs));
 		return saveAs;
 	}
 	
