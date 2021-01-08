@@ -24,8 +24,8 @@ Details:
 Links / API notes:
 ```
 JSON/Web APIS:
-- New Major V1: https://launchermeta.mojang.com/mc/game/version_manifest.json
 - New Major V2: https://launchermeta.mojang.com/mc/game/version_manifest_v2.json
+- New Major V1: https://launchermeta.mojang.com/mc/game/version_manifest.json
 - Old Major: http://s3.amazonaws.com/Minecraft.Download/versions/versions.json
 - Old Assets Index: https://s3.amazonaws.com/Minecraft.Download/indexes/<assetsIndexId>.json
 - Old Minor Json: https://s3.amazonaws.com/Minecraft.Download/versions/<versions>/<version>.json
