@@ -95,7 +95,7 @@ public class DLUtils {
 			}
 			saveAs = hfile;
 		}
-		directDL(clazz.getResourceAsStream(path), saveAs, timestamp);
+		directDL(clazz.getClassLoader().getResourceAsStream(path), saveAs, timestamp);
 		return saveAs;
 	}
 	
