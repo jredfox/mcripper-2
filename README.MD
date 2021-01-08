@@ -23,19 +23,22 @@ Details:
 
 Links / API notes:
 ```
-- New Major V1: https://launchermeta.mojang.com/mc/game/version_manifest.json
+JSON/Web APIS:
 - New Major V2: https://launchermeta.mojang.com/mc/game/version_manifest_v2.json
+- New Major V1: https://launchermeta.mojang.com/mc/game/version_manifest.json
 - Old Major: http://s3.amazonaws.com/Minecraft.Download/versions/versions.json
 - Old Assets Index: https://s3.amazonaws.com/Minecraft.Download/indexes/<assetsIndexId>.json
 - Old Minor Json: https://s3.amazonaws.com/Minecraft.Download/versions/<versions>/<version>.json
 - Old Version: http://s3.amazonaws.com/Minecraft.Download/versions/<version>/<version>.jar
 - Old Server: http://s3.amazonaws.com/Minecraft.Download/versions/<version>/minecraft_server.<version>.jar
 - Old Server Exe: http://s3.amazonaws.com/Minecraft.Download/versions/<version>/minecraft_server.<version>.exe
-- Old Resources: http://s3.amazonaws.com/MinecraftResources
-- Old 2012 and below Resources: http://s3.amazonaws.com/Minecraft.Resources
-- Old: http://s3.amazonaws.com/MinecraftDownload
 - Old < 1.6: http://assets.minecraft.net/<version>.replaceAll("\\.","_")/minecraft.jar
 - Old < 1.6: http://assets.minecraft.net/<version>.replaceAll("\\.","_")/minecraft_server.jar
 - Old < 1.6: http://assets.minecraft.net/<version>.replaceAll("\\.","_")/Minecraft_Server.exe
-- assets.minecraft.net uses the same index as regular amazonaws however it's currently down so it's embedded into this project now
+
+Amazon Aws indexes:
+- http://assets.minecraft.net uses the same index as regular amazonaws however it's currently down so it's embedded into this project now
+- http://s3.amazonaws.com/MinecraftResources
+- Old 2012 and below Resources: http://s3.amazonaws.com/Minecraft.Resources
+- Old: http://s3.amazonaws.com/MinecraftDownload
 ```
