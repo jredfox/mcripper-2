@@ -40,7 +40,7 @@ public class HashPrinter extends Printer {
 		String[] arr = line.split(",");
 		String hash = arr[0].trim();
 		String fname = arr[1].trim();
-		if(!new File(this.root, fname).exists())
+		if(!RippedUtils.getSimpleFile(fname).exists())
 		{
 			System.out.println("deleting hash:" + hash + "," + fname);
 			this.dirty = true;
@@ -57,7 +57,7 @@ public class HashPrinter extends Printer {
 	
 	public void append(String hash, File out)
 	{
-		String path = DeDuperUtil.getRealtivePath(this.root, out.getAbsoluteFile());
+		String path = RippedUtils.getSimplePath(out);
 		this.hashes.put(hash, path);
 		this.println(hash + "," + path);
 	}

@@ -5,6 +5,7 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
 
@@ -23,63 +24,107 @@ import jredfox.selfcmd.util.OSUtil;
 
 public class DLUtils {
 	
-	public static File dl(String url, String path, String hash) throws FileNotFoundException, IOException
+	public static File dl(String url, File saveAs, String hash) throws FileNotFoundException, IOException
 	{
-		return dl(url, path, System.currentTimeMillis(), hash);
+		return dl(url, saveAs, System.currentTimeMillis(), hash);
 	}
 	
 	/**
 	 * download a file to the path specified. With timestamp and hashing support. 
 	 * The hash is in case the file destination already exists. To allow override pass "override" as the hash
 	 */
-	public static File dl(String url, String path, long timestamp, String hash) throws FileNotFoundException, IOException, IllegalArgumentException
+	public static File dl(String url, File saveAs, long timestamp, String hash) throws FileNotFoundException, IOException, IllegalArgumentException
 	{
 		HashPrinter printer = McChecker.hash;
-		url = url.replaceAll(" ", "%20");
+		url = getFixedUrl(url);
 		if(hash == null)
 			throw new IllegalArgumentException("hash cannot be null!");
-		File output = null;
+		
+		long time = System.currentTimeMillis();
+		saveAs = getFixedFile(saveAs);
+		
 		try
-		{
-			long time = System.currentTimeMillis();
-			boolean hasHash = !hash.equals("override");
-			output = OSUtil.toWinFile(new File(path.replaceAll("%20", " "))).getAbsoluteFile();
-			if(hasHash)
+		{	
+			//prevent duplicate downloads
+			if(printer.hashes.containsKey(hash))
+				return RippedUtils.getSimpleFile(printer.hashes.get(hash));
+			else if(saveAs.exists())
 			{
-				if(printer.hashes.containsKey(hash))
-					return new File(printer.root, printer.hashes.get(hash));
-				else if(output.exists())
+				File hfile = new File(saveAs.getParent(), DeDuperUtil.getTrueName(saveAs) + "-" + hash + DeDuperUtil.getExtensionFull(saveAs));
+				boolean hflag = hfile.exists();
+				if(hflag || hash.equals(RippedUtils.getSHA1(saveAs)))
 				{
-					//prevent duplicate downloads
-					File hfile = new File(output.getParent(), DeDuperUtil.getTrueName(output) + "-" + hash + DeDuperUtil.getExtensionFull(output));
-					boolean hflag = hfile.exists();
-					if(hflag || hash.equals(RippedUtils.getSHA1(output)))
-					{
-						output = hflag ? hfile : output;
-						System.err.println("File is out of sync with " + printer.log.getName() + " skipping duplicate download:" + output);
-						printer.append(hash, output);
-						return output;
-					}
-					output = hfile;
+					saveAs = hflag ? hfile : saveAs;
+					System.err.println("File is out of sync with " + printer.log.getName() + " skipping duplicate download:" + saveAs);
+					printer.append(hash, saveAs);
+					return saveAs;
 				}
+				saveAs = hfile;
 			}
 			
-			URLConnection con = new URL(url).openConnection();
-			con.setConnectTimeout(1000 * 15);
-			con.setReadTimeout(Integer.MAX_VALUE / 2);
-			InputStream inputStream = con.getInputStream();
+			directDL(url, saveAs, timestamp);
+			System.out.println("dl:" + RippedUtils.getSimplePath(saveAs) + " in:" + (System.currentTimeMillis() - time) + "ms " + " from:" + url);
+			printer.append(hash, saveAs);
+			return saveAs;
+		}
+		catch(IOException io)
+		{
+			printer.hashes.remove(hash);
+			throw io;
+		}
+	}
+	
+	public static File extractDL(Class<?> clazz, String path, File saveAs, long timestamp, String hash) throws FileNotFoundException, IOException
+	{
+		saveAs = getFixedFile(saveAs);
+		
+		//prevent duplicate downloads
+		HashPrinter printer = McChecker.hash;
+		if(printer.hashes.containsKey(hash))
+			return RippedUtils.getSimpleFile(printer.hashes.get(hash));
+		else if(saveAs.exists())
+		{
+			File hfile = new File(saveAs.getParent(), DeDuperUtil.getTrueName(saveAs) + "-" + hash + DeDuperUtil.getExtensionFull(saveAs));
+			boolean hflag = hfile.exists();
+			if(hflag || hash.equals(RippedUtils.getSHA1(saveAs)))
+			{
+				saveAs = hflag ? hfile : saveAs;
+				System.err.println("File is out of sync with " + printer.log.getName() + " skipping duplicate download:" + saveAs);
+				printer.append(hash, saveAs);
+				return saveAs;
+			}
+			saveAs = hfile;
+		}
+		directDL(clazz.getResourceAsStream(path), saveAs, timestamp);
+		return saveAs;
+	}
+	
+	/**
+	 * direct dl with safegards in place to delete corrupted download files
+	 */
+	public static void directDL(String url, File output, long timestamp) throws MalformedURLException, IOException
+	{
+		URLConnection con = new URL(url).openConnection();
+		con.setConnectTimeout(1000 * 15);
+		InputStream inputStream = con.getInputStream();
+		directDL(inputStream, output, timestamp);
+	}
+
+	/**
+	 * direct dl with safegards in place to delete corrupted download files
+	 */
+	public static void directDL(InputStream inputStream, File output, long timestamp) throws FileNotFoundException, IOException 
+	{
+		try
+		{
 			output.getParentFile().mkdirs();
 			IOUtils.copy(inputStream, new FileOutputStream(output));
 			output.setLastModified(timestamp);
-			printer.append(hash, output);
-			System.out.println("dl:" + output + " in:" + (System.currentTimeMillis() - time) + "ms");
-			return output;
 		}
 		catch(IOException io)
 		{
 			if(output.exists())
 				output.delete();
-			printer.hashes.remove(hash);
 			throw io;
 		}
 	}
@@ -96,35 +141,30 @@ public class DLUtils {
 	
 	public static File dlToFile(String url, File output, long timestamp, boolean print) throws FileNotFoundException, IOException
 	{
+		long time = System.currentTimeMillis();
 		url = url.replaceAll(" ", "%20");
 		output = new File(output.getPath().replaceAll("%20", " "));
-		URLConnection con = null;
-		try
-		{
-			con = new URL(url).openConnection();
-			con.setConnectTimeout(1000 * 15);
-			con.setReadTimeout(Integer.MAX_VALUE / 2);
-			InputStream inputStream = con.getInputStream();
-			output.getParentFile().mkdirs();
-			IOUtils.copy(inputStream, new FileOutputStream(output));
-			output.setLastModified(timestamp);
-			if(print)
-				System.out.println("dl:" + output + " from:" + url);
-		}
-		catch(IOException io)
-		{
-			if(output.exists())
-				output.delete();
-			throw io;
-		}
+		directDL(url, output, timestamp);
+		if(print)
+			System.out.println("dl:" + RippedUtils.getSimplePath(output) + " in:" + (System.currentTimeMillis() - time) + "ms " + " from:" + url);
 		return output;
+	}
+	
+	public static String getFixedUrl(String url) 
+	{
+		return url.replaceAll(" ", "%20");
+	}
+	
+	public static File getFixedFile(File saveAs) 
+	{
+		return OSUtil.toWinFile(new File(saveAs.getPath().replaceAll("%20", " "))).getAbsoluteFile();
 	}
 	
 	public static File dlMove(String url, String path, File saveAs) throws FileNotFoundException, IOException
 	{
 		File tmpFile = dlToFile(url, new File(McChecker.tmp, path));
 		String hash = RippedUtils.getSHA1(tmpFile);
-		File moved = dl(RippedUtils.toURL(tmpFile).toString(), saveAs.getPath(), hash);
+		File moved = dl(RippedUtils.toURL(tmpFile).toString(), saveAs, hash);
 		tmpFile.delete();
 		return moved;
 	}
@@ -168,7 +208,7 @@ public class DLUtils {
 			//if file doesn't exist recall hash and direct dl it here
 			try
 			{
-				return dl(url, saveAs.getPath(), cachedHash);
+				return dl(url, saveAs, cachedHash);
 			}
 			catch(Exception e)
 			{
@@ -181,7 +221,7 @@ public class DLUtils {
 		{
 			File tmpFile = dlToFile(url, new File(McChecker.tmp, path));
 			String hash = RippedUtils.getSHA1(tmpFile);
-			File moved = dl(RippedUtils.toURL(tmpFile).toString(), saveAs.getPath(), hash);
+			File moved = dl(RippedUtils.toURL(tmpFile).toString(), saveAs, hash);
 			tmpFile.delete();
 			McChecker.learner.append(path, hash, moved.lastModified());
 			System.out.println("dl tmp:" + path + " from:" + url);
@@ -220,7 +260,10 @@ public class DLUtils {
 		File oldMcDir = new File(McChecker.mcripped, path);
 		File xmlFile = safeDlMove(url, path + "/" + path + ".xml", new File(oldMcDir, path + ".xml"));
 		if(xmlFile == null)
+		{
+			System.err.println("Unable to dl index from:" + url + " to path:" + path);
 			return;
+		}
 		Document doc = RippedUtils.parseXML(xmlFile);
 		NodeList nlist = RippedUtils.getElementSafely(doc, "Contents");
 		for(int i=0; i < nlist.getLength(); i++)
@@ -302,7 +345,7 @@ public class DLUtils {
 				String sha1 = nodeHash.getTextContent();
 				try
 				{
-					dl(baseUrl + "/" + nodeName, new File(webDir, nodeName).getPath(), ms, sha1);
+					dl(baseUrl + "/" + nodeName, new File(webDir, nodeName), ms, sha1);
 				}
 				catch(Exception e)
 				{

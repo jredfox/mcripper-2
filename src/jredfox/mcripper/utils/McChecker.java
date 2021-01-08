@@ -121,10 +121,10 @@ public class McChecker {
 	{
 		try
 		{
-//			DLUtils.dlAmazonAws("http://s3.amazonaws.com/MinecraftDownload", "MinecraftDownload");
-//			DLUtils.dlAmazonAws("http://s3.amazonaws.com/MinecraftResources", "MinecraftResources");
+			DLUtils.dlAmazonAws("http://s3.amazonaws.com/MinecraftDownload", "MinecraftDownload");
+			DLUtils.dlAmazonAws("http://s3.amazonaws.com/MinecraftResources", "MinecraftResources");
 			DLUtils.dlAmazonAws("http://s3.amazonaws.com/Minecraft.Resources", "Minecraft.Resources");
-//			checkOldVersions(skipSnaps);
+			checkOldVersions(skipSnaps);
 		}
 		catch(Exception e)
 		{
@@ -165,7 +165,7 @@ public class McChecker {
 			if(skipSnaps && type.startsWith("snapshot"))
 				continue;
 			String time = jsonVersion.getString("time");
-			File minor = DLUtils.dl(url, jsonMinor + "/" + type + "/" + version + ".json", minorHash);
+			File minor = DLUtils.dl(url, new File(jsonMinor, type + "/" + version + ".json"), minorHash);
 			minors.add(minor.getAbsoluteFile());
 		}
 		majorCount++;
@@ -220,7 +220,7 @@ public class McChecker {
 			String id = aIndex.getString("id");
 			String sha1 = aIndex.getString("sha1").toLowerCase();
 			String url = aIndex.getString("url");
-			assets.add(DLUtils.dl(url, new File(jsonAssets, id + ".json").getPath(), sha1));
+			assets.add(DLUtils.dl(url, new File(jsonAssets, id + ".json"), sha1));
 		}
 		
 		//download the logging
@@ -234,7 +234,7 @@ public class McChecker {
 				String logId = logFile.getString("id");
 				String logSha1 = logFile.getString("sha1");
 				String logUrl = logFile.getString("url");
-				DLUtils.dl(logUrl, new File(mojang, "assets/log_configs/" + logId).getPath(), logSha1);
+				DLUtils.dl(logUrl, new File(mojang, "assets/log_configs/" + logId), logSha1);
 			}
 		}
 		
@@ -249,7 +249,7 @@ public class McChecker {
 				String dataUrl = data.getString("url");
 				String[] dataUrlSplit = dataUrl.replace("\\", "/").split("/");
 				String name = dataUrlSplit[dataUrlSplit.length - 1];
-				DLUtils.dl(dataUrl, new File(mojang, "versions/" + type + "/" + versionName + "/" + versionName + "-" + name).getPath(), dataSha1);
+				DLUtils.dl(dataUrl, new File(mojang, "versions/" + type + "/" + versionName + "/" + versionName + "-" + name), dataSha1);
 			}
 		}
 		
@@ -270,7 +270,7 @@ public class McChecker {
 						String libPath = artifact.getString("path");
 						String libSha1 = artifact.getString("sha1");
 						String libUrl = artifact.getString("url");
-						DLUtils.dl(libUrl, new File(mojang, "libraries/" + libPath).getPath(), libSha1);
+						DLUtils.dl(libUrl, new File(mojang, "libraries/" + libPath), libSha1);
 					}
 					//download the classifiers
 					if(downloads.containsKey("classifiers"))
@@ -282,7 +282,7 @@ public class McChecker {
 							String clPath = cl.getString("path");
 							String clSha1 = cl.getString("sha1");
 							String clUrl = cl.getString("url");
-							DLUtils.dl(clUrl, new File(mojang, "libraries/" + clPath).getPath(), clSha1);
+							DLUtils.dl(clUrl, new File(mojang, "libraries/" + clPath), clSha1);
 						}
 					}
 				}
@@ -395,25 +395,14 @@ public class McChecker {
 			String assetSha1 = assetJson.getString("hash");
 			String assetSha1Char = assetSha1.substring(0, 2);
 			String assetUrl = "https://resources.download.minecraft.net/" + assetSha1Char + "/" + assetSha1;
-			DLUtils.dl(assetUrl, new File(mojang, "assets/objects/" + assetSha1Char + "/" + assetSha1).getPath(), assetSha1);
+			DLUtils.dl(assetUrl, new File(mojang, "assets/objects/" + assetSha1Char + "/" + assetSha1), assetSha1);
 		}
 		assetsCount++;
 	}
 	
 	public static File extractAf() throws FileNotFoundException, IOException 
 	{
-		String path = "release/1.12.2-af-minor.json";
-		File saveAs = new File(jsonMinor, path);
-		if(saveAs.exists())
-			return saveAs;
-		InputStream in = McRipper.class.getResourceAsStream("/1.12.2-af-minor.json");
-		File jsonaf = new File(tmp, path).getAbsoluteFile();
-		jsonaf.getParentFile().mkdirs();
-		IOUtils.copy(in, new FileOutputStream(jsonaf));
-		String sha1 = RippedUtils.getSHA1(jsonaf);
-		File actualaf = DLUtils.dl(RippedUtils.toURL(jsonaf).toString(), saveAs.getAbsolutePath(), sha1);
-		jsonaf.delete();
-		return actualaf;
+		return DLUtils.extractDL(McChecker.class, "resources/mcripper2/jsons/minor/1.12.2-af-minor.json", new File(jsonMinor, "1.12.2-af-minor.json"), System.currentTimeMillis(), "0ad0d1db8e4bdd55addfdec57e048339ffe14aab");
 	}
 	
 	/**

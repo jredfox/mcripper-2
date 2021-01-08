@@ -199,4 +199,14 @@ public class RippedUtils {
 		return l.item(0).getTextContent();
 	}
 
+	public static String getSimplePath(File output)
+	{
+		return DeDuperUtil.getRealtivePath(McChecker.root, output.getAbsoluteFile());
+	}
+
+	public static File getSimpleFile(String path) 
+	{
+		return new File(McChecker.root, path);
+	}
+
 }
