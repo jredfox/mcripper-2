@@ -119,10 +119,11 @@ public class McChecker {
 	{
 		try
 		{
-			DLUtils.dlAmazonAws("http://s3.amazonaws.com/MinecraftDownload", "MinecraftDownload");
-			DLUtils.dlAmazonAws("http://s3.amazonaws.com/MinecraftResources", "MinecraftResources");
-			DLUtils.dlAmazonAws("http://s3.amazonaws.com/Minecraft.Resources", "Minecraft.Resources");
-			checkOldVersions(skipSnaps);
+//			DLUtils.dlAmazonAws("http://s3.amazonaws.com/MinecraftResources", "old/MinecraftResources");
+//			DLUtils.dlAmazonAws("http://s3.amazonaws.com/Minecraft.Resources", "old/Minecraft.Resources");
+//			DLUtils.dlAmazonAws("http://assets.minecraft.net", "old/Assets_Minecraft_Net");
+			DLUtils.dlAmazonAws("http://s3.amazonaws.com/MinecraftDownload", "old/MinecraftDownload");
+//			checkOldVersions(skipSnaps);
 		}
 		catch(Exception e)
 		{
@@ -132,7 +133,7 @@ public class McChecker {
 	
 	public static void checkOldVersions(boolean skipSnaps) throws FileNotFoundException, IOException 
 	{
-		File oldJson = DLUtils.dlMove("http://s3.amazonaws.com/Minecraft.Download/versions/versions.json", "Minecraft.Download/versions.json", new File(jsonOldMajor, "versions.json"));
+		File oldJson = DLUtils.dlMove("http://s3.amazonaws.com/Minecraft.Download/versions/versions.json", "old/Minecraft.Download/versions.json", new File(jsonOldMajor, "versions.json"));
 		Set<File> oldMinors = checkOldMajor(oldJson, skipSnaps);
 		Set<File> oldAssets = new FileSet(jsonAssets.exists() ? jsonAssets.listFiles().length + 10 : 20);
 		for(File oldMinor : oldMinors)
@@ -188,7 +189,7 @@ public class McChecker {
 			
 			String clientPath = type + "/" + version + ".json";
 			File minorFile = new File(jsonMinor, clientPath);
-			File dlMinor = DLUtils.learnDl(urlBase + "versions/" + version + "/" + version + ".json", "Minecraft.Download/jsons/minor/" + clientPath, minorFile);
+			File dlMinor = DLUtils.learnDl(urlBase + "versions/" + version + "/" + version + ".json", "old/Minecraft.Download/jsons/minor/" + clientPath, minorFile);
 			oldMinors.add(dlMinor);
 		}
 		oldMajorCount++;
@@ -349,7 +350,7 @@ public class McChecker {
 	{
 		Set<File> assets = new FileSet(2);
 		String urlBase = "http://s3.amazonaws.com/Minecraft.Download/";
-		File oldMcDir = new File(mcripped, "Minecraft.Download");
+		File oldMcDir = new File(mcripped, "old/Minecraft.Download");
 		String assetsId = json.getString("assets");
 		String version = json.getString("id");
 		String type = json.getString("type");
@@ -367,12 +368,12 @@ public class McChecker {
 		File serverExeFile = new File(oldMcDir, serverExePath);
 		
 		//dl the assetIndexes
-		assets.add(DLUtils.learnDl(urlBase + "indexes/" + checkPath, "Minecraft.Download/jsons/assets/" + checkPath, checkFile));
-		assets.add(DLUtils.learnDl(urlBase + "indexes/" + assetsPath, "Minecraft.Download/jsons/assets/" + assetsPath, assetsFile));
+		assets.add(DLUtils.learnDl(urlBase + "indexes/" + checkPath, "old/Minecraft.Download/jsons/assets/" + checkPath, checkFile));
+		assets.add(DLUtils.learnDl(urlBase + "indexes/" + assetsPath, "old/Minecraft.Download/jsons/assets/" + assetsPath, assetsFile));
 		
-		DLUtils.learnDl(urlBase + "versions/" + version + "/" + version + ".jar", "Minecraft.Download/" + jarPath, jarFile);
-		DLUtils.learnDl(urlBase + "versions/" + version + "/" + "minecraft_server." + version + ".jar", "Minecraft.Download/" + serverPath, serverJarFile);
-		DLUtils.learnDl(urlBase + "versions/" + version + "/" + "minecraft_server." + version + ".exe", "Minecraft.Download/" + serverExePath, serverExeFile);
+		DLUtils.learnDl(urlBase + "versions/" + version + "/" + version + ".jar", "old/Minecraft.Download/" + jarPath, jarFile);
+		DLUtils.learnDl(urlBase + "versions/" + version + "/" + "minecraft_server." + version + ".jar", "old/Minecraft.Download/" + serverPath, serverJarFile);
+		DLUtils.learnDl(urlBase + "versions/" + version + "/" + "minecraft_server." + version + ".exe", "old/Minecraft.Download/" + serverExePath, serverExeFile);
 		oldMinor++;
 		return assets;
 	}
@@ -431,7 +432,7 @@ public class McChecker {
 		root = appDir;
 		mcripped = new File(root, "mcripped");
 		mojang = new File(mcripped, "mojang");
-		jsonDir = new File(mojang, "jsons");
+		jsonDir = new File(mcripped, "jsons");
 		jsonOldMajor = new File(jsonDir, "oldmajors");
 		jsonMajor = new File(jsonDir, "major");
 		jsonMinor = new File(jsonDir, "minor");

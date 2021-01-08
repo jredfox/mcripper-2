@@ -243,11 +243,17 @@ public class DLUtils {
 	 */
 	public static void dlAmazonAws(String url, String path) throws FileNotFoundException, IOException, SAXException, ParserConfigurationException
 	{
-		File oldMcDir = new File(McChecker.mcripped, path);
-		File xmlFile = safeDlMove(url, path + "/" + path + ".xml", new File(oldMcDir, path + ".xml"));
+		File baseDir = new File(McChecker.mcripped, path);
+		String xname = DeDuperUtil.getTrueName(baseDir) + ".xml";
+		File xmlFile = safeDlMove(url, path + "/" + xname, new File(baseDir, xname));
+		dlAmazonAws(url, path, baseDir, xmlFile);
+	}
+	
+	public static void dlAmazonAws(String baseUrl, String basePath, File baseDir, File xmlFile) throws SAXException, IOException, ParserConfigurationException
+	{
 		if(xmlFile == null)
 		{
-			System.err.println("Unable to dl index from:" + url + " to path:" + path);
+			System.err.println("Unable to dl index from:" + baseUrl + " to path:" + baseDir);
 			return;
 		}
 		Document doc = RippedUtils.parseXML(xmlFile);
@@ -262,9 +268,9 @@ public class DLUtils {
 				if(key.endsWith("/"))
 					continue;//skip the directories
 				String timestamp = RippedUtils.getText(element, "LastModified");
-				String fileUrl = url + "/" + key;
-				File saveAs = new File(oldMcDir, key);
-				learnDl(fileUrl, path + "/" + key, saveAs);
+				String fileUrl = baseUrl + "/" + key;
+				File saveAs = new File(baseDir, key);
+				learnDl(fileUrl, basePath + "/" + key, saveAs);
 			}
 		}
 	}
@@ -304,7 +310,7 @@ public class DLUtils {
 		//dl the index file
 		String xmlUrl = baseUrl + "/" + name + "_files.xml";
 		name = name + "_files.xml";
-		File xmlFile = dlMove(xmlUrl, name, new File(webDir, name));
+		File xmlFile = dlMove(xmlUrl, dirPath + "/" + name, new File(webDir, name));
 		
 		//start the dl process
 		Document doc = RippedUtils.parseXML(xmlFile);
