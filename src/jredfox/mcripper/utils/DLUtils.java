@@ -76,29 +76,13 @@ public class DLUtils {
 	
 	public static File extractDL(Class<?> clazz, String path, File saveAs, long timestamp, String hash) throws FileNotFoundException, IOException
 	{
-		saveAs = getFixedFile(saveAs);
-		
-		//prevent duplicate downloads
-		HashPrinter printer = McChecker.hash;
-		if(printer.hashes.containsKey(hash))
-			return RippedUtils.getSimpleFile(printer.hashes.get(hash));
-		else if(saveAs.exists())
-		{
-			File hfile = new File(saveAs.getParent(), DeDuperUtil.getTrueName(saveAs) + "-" + hash + DeDuperUtil.getExtensionFull(saveAs));
-			boolean hflag = hfile.exists();
-			if(hflag || hash.equals(RippedUtils.getSHA1(saveAs)))
-			{
-				saveAs = hflag ? hfile : saveAs;
-				System.err.println("File is out of sync with " + printer.log.getName() + " skipping duplicate download:" + saveAs);
-				printer.append(hash, saveAs);
-				return saveAs;
-			}
-			saveAs = hfile;
-		}
-		directDL(clazz.getClassLoader().getResourceAsStream(path), saveAs, timestamp);
-		printer.append(hash, saveAs);
-		System.out.println("extracted:" + RippedUtils.getSimplePath(saveAs));
-		return saveAs;
+		String url = clazz.getClassLoader().getResource(path).toString();
+		return dl(url, saveAs, timestamp, hash);
+	}
+	
+	public static File learnExtractDL(Class<?> clazz, String path, File saveAs)
+	{
+		return DLUtils.learnDl(clazz.getClassLoader().getResource(path).toString(), path, saveAs);
 	}
 	
 	/**

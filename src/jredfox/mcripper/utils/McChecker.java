@@ -402,7 +402,7 @@ public class McChecker {
 	
 	public static File extractAf() throws FileNotFoundException, IOException 
 	{
-		return DLUtils.extractDL(McChecker.class, "resources/mcripper/jsons/minor/1.12.2-af-minor.json", new File(jsonMinor, "release/1.12.2-af-minor.json"), System.currentTimeMillis(), "0ad0d1db8e4bdd55addfdec57e048339ffe14aab");
+		return DLUtils.learnExtractDL(McChecker.class, "resources/mcripper/jsons/minor/1.12.2-af-minor.json", new File(jsonMinor, "release/1.12.2-af-minor.json"));
 	}
 	
 	/**
