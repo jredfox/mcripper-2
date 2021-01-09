@@ -28,7 +28,6 @@ public class McRipperCommands {
 	
 	private static final String skipSnaps = "skipSnaps";
 	private static final String mcDir = "mcDir=value";
-	private static final String skipOldMajors = "skipOldMajors";
 	
 	public static RipperCommand checkAll = new RipperCommand(new String[]{"--" + mcDir, "--" + skipSnaps}, "checkAll")
 	{
@@ -92,6 +91,7 @@ public class McRipperCommands {
 		public void run(ParamList<Object> params)
 		{
 			McChecker.checkOmni();
+			this.finish(params);
 		}
 	};
 	
