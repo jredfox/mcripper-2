@@ -18,7 +18,6 @@ import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
 import jredfox.filededuper.util.DeDuperUtil;
-import jredfox.filededuper.util.IOUtils;
 import jredfox.mcripper.printer.HashPrinter;
 import jredfox.selfcmd.util.OSUtil;
 
@@ -104,7 +103,7 @@ public class DLUtils {
 		try
 		{
 			output.getParentFile().mkdirs();
-			IOUtils.copy(inputStream, new FileOutputStream(output));
+			RippedUtils.copy(inputStream, new FileOutputStream(output));
 			output.setLastModified(timestamp);
 		}
 		catch(IOException io)
@@ -248,7 +247,10 @@ public class DLUtils {
 		Document doc = RippedUtils.parseXML(xmlFile);
 		NodeList nlist = RippedUtils.getElementSafely(doc, "Contents");
 		if(nlist == null)
+		{
 			System.err.println("XML file appears to be missing Contents:" + xmlFile.getAbsolutePath() + " from:" + baseUrl);
+			return;
+		}
 		for(int i=0; i < nlist.getLength(); i++)
 		{
 			Node node = nlist.item(i);
@@ -262,7 +264,7 @@ public class DLUtils {
 				long timestamp = RippedUtils.parseZTime(strTime);
 				String fileUrl = baseUrl + "/" + key;
 				File saveAs = new File(baseDir, key);
-				learnDl(fileUrl, saveAs, timestamp);
+				learnDl(fileUrl, saveAs);
 			}
 		}
 	}

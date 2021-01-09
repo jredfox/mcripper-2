@@ -5,6 +5,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.net.URL;
@@ -252,6 +253,38 @@ public class RippedUtils {
 			}
 		}
 		return paths;
+	}
+	
+	public static void copy(InputStream in, OutputStream out) throws IOException
+	{
+		copy(in, out, true);
+	}
+	
+	/**
+	 * needed to copy input to output with closing stream safely
+	 */
+	public static void copy(InputStream in, OutputStream out, boolean close) throws IOException
+	{
+		try
+		{
+			int length;
+   	 		while ((length = in.read(IOUtils.buffer)) > 0)
+   	 		{
+   	 			out.write(IOUtils.buffer, 0, length);
+   	 		}
+		}
+		catch(Exception e)
+		{
+			throw e;
+		}
+		finally
+		{
+   	 		if(close)
+   	 		{
+   	 			IOUtils.close(in);
+   	 			IOUtils.close(out);
+   	 		}
+		}
 	}
 
 	/**
