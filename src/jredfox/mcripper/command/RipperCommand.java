@@ -36,8 +36,10 @@ public abstract class RipperCommand extends Command<Object>{
 		McChecker.mcDir = params.hasFlag("mcDir") ? new File(params.getValue("mcDir")).getAbsoluteFile() : McChecker.mcDir;
 	}
 	
-	public void finish()
+	public void finish(ParamList<?> params)
 	{
+		if(params.hasFlag("internal"))
+			return;
 		this.setMcDefault();
 		McChecker.checkJsons.clear();
 		System.out.println("Done in:" + (System.currentTimeMillis() - ms) / 1000D + " seconds" + (McChecker.oldMajorCount > 0 ? " oldMajor:" + McChecker.oldMajorCount : "") + " major:" + McChecker.majorCount + (McChecker.oldMinor > 0 ? " oldMinor:" + McChecker.oldMinor : "") + " minor:" + McChecker.minorCount + " assets:" + McChecker.assetsCount);

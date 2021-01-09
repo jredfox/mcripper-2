@@ -13,6 +13,7 @@ import java.util.zip.ZipFile;
 import com.jml.evilnotch.lib.json.JSONObject;
 
 import jredfox.filededuper.command.Command;
+import jredfox.filededuper.command.CommandOption;
 import jredfox.filededuper.command.ParamList;
 import jredfox.filededuper.command.exception.CommandParseException;
 import jredfox.filededuper.util.DeDuperUtil;
@@ -35,6 +36,7 @@ public class McRipperCommands {
 		public void run(ParamList<Object> params) 
 		{
 			long start = System.currentTimeMillis();
+			params.options.add(new CommandOption("--internal"));
 			System.out.println("CHECKING MOJANG:");
 			McRipperCommands.checkMojang.run(params);
 			System.out.println("CHECKING THE DISK FOR CUSTOM JSONS:");
@@ -43,7 +45,7 @@ public class McRipperCommands {
 			McRipperCommands.checkOmni.run(params);
 			System.out.println("CHECKING OLD(LEGACY) MINECRAFT DOMAINS:");
 			McRipperCommands.checkOld.run(params);
-			System.out.println("finished in:" + (System.currentTimeMillis() - start) / 1000D);
+			System.out.println("Finished in:" + (System.currentTimeMillis() - start) / 1000D);
 		}
 	};
 	
@@ -61,7 +63,7 @@ public class McRipperCommands {
 			{
 				e.printStackTrace();
 			}
-			this.finish();
+			this.finish(params);
 		}
 	};
 	
@@ -79,7 +81,7 @@ public class McRipperCommands {
 			{
 				e.printStackTrace();
 			} 
-			this.finish();
+			this.finish(params);
 		}
 	};
 	
@@ -99,7 +101,7 @@ public class McRipperCommands {
 		{
 			this.start(params);
 			McChecker.checkOldMc(params.hasFlag("skipSnaps"));
-			this.finish();
+			this.finish(params);
 		}
 	};
 	
