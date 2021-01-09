@@ -8,6 +8,8 @@ import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.time.Instant;
+import java.time.OffsetDateTime;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -250,6 +252,22 @@ public class RippedUtils {
 			}
 		}
 		return paths;
+	}
+
+	/**
+	 * parse them zula times. example: 2010-09-18T21:35:15.000Z
+	 */
+	public static long parseZTime(String strTime) 
+	{
+		return Instant.parse(strTime).toEpochMilli();
+	}
+	
+	/**
+	 * parse the offset times. example: 2015-11-10T16:43:29-0500 and 2014-05-14T17:29:23+00:00
+	 */
+	public static long parseOffsetTime(String strTime)
+	{
+		return OffsetDateTime.parse(strTime).toInstant().toEpochMilli();
 	}
 
 }

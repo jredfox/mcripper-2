@@ -258,10 +258,11 @@ public class DLUtils {
 				String key = RippedUtils.getText(element, "Key");
 				if(key.endsWith("/"))
 					continue;//skip the directories
-				String timestamp = RippedUtils.getText(element, "LastModified");
+				String strTime = RippedUtils.getText(element, "LastModified");
+				long timestamp = RippedUtils.parseZTime(strTime);
 				String fileUrl = baseUrl + "/" + key;
 				File saveAs = new File(baseDir, key);
-				learnDl(fileUrl, saveAs);
+				learnDl(fileUrl, saveAs, timestamp);
 			}
 		}
 	}
