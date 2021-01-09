@@ -73,15 +73,11 @@ public class DLUtils {
 		}
 	}
 	
-	public static File extractDL(Class<?> clazz, String path, File saveAs, long timestamp, String hash) throws FileNotFoundException, IOException
-	{
-		String url = clazz.getClassLoader().getResource(path).toString();
-		return dl(url, saveAs, timestamp, hash);
-	}
-	
 	public static File learnExtractDL(Class<?> clazz, String path, File saveAs)
 	{
-		return DLUtils.learnDl(clazz.getClassLoader().getResource(path).toString(), saveAs);
+		URL url = clazz.getClassLoader().getResource(path);
+		long timestamp = RippedUtils.getTime(url);
+		return DLUtils.learnDl(url.toString(), saveAs, timestamp);
 	}
 	
 	/**
@@ -158,7 +154,7 @@ public class DLUtils {
 		return f;
 	}
 
-	public static File learnDl(String url, File saveAs) 
+	public static File learnDl(String url, File saveAs, long timestamp) 
 	{
 		String spath = DeDuperUtil.getRealtivePath(McChecker.mcripped, saveAs.getAbsoluteFile());
 		String urlPath = getFixedUrl(url);
@@ -264,7 +260,7 @@ public class DLUtils {
 				long timestamp = RippedUtils.parseZTime(strTime);
 				String fileUrl = baseUrl + "/" + key;
 				File saveAs = new File(baseDir, key);
-				learnDl(fileUrl, saveAs);
+				learnDl(fileUrl, saveAs, timestamp);
 			}
 		}
 	}

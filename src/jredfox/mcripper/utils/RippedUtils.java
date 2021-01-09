@@ -6,9 +6,11 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.net.JarURLConnection;
 import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.net.URLConnection;
 import java.time.Instant;
 import java.time.OffsetDateTime;
 import java.util.HashSet;
@@ -301,6 +303,26 @@ public class RippedUtils {
 	public static long parseOffsetTime(String strTime)
 	{
 		return OffsetDateTime.parse(strTime).toInstant().toEpochMilli();
+	}
+
+	/**
+	 * note this will open and close a stream just for the timestamp
+	 */
+	public static long getTime(URL url)
+	{
+		try
+		{
+			URLConnection con = url.openConnection();
+			long time = con.getLastModified();
+			time = time != 0 ? time : System.currentTimeMillis();
+			IOUtils.close(con.getInputStream());
+			return time;
+		}
+		catch(Exception e)
+		{
+			e.printStackTrace();
+		}
+		return -1;
 	}
 
 }

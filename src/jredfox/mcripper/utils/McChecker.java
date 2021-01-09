@@ -203,11 +203,10 @@ public class McChecker {
 			String type = versionEntry.getString("type");
 			if(skipSnaps && type.startsWith("snapshot"))
 				continue;
-			String time = versionEntry.getString("time");
-			
+			long time = RippedUtils.parseOffsetTime(versionEntry.getString("time"));
 			String clientPath = type + "/" + version + ".json";
 			File minorFile = new File(jsonOldMinor, clientPath);
-			File dlMinor = DLUtils.learnDl(urlBase + "versions/" + version + "/" + version + ".json", minorFile);
+			File dlMinor = DLUtils.learnDl(urlBase + "versions/" + version + "/" + version + ".json", minorFile, time);
 			oldMinors.add(dlMinor);
 		}
 		oldMajorCount++;
@@ -371,6 +370,7 @@ public class McChecker {
 		File oldMcDir = new File(mcripped, "old/Minecraft.Download");
 		String assetsId = json.getString("assets");
 		String version = json.getString("id");
+		long clientTime = RippedUtils.parseOffsetTime(json.getString("time"));
 		String type = json.getString("type");
 		
 		String checkPath = version + ".json";
@@ -389,7 +389,7 @@ public class McChecker {
 		assets.add(DLUtils.learnDl(urlBase + "indexes/" + checkPath, checkFile));
 		assets.add(DLUtils.learnDl(urlBase + "indexes/" + assetsPath, assetsFile));
 		
-		DLUtils.learnDl(urlBase + "versions/" + version + "/" + version + ".jar", jarFile);
+		DLUtils.learnDl(urlBase + "versions/" + version + "/" + version + ".jar", jarFile, clientTime);
 		DLUtils.learnDl(urlBase + "versions/" + version + "/" + "minecraft_server." + version + ".jar", serverJarFile);
 		DLUtils.learnDl(urlBase + "versions/" + version + "/" + "minecraft_server." + version + ".exe", serverExeFile);
 		oldMinor++;
