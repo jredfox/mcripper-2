@@ -3,6 +3,7 @@ Rip Minecraft assets from mojang for archiving purposes. You will still need to 
 Commands
 - rip dir/version.json/assetsIndex.json outputDir --mcDir=value -s -a
 - rip assetsIndex.json & minecraft.jar & outputDir -s -a
+- checkAll (WARNING: this will take forever to complete as it does all the check commands)
 - checkMojang --skipSnaps --mcDir=value
 - checkDisk --skipSnaps --skipOldMajors --mcDir=value
 - checkOmni
