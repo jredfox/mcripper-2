@@ -247,6 +247,8 @@ public class DLUtils {
 		}
 		Document doc = RippedUtils.parseXML(xmlFile);
 		NodeList nlist = RippedUtils.getElementSafely(doc, "Contents");
+		if(nlist == null)
+			System.err.println("XML file appears to be missing Contents:" + xmlFile.getAbsolutePath() + " from:" + baseUrl);
 		for(int i=0; i < nlist.getLength(); i++)
 		{
 			Node node = nlist.item(i);
