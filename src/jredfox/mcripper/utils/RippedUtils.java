@@ -6,10 +6,19 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
+import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.Enumeration;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipFile;
+import java.util.zip.ZipInputStream;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -27,6 +36,7 @@ import com.jml.evilnotch.lib.json.serialize.JSONSerializer;
 
 import jredfox.filededuper.util.DeDuperUtil;
 import jredfox.filededuper.util.IOUtils;
+import jredfox.filededuper.util.JarUtil;
 import jredfox.selfcmd.util.OSUtil;
 
 /**
@@ -216,10 +226,34 @@ public class RippedUtils {
 	{
 		return new File(McChecker.root, path);
 	}
-
-	public static File getFileFromJar(Class<?> clazz, String path) throws URISyntaxException 
+	
+	public static Set<String> getPathsFromDir(Class<?> clazz, String path) throws URISyntaxException, IOException 
 	{
-		return new File(clazz.getClassLoader().getResource(path).toURI());
+		return getPathsFromDir(clazz, path, "*");
+	}
+
+	/**
+	 * getResource Paths from a jar/IDE from a directory
+	 */
+	public static Set<String> getPathsFromDir(Class<?> clazz, String path, String ext) throws URISyntaxException, IOException 
+	{
+		Set<String> paths = new HashSet<>();
+		File jarFile = new File(clazz.getProtectionDomain().getCodeSource().getLocation().toURI());
+		if(!jarFile.isDirectory())
+		{
+			ZipFile jar = JarUtil.getZipFile(jarFile);
+			List<ZipEntry> li = JarUtil.getEntriesFromDir(jar, path, ext);
+			for(ZipEntry e : li)
+				paths.add(e.getName());
+		}
+		else
+		{
+			for(File f : DeDuperUtil.getDirFiles(new File(jarFile, path), ext))
+			{
+				paths.add(DeDuperUtil.getRealtivePath(jarFile, f));
+			}
+		}
+		return paths;
 	}
 
 }

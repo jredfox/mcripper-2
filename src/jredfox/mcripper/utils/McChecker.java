@@ -406,12 +406,13 @@ public class McChecker {
 	
 	public static void extractJsons() throws FileNotFoundException, IOException, URISyntaxException 
 	{
-		File dir = RippedUtils.getFileFromJar(McChecker.class, "resources/mcripper/jsons");
-		List<File> jarFiles = DeDuperUtil.getDirFiles(dir);
-		for(File f : jarFiles)
+		String base = "resources/mcripper/jsons";
+		Set<String> resources = RippedUtils.getPathsFromDir(McChecker.class, base);
+		File dir = new File(base);//create a virtual file
+		for(String r : resources)
 		{
-			String path = DeDuperUtil.getRealtivePath(dir, f);
-			DLUtils.learnDl(RippedUtils.toURL(f).toString(), new File(jsonDir, path));
+			String path = DeDuperUtil.getRealtivePath(dir, new File(r));//get a relative path based on virtual files
+			DLUtils.learnExtractDL(McChecker.class, r, new File(jsonDir, path));
 		}
 	}
 	
