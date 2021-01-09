@@ -45,7 +45,8 @@ public class McRipperCommands {
 			McRipperCommands.checkOmni.run(params);
 			System.out.println("CHECKING OLD(LEGACY) MINECRAFT DOMAINS:");
 			McRipperCommands.checkOld.run(params);
-			System.out.println("Finished in:" + (System.currentTimeMillis() - start) / 1000D);
+			this.clear();
+			System.out.println("Finished checkAll in:" + (System.currentTimeMillis() - start) / 1000D);
 		}
 	};
 	
