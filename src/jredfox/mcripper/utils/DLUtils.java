@@ -190,7 +190,7 @@ public class DLUtils {
 		try
 		{
 			File tmpFile = dlToFile(url, new File(McChecker.tmp, spath));
-			System.out.println("dl tmp:" + spath + " from:" + url);
+			System.out.println("learned dl:" + spath + " from:" + url);
 			String hash = RippedUtils.getSHA1(tmpFile);
 			File moved = dl(RippedUtils.toURL(tmpFile).toString(), saveAs, hash);
 			tmpFile.delete();
