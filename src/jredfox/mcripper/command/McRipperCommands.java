@@ -25,7 +25,29 @@ import jredfox.mcripper.utils.RippedUtils;
 
 public class McRipperCommands {
 	
-	public static RipperCommand checkDisk = new RipperCommand(new String[]{"--mcDir=value", "--skipSnaps", "--skipOldMajors"}, "checkDisk")
+	private static final String skipSnaps = "skipSnaps";
+	private static final String mcDir = "mcDir=value";
+	private static final String skipOldMajors = "skipOldMajors";
+	
+	public static RipperCommand checkAll = new RipperCommand(new String[]{"--" + mcDir, "--" + skipSnaps, "--" + skipOldMajors}, "checkAll")
+	{
+		@Override
+		public void run(ParamList<Object> params) 
+		{
+			long start = System.currentTimeMillis();
+			System.out.println("CHECKING MOJANG:");
+			McRipperCommands.checkMojang.run(params);
+			System.out.println("CHECKING THE DISK FOR CUSTOM JSONS:");
+			McRipperCommands.checkDisk.run(params);
+			System.out.println("CHECKING OMNI-ARCHIVE:");
+			McRipperCommands.checkOmni.run(params);
+			System.out.println("CHECKING OLD(LEGACY) MINECRAFT DOMAINS:");
+			McRipperCommands.checkOld.run(params);
+			System.out.println("finished in:" + (System.currentTimeMillis() - start) / 1000D);
+		}
+	};
+	
+	public static RipperCommand checkDisk = new RipperCommand(new String[]{"--" + mcDir, "--" + skipSnaps, "--" + skipOldMajors}, "checkDisk")
 	{
 		@Override
 		public void run(ParamList<Object> params)
@@ -43,7 +65,7 @@ public class McRipperCommands {
 		}
 	};
 	
-	public static RipperCommand checkMojang = new RipperCommand(new String[]{"--mcDir=value", "--skipSnaps"}, "checkMojang")
+	public static RipperCommand checkMojang = new RipperCommand(new String[]{"--" + mcDir, "--" + skipSnaps}, "checkMojang")
 	{
 		@Override
 		public void run(ParamList<Object> params)
@@ -70,7 +92,7 @@ public class McRipperCommands {
 		}
 	};
 	
-	public static RipperCommand checkOld = new RipperCommand(new String[]{"--mcDir=value", "--skipSnaps"}, "checkOld")
+	public static RipperCommand checkOld = new RipperCommand(new String[]{"--" + mcDir, "--" + skipSnaps}, "checkOld")
 	{
 		@Override
 		public void run(ParamList<Object> params)
@@ -81,7 +103,7 @@ public class McRipperCommands {
 		}
 	};
 	
-	public static Command<File> rip = new Command<File>(new String[]{"-s", "-a", "--mcDir=value"}, "rip")
+	public static Command<File> rip = new Command<File>(new String[]{"-s", "-a", "--" + mcDir}, "rip")
 	{
 		@Override
 		public String[] displayArgs() 

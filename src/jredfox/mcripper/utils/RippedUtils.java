@@ -6,6 +6,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -207,6 +208,11 @@ public class RippedUtils {
 	public static File getSimpleFile(String path) 
 	{
 		return new File(McChecker.root, path);
+	}
+
+	public static File getFileFromJar(Class<?> clazz, String path) throws URISyntaxException 
+	{
+		return new File(clazz.getClassLoader().getResource(path).toURI());
 	}
 
 }

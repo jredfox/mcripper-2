@@ -173,9 +173,7 @@ public class DLUtils {
 		String spath = DeDuperUtil.getRealtivePath(McChecker.mcripped, saveAs.getAbsoluteFile());
 		String urlPath = getFixedUrl(url);
 		if(urlPath.contains("file:") || urlPath.contains("jar:"))
-		{
 			urlPath = spath;
-		}
 		if(McChecker.bad.contains(urlPath))
 			return null;
 		String cachedHash = McChecker.learner.get(urlPath, 1);
@@ -201,11 +199,11 @@ public class DLUtils {
 		try
 		{
 			File tmpFile = dlToFile(url, new File(McChecker.tmp, spath));
+			System.out.println("dl tmp:" + spath + " from:" + url);
 			String hash = RippedUtils.getSHA1(tmpFile);
 			File moved = dl(RippedUtils.toURL(tmpFile).toString(), saveAs, hash);
 			tmpFile.delete();
 			McChecker.learner.append(urlPath, hash);
-			System.out.println("dl tmp:" + spath + " from:" + url);
 			return moved;
 		}
 		catch(IOException e)

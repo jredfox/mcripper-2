@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.MalformedURLException;
+import java.net.URISyntaxException;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
@@ -50,11 +51,10 @@ public class McChecker {
 	public static final File mcDefaultDir = RippedUtils.getMinecraftDir();
 	public static volatile File mcDir = mcDefaultDir;
 	
-	public static void checkMojang(boolean skipSnaps) throws FileNotFoundException, IOException 
+	public static void checkMojang(boolean skipSnaps) throws FileNotFoundException, IOException, URISyntaxException 
 	{
 		File[] majors = dlMojang();
 		Set<File> minors = new FileSet(534);//the default amount of versions is 534 grow if needed to past this
-		minors.add(extractAf());//since mojang no longer has this file on their servers we need embed it into the jar and extract it
 		for(File major : majors)
 		{
 			minors.addAll(checkMajor(major, skipSnaps));
@@ -119,10 +119,10 @@ public class McChecker {
 	{
 		try
 		{
-			DLUtils.dlAmazonAws("http://s3.amazonaws.com/MinecraftResources", "old/MinecraftResources");
-			DLUtils.dlAmazonAws("http://s3.amazonaws.com/Minecraft.Resources", "old/Minecraft.Resources");
+//			DLUtils.dlAmazonAws("http://s3.amazonaws.com/MinecraftResources", "old/MinecraftResources");
+//			DLUtils.dlAmazonAws("http://s3.amazonaws.com/Minecraft.Resources", "old/Minecraft.Resources");
 //			DLUtils.dlAmazonAws("http://assets.minecraft.net", "old/Assets_Minecraft_Net");
-			DLUtils.dlAmazonAws("http://s3.amazonaws.com/MinecraftDownload", "old/MinecraftDownload");
+//			DLUtils.dlAmazonAws("http://s3.amazonaws.com/MinecraftDownload", "old/MinecraftDownload");
 //			checkOldVersions(skipSnaps);
 		}
 		catch(Exception e)
@@ -399,9 +399,15 @@ public class McChecker {
 		assetsCount++;
 	}
 	
-	public static File extractAf() throws FileNotFoundException, IOException 
+	public static void extractJsons() throws FileNotFoundException, IOException, URISyntaxException 
 	{
-		return DLUtils.learnExtractDL(McChecker.class, "resources/mcripper/jsons/minor/1.12.2-af-minor.json", new File(jsonMinor, "release/1.12.2-af-minor.json"));
+		File dir = RippedUtils.getFileFromJar(McChecker.class, "resources/mcripper/jsons");
+		List<File> jarFiles = DeDuperUtil.getDirFiles(dir);
+		for(File f : jarFiles)
+		{
+			String path = DeDuperUtil.getRealtivePath(dir, f);
+			DLUtils.learnDl(RippedUtils.toURL(f).toString(), new File(jsonDir, path));
+		}
 	}
 	
 	/**
@@ -443,13 +449,13 @@ public class McChecker {
 		bad = new SetPrinter(root, new File(root, "bad.paths"), 300);
 	}
 
-	public static void parseHashes() throws IOException
+	public static void parseHashes() throws IOException, URISyntaxException
 	{
 		long ms = System.currentTimeMillis();
 		hash.load();
 		learner.load();
 		bad.load();
-		extractAf();
+		extractJsons();
 		System.out.println("parsed hashes & data in:" + (System.currentTimeMillis() - ms) + "ms");
 	}
 
