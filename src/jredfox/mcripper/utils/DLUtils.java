@@ -122,17 +122,8 @@ public class DLUtils {
 	
 	public static File dlToFile(String url, File output, long timestamp) throws FileNotFoundException, IOException
 	{
-		return dlToFile(url, output, timestamp, false);
-	}
-	
-	public static File dlToFile(String url, File output, long timestamp, boolean print) throws FileNotFoundException, IOException
-	{
-		long time = System.currentTimeMillis();
-		url = url.replaceAll(" ", "%20");
-		output = new File(output.getPath().replaceAll("%20", " "));
-		directDL(url, output, timestamp);
-		if(print)
-			System.out.println("dl:" + RippedUtils.getSimplePath(output) + " in:" + (System.currentTimeMillis() - time) + "ms " + " from:" + url);
+		output = getFixedFile(output);
+		directDL(getFixedUrl(url), output, timestamp);
 		return output;
 	}
 	
