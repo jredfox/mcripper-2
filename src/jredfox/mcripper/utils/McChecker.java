@@ -119,9 +119,9 @@ public class McChecker {
 	{
 		try
 		{
+			DLUtils.dlAmazonAws("http://assets.minecraft.net", extractAssetsXml());
 //			DLUtils.dlAmazonAws("http://s3.amazonaws.com/MinecraftResources", "old/MinecraftResources");
 //			DLUtils.dlAmazonAws("http://s3.amazonaws.com/Minecraft.Resources", "old/Minecraft.Resources");
-//			DLUtils.dlAmazonAws("http://assets.minecraft.net", "old/Assets_Minecraft_Net");
 //			DLUtils.dlAmazonAws("http://s3.amazonaws.com/MinecraftDownload", "old/MinecraftDownload");
 //			checkOldVersions(skipSnaps);
 		}
@@ -131,6 +131,11 @@ public class McChecker {
 		}
 	}
 	
+	public static File extractAssetsXml() 
+	{
+		return DLUtils.learnExtractDL(McChecker.class, "resources/mcripper/aws/assets.minecraft.net-2016-11-06.xml", new File(McChecker.mcripped, "old/assets_minecraft_net/assets_minecraft_net.xml"));
+	}
+
 	public static void checkOldVersions(boolean skipSnaps) throws FileNotFoundException, IOException 
 	{
 		File oldJson = DLUtils.dlMove("http://s3.amazonaws.com/Minecraft.Download/versions/versions.json", "old/Minecraft.Download/versions.json", new File(jsonOldMajor, "versions.json"));

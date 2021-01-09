@@ -169,12 +169,18 @@ public class RippedUtils {
 		for(String key : keys)
 		{
 			NodeList l = d.getElementsByTagName(key);
-			if(l == null)
+			if(isEmpty(l))
 				l = d.getElementsByTagName(key.toLowerCase());
-			if(l != null)
+			
+			if(!isEmpty(l))
 				return l;
 		}
 		return null;
+	}
+	
+	private static boolean isEmpty(NodeList nl)
+	{
+		return nl == null || nl.getLength() == 0;
 	}
 
 	public static NodeList getElementSafely(Element elment, String... keys) 
@@ -182,9 +188,10 @@ public class RippedUtils {
 		for(String key : keys)
 		{
 			NodeList l = elment.getElementsByTagName(key);
-			if(l == null)
+			if(isEmpty(l))
 				l = elment.getElementsByTagName(key.toLowerCase());
-			if(l != null)
+			
+			if(!isEmpty(l))
 				return l;
 		}
 		return null;

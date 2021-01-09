@@ -171,7 +171,7 @@ public class DLUtils {
 		//recall learning
 		if(cachedHash != null && McChecker.hash.contains(cachedHash))
 		{
-			return new File(McChecker.root, McChecker.hash.hashes.get(cachedHash));
+			return RippedUtils.getSimpleFile(McChecker.hash.hashes.get(cachedHash));
 		}
 		else if(cachedHash != null)
 		{
@@ -231,6 +231,11 @@ public class DLUtils {
 		String xname = DeDuperUtil.getTrueName(baseDir) + ".xml";
 		File xmlFile = safeDlMove(url, path + "/" + xname, new File(baseDir, xname));
 		dlAmazonAws(url, baseDir, xmlFile);
+	}
+	
+	public static void dlAmazonAws(String baseUrl, File xmlFile) throws SAXException, IOException, ParserConfigurationException
+	{
+		dlAmazonAws(baseUrl, xmlFile.getParentFile(), xmlFile);
 	}
 	
 	public static void dlAmazonAws(String baseUrl, File baseDir, File xmlFile) throws SAXException, IOException, ParserConfigurationException
