@@ -30,7 +30,7 @@ public class McRipperCommands {
 	private static final String mcDir = "mcDir=value";
 	private static final String skipOldMajors = "skipOldMajors";
 	
-	public static RipperCommand checkAll = new RipperCommand(new String[]{"--" + mcDir, "--" + skipSnaps, "--" + skipOldMajors}, "checkAll")
+	public static RipperCommand checkAll = new RipperCommand(new String[]{"--" + mcDir, "--" + skipSnaps}, "checkAll")
 	{
 		@Override
 		public void run(ParamList<Object> params) 
@@ -49,7 +49,7 @@ public class McRipperCommands {
 		}
 	};
 	
-	public static RipperCommand checkDisk = new RipperCommand(new String[]{"--" + mcDir, "--" + skipSnaps, "--" + skipOldMajors}, "checkDisk")
+	public static RipperCommand checkDisk = new RipperCommand(new String[]{"--" + mcDir, "--" + skipSnaps}, "checkDisk")
 	{
 		@Override
 		public void run(ParamList<Object> params)
@@ -57,7 +57,7 @@ public class McRipperCommands {
 			this.start(params);
 			try 
 			{
-				McChecker.checkDisk(params.hasFlag("skipSnaps"), params.hasFlag("skipOldMajors"));
+				McChecker.checkDisk(params.hasFlag("skipSnaps"));
 			}
 			catch (Exception e)
 			{

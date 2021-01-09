@@ -34,6 +34,7 @@ public class McChecker {
 	public static File jsonMinor;
 	public static File jsonAssets;
 	public static File jsonOldMajor;
+	public static File jsonOldMinor;
 	
 	//counts
 	public static int majorCount;
@@ -71,25 +72,37 @@ public class McChecker {
 		}
 	}
 	
-	public static void checkDisk(boolean skipSnaps, boolean skipOldMajors) throws FileNotFoundException, IOException
+	public static void checkDisk(boolean skipSnaps) throws FileNotFoundException, IOException
 	{
+		//do majors
 		List<File> majors = DeDuperUtil.getDirFiles(jsonMajor);
-		Set<File> oldMinors = new FileSet(0);
 		for(File major : majors)
 		{
 			checkMajor(major, skipSnaps);
 		}
-		if(!skipOldMajors)
+		
+		//do oldMajors
+		List<File> oldMajors = DeDuperUtil.getDirFiles(jsonOldMajor);
+		for(File oldMajor : oldMajors)
 		{
-			List<File> oldMajors = DeDuperUtil.getDirFiles(jsonOldMajor);
-			for(File oldMajor : oldMajors)
-				oldMinors = checkOldMajor(oldMajor, skipSnaps);
+			checkOldMajor(oldMajor, skipSnaps);
 		}
+		
+		//do minors
 		List<File> minors = DeDuperUtil.getDirFiles(jsonMinor);
 		for(File minor : minors)
 		{
-			checkMinor(minor, skipSnaps, oldMinors.contains(minor));
+			checkMinor(minor, skipSnaps, false);
 		}
+		
+		//do oldMinors
+		List<File> ominors = DeDuperUtil.getDirFiles(jsonOldMinor);
+		for(File ominor : ominors)
+		{
+			checkMinor(ominor, skipSnaps, true);
+		}
+		
+		//do assets
 		List<File> assetsJsons = DeDuperUtil.getDirFiles(jsonAssets);
 		for(File assets : assetsJsons)
 		{
@@ -193,7 +206,7 @@ public class McChecker {
 			String time = versionEntry.getString("time");
 			
 			String clientPath = type + "/" + version + ".json";
-			File minorFile = new File(jsonMinor, clientPath);
+			File minorFile = new File(jsonOldMinor, clientPath);
 			File dlMinor = DLUtils.learnDl(urlBase + "versions/" + version + "/" + version + ".json", minorFile);
 			oldMinors.add(dlMinor);
 		}
@@ -445,10 +458,11 @@ public class McChecker {
 		mcripped = new File(root, "mcripped");
 		mojang = new File(mcripped, "mojang");
 		jsonDir = new File(mcripped, "jsons");
-		jsonOldMajor = new File(jsonDir, "oldmajors");
 		jsonMajor = new File(jsonDir, "major");
 		jsonMinor = new File(jsonDir, "minor");
 		jsonAssets = new File(jsonDir, "assets");
+		jsonOldMajor = new File(jsonDir, "oldmajors");
+		jsonOldMinor = new File(jsonDir, "oldminors");
 		
 		hash = new HashPrinter(root, new File(root, "index.hash"), 10000);
 		learner = new CSVPrinter(root, new File(root, "learned.rhash"), 600);
@@ -461,8 +475,8 @@ public class McChecker {
 		hash.load();
 		learner.load();
 		bad.load();
-		extractJsons();
 		System.out.println("parsed hashes & data in:" + (System.currentTimeMillis() - ms) + "ms");
+		extractJsons();
 	}
 
 	public static void closePrinters()
