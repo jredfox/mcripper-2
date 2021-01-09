@@ -155,36 +155,30 @@ public class DLUtils {
 		return moved;
 	}
 	
-	public static File dlFromMc(File mcDir, String url, String path, File saveAs, String hash) throws FileNotFoundException, IOException
+	public static File dlFromMc(File mcDir, String url, File saveAs, String path, String hash) throws FileNotFoundException, IOException
 	{
 		File cached = new File(mcDir, path).getAbsoluteFile();
 		cached = cached.exists() ? cached : new File(McChecker.mojang, path);
 		boolean exists = cached.exists();
 		long timestamp = exists ? cached.lastModified() : System.currentTimeMillis();
-		url = exists && hash.equals(RippedUtils.getSHA1(cached)) ? cached.toURI().toURL().toString() : url;
+		url = exists && hash.equals(RippedUtils.getSHA1(cached)) ? RippedUtils.toURL(cached).toString() : url;
 		File f = dlToFile(url, saveAs, timestamp);
 		if(!url.startsWith("file:"))
 			System.out.println("dl:" + f.getPath() + " from:" + url);
 		return f;
 	}
-	
-	/**
-	 * get a file from mc if it doesn't exist dl it to mc directory
-	 */
-	public static File getOrDlFromMc(File mcDir, String url, String type, String path, String hash) throws FileNotFoundException, IOException
-	{
-		File cached = getFromMc(mcDir, type, path);
-		boolean exists = cached.exists();
-		long timestamp = exists ? cached.lastModified() : System.currentTimeMillis();
-		return exists && hash.equals(RippedUtils.getSHA1(cached)) ? cached : dlToFile(url, new File(mcDir, path), timestamp, true);
-	}
 
 	public static File learnDl(String url, File saveAs) 
 	{
-		String path = DeDuperUtil.getRealtivePath(McChecker.mcripped, saveAs.getAbsoluteFile());
-		if(McChecker.bad.contains(path))
+		String spath = DeDuperUtil.getRealtivePath(McChecker.mcripped, saveAs.getAbsoluteFile());
+		String urlPath = getFixedUrl(url);
+		if(urlPath.contains("file:") || urlPath.contains("jar:"))
+		{
+			urlPath = spath;
+		}
+		if(McChecker.bad.contains(urlPath))
 			return null;
-		String cachedHash = McChecker.learner.get(path, 1);
+		String cachedHash = McChecker.learner.get(urlPath, 1);
 		//recall learning
 		if(cachedHash != null && McChecker.hash.contains(cachedHash))
 		{
@@ -206,12 +200,12 @@ public class DLUtils {
 		//learn here
 		try
 		{
-			File tmpFile = dlToFile(url, new File(McChecker.tmp, path));
+			File tmpFile = dlToFile(url, new File(McChecker.tmp, spath));
 			String hash = RippedUtils.getSHA1(tmpFile);
 			File moved = dl(RippedUtils.toURL(tmpFile).toString(), saveAs, hash);
 			tmpFile.delete();
-			McChecker.learner.append(path, hash, moved.lastModified());
-			System.out.println("dl tmp:" + path + " from:" + url);
+			McChecker.learner.append(urlPath, hash);
+			System.out.println("dl tmp:" + spath + " from:" + url);
 			return moved;
 		}
 		catch(IOException e)
@@ -220,12 +214,12 @@ public class DLUtils {
 			if(e instanceof FileNotFoundException || msg.contains("HTTP response code:"))
 			{
 				System.err.println(msg);
-				McChecker.bad.append(path);
+				McChecker.bad.append(urlPath);
 			}
 			else
 			{
 				e.printStackTrace();
-				McChecker.bad.parse(path);
+				McChecker.bad.parse(urlPath);
 			}
 		}
 		catch(Exception e)
@@ -346,29 +340,5 @@ public class DLUtils {
 				}
 			}
 		}
-	}
-	
-	public static File getFromMc(File mcDir, String type, String path) 
-	{
-		File cached = new File(mcDir, path);
-		return cached.exists() ? cached : new File(McChecker.mojang, toRipperPath(type, path));
-	}
-	
-	/**
-	 * doesn't support server paths, or server mappings as mojang doesn't have a specified path for them as of yet
-	 */
-	public static String toRipperPath(String type, String path)
-	{
-		if(path.startsWith("versions/") && !path.startsWith("versions/" + type))
-		{
-			path = path.replaceFirst("versions/", "versions/" + type + "/");
-			String ext = DeDuperUtil.getExtension(path);
-			path = path.substring(0, path.length() - ext.length() -1) + "-client." + ext;
-		}
-		else if(path.startsWith("assets/indexes/"))
-		{
-			path = path.replaceFirst("assets/indexes/", "jsons/assets/");
-		}
-		return path;
 	}
 }

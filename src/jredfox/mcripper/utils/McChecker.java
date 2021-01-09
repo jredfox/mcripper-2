@@ -119,8 +119,8 @@ public class McChecker {
 	{
 		try
 		{
-//			DLUtils.dlAmazonAws("http://s3.amazonaws.com/MinecraftResources", "old/MinecraftResources");
-//			DLUtils.dlAmazonAws("http://s3.amazonaws.com/Minecraft.Resources", "old/Minecraft.Resources");
+			DLUtils.dlAmazonAws("http://s3.amazonaws.com/MinecraftResources", "old/MinecraftResources");
+			DLUtils.dlAmazonAws("http://s3.amazonaws.com/Minecraft.Resources", "old/Minecraft.Resources");
 //			DLUtils.dlAmazonAws("http://assets.minecraft.net", "old/Assets_Minecraft_Net");
 			DLUtils.dlAmazonAws("http://s3.amazonaws.com/MinecraftDownload", "old/MinecraftDownload");
 //			checkOldVersions(skipSnaps);
