@@ -181,8 +181,8 @@ public class McChecker {
 			String type = jsonVersion.getString("type");
 			if(skipSnaps && type.startsWith("snapshot"))
 				continue;
-			String time = jsonVersion.getString("time");
-			File minor = DLUtils.dl(url, new File(jsonMinor, type + "/" + version + ".json"), minorHash);
+			long time = RippedUtils.parseOffsetTime(jsonVersion.getString("time"));
+			File minor = DLUtils.dl(url, new File(jsonMinor, type + "/" + version + ".json"), time, minorHash);
 			minors.add(minor.getAbsoluteFile());
 		}
 		majorCount++;
@@ -261,11 +261,12 @@ public class McChecker {
 			for(String key : clientData.keySet())
 			{
 				JSONObject data = clientData.getJSONObject(key);
+				long time = key.equals("client") ? RippedUtils.parseOffsetTime(json.getString("releaseTime")) : -1;
 				String dataSha1 = data.getString("sha1").toLowerCase();
 				String dataUrl = data.getString("url");
 				String[] dataUrlSplit = dataUrl.replace("\\", "/").split("/");
 				String name = dataUrlSplit[dataUrlSplit.length - 1];
-				DLUtils.dl(dataUrl, new File(mojang, "versions/" + type + "/" + versionName + "/" + versionName + "-" + name), dataSha1);
+				DLUtils.dl(dataUrl, new File(mojang, "versions/" + type + "/" + versionName + "/" + versionName + "-" + name), time, dataSha1);
 			}
 		}
 		
@@ -370,7 +371,7 @@ public class McChecker {
 		File oldMcDir = new File(mcripped, "old/Minecraft.Download");
 		String assetsId = json.getString("assets");
 		String version = json.getString("id");
-		long clientTime = RippedUtils.parseOffsetTime(json.getString("time"));
+		long clientTime = RippedUtils.parseOffsetTime(json.getString("releaseTime"));
 		String type = json.getString("type");
 		
 		String checkPath = version + ".json";

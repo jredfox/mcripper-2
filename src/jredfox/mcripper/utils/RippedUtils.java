@@ -304,25 +304,11 @@ public class RippedUtils {
 	{
 		return OffsetDateTime.parse(strTime).toInstant().toEpochMilli();
 	}
-
-	/**
-	 * note this will open and close a stream just for the timestamp
-	 */
-	public static long getTime(URL url)
+	
+	public static long getTime(URLConnection con)
 	{
-		try
-		{
-			URLConnection con = url.openConnection();
-			long time = con.getLastModified();
-			time = time != 0 ? time : System.currentTimeMillis();
-			IOUtils.close(con.getInputStream());
-			return time;
-		}
-		catch(Exception e)
-		{
-			e.printStackTrace();
-		}
-		return -1;
+		long ms = con.getLastModified();
+		return ms != 0 ? ms : System.currentTimeMillis();
 	}
 
 }

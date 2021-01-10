@@ -25,7 +25,7 @@ public class DLUtils {
 	
 	public static File dl(String url, File saveAs, String hash) throws FileNotFoundException, IOException
 	{
-		return dl(url, saveAs, System.currentTimeMillis(), hash);
+		return dl(url, saveAs, -1, hash);
 	}
 	
 	/**
@@ -75,17 +75,18 @@ public class DLUtils {
 	
 	public static File learnExtractDL(Class<?> clazz, String path, File saveAs)
 	{
-		URL url = clazz.getClassLoader().getResource(path);
-		long timestamp = RippedUtils.getTime(url);
-		return DLUtils.learnDl(url.toString(), saveAs, timestamp);
+		return DLUtils.learnDl(clazz.getClassLoader().getResource(path).toString(), saveAs, -1);
 	}
 	
 	/**
-	 * direct dl with safegards in place to delete corrupted download files
+	 * direct dl with safegards in place to delete corrupted download files. setting the timestamp to -1 will dl it with the lastModified of the website or current ms
 	 */
-	public static void directDL(String url, File output, long timestamp) throws MalformedURLException, IOException
+	public static void directDL(String sURL, File output, long timestamp) throws MalformedURLException, IOException
 	{
-		URLConnection con = new URL(url).openConnection();
+		URL url = new URL(sURL);
+		URLConnection con = url.openConnection();
+		if(timestamp == -1)
+			timestamp = RippedUtils.getTime(con);
 		con.setConnectTimeout(1000 * 15);
 		InputStream inputStream = con.getInputStream();
 		directDL(inputStream, output, timestamp);
@@ -112,7 +113,7 @@ public class DLUtils {
 	
 	public static File dlToFile(String url, File output) throws FileNotFoundException, IOException
 	{
-		return dlToFile(url, output, System.currentTimeMillis());
+		return dlToFile(url, output, -1);
 	}
 	
 	public static File dlToFile(String url, File output, long timestamp) throws FileNotFoundException, IOException
@@ -146,12 +147,17 @@ public class DLUtils {
 		File cached = new File(mcDir, path).getAbsoluteFile();
 		cached = cached.exists() ? cached : new File(McChecker.mojang, path);
 		boolean exists = cached.exists();
-		long timestamp = exists ? cached.lastModified() : System.currentTimeMillis();
+		long timestamp = exists ? cached.lastModified() : -1;
 		url = exists && hash.equals(RippedUtils.getSHA1(cached)) ? RippedUtils.toURL(cached).toString() : url;
 		File f = dlToFile(url, saveAs, timestamp);
 		if(!url.startsWith("file:"))
 			System.out.println("dl:" + f.getPath() + " from:" + url);
 		return f;
+	}
+	
+	public static File learnDl(String url, File saveAs) 
+	{
+		return learnDl(url, saveAs, -1);
 	}
 
 	public static File learnDl(String url, File saveAs, long timestamp) 
@@ -173,7 +179,7 @@ public class DLUtils {
 			//if file doesn't exist recall hash and direct dl it here
 			try
 			{
-				return dl(url, saveAs, cachedHash);
+				return dl(url, saveAs, timestamp, cachedHash);
 			}
 			catch(Exception e)
 			{
@@ -183,11 +189,11 @@ public class DLUtils {
 		
 		//learn here
 		try
-		{
+		{	
 			File tmpFile = dlToFile(url, new File(McChecker.tmp, spath));
-			System.out.println("learned dl:" + spath + " from:" + url);
+			System.out.println("learned dl:" + spath + " from:" + url + ", " + timestamp);
 			String hash = RippedUtils.getSHA1(tmpFile);
-			File moved = dl(RippedUtils.toURL(tmpFile).toString(), saveAs, hash);
+			File moved = dl(RippedUtils.toURL(tmpFile).toString(), saveAs, timestamp, hash);
 			tmpFile.delete();
 			McChecker.learner.append(urlPath, hash);
 			return moved;
