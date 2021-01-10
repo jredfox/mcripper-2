@@ -256,6 +256,7 @@ public class McRipperCommands {
 				this.deletePrinter(McChecker.hash);
 				this.deletePrinter(McChecker.bad);
 				this.deletePrinter(McChecker.learner);
+				this.deletePrinter(McChecker.learnedIndexes);
 				McChecker.parseHashes();
 			}
 			catch (Exception e)

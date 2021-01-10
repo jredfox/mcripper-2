@@ -24,7 +24,7 @@ public class McRipper {
 	}
 	
 	public static final String appId = "Mcripper";
-	public static final String version = "rc.1-nightly-1-9-2021-04:18:10.Z";
+	public static final String version = "rc.1-nightly-1-10-2021-05:00:38.Z";
 	public static final String appName = "MC Ripper 2 Build: " + version;
 	
 	public static void main(String[] args) throws Exception

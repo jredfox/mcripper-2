@@ -18,6 +18,7 @@ import jredfox.mcripper.McRipper;
 import jredfox.mcripper.data.FileSet;
 import jredfox.mcripper.printer.CSVPrinter;
 import jredfox.mcripper.printer.HashPrinter;
+import jredfox.mcripper.printer.MapPrinter;
 import jredfox.mcripper.printer.SetPrinter;
 import jredfox.selfcmd.util.OSUtil;
 
@@ -45,8 +46,9 @@ public class McChecker {
 	
 	//printers
 	public static HashPrinter hash;
-	public static CSVPrinter learner;
+	public static MapPrinter learner;
 	public static SetPrinter bad;
+	public static MapPrinter learnedIndexes;
 
 	//mc dirs
 	public static final File mcDefaultDir = RippedUtils.getMinecraftDir();
@@ -484,8 +486,9 @@ public class McChecker {
 		jsonOldMinor = new File(jsonDir, "oldminors");
 		
 		hash = new HashPrinter(root, new File(root, "index.hash"), 10000);
-		learner = new CSVPrinter(root, new File(root, "learned.rhash"), 600);
+		learner = new MapPrinter(root, new File(root, "learned.rhash"), 600);
 		bad = new SetPrinter(root, new File(root, "bad.paths"), 300);
+		learnedIndexes = new MapPrinter(root, new File(root, "learned_indexes.rhash"), 15);
 	}
 
 	public static void parseHashes() throws IOException, URISyntaxException
@@ -503,6 +506,7 @@ public class McChecker {
 		IOUtils.close(hash);
 		IOUtils.close(learner);
 		IOUtils.close(bad);
+		IOUtils.close(learnedIndexes);
 	}
 
 }

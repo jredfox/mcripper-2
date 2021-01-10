@@ -8,6 +8,7 @@ import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
+import java.util.Iterator;
 
 import javax.xml.parsers.ParserConfigurationException;
 
@@ -79,7 +80,7 @@ public class DLUtils {
 	}
 	
 	/**
-	 * direct dl with safegards in place to delete corrupted download files. setting the timestamp to -1 will dl it with the lastModified of the website or current ms
+	 * direct dl with safegards in place to delete corrupted download files. setting the timestamp to -1 will be {@link URLConnection#getLastModified()} of the website or current ms
 	 */
 	public static void directDL(String sURL, File output, long timestamp) throws MalformedURLException, IOException
 	{
@@ -160,20 +161,28 @@ public class DLUtils {
 		return f;
 	}
 	
-	public static File learnDl(String url, File saveAs) 
+	public static File learnDl(String index, String url, File saveAs) 
 	{
-		return learnDl(url, saveAs, -1);
+		return learnDl(index, url, saveAs, -1);
 	}
 
-	public static File learnDl(String url, File saveAs, long timestamp) 
+	public static File learnDl(String index, String indexHash, String url, File saveAs, long timestamp) 
 	{
 		String spath = DeDuperUtil.getRealtivePath(McChecker.mcripped, saveAs.getAbsoluteFile());
 		String urlPath = getFixedUrl(url);
 		if(urlPath.contains("file:") || urlPath.contains("jar:"))
 			urlPath = spath;
+		
+		//TODO: make it so if the learned index's hash has changed to forgot everything and start from scratch
+		if(McChecker.learnedIndexes.contains(index) && !McChecker.learnedIndexes.map.get(index).equals(indexHash))
+		{
+			System.out.println("it's time to forget everything....");
+			forget(index);
+		}
+		
 		if(McChecker.bad.contains(urlPath))
 			return null;
-		String cachedHash = McChecker.learner.get(urlPath, 1);
+		String cachedHash = McChecker.learner.get(urlPath);
 		//recall learning
 		if(cachedHash != null && McChecker.hash.contains(cachedHash))
 		{
@@ -225,6 +234,30 @@ public class DLUtils {
 		return null;
 	}
 	
+	/**
+	 * forget all learned domains from the index path
+	 */
+	public static void forget(String urlBase) 
+	{
+		//forget the bad paths
+		Iterator<String> itBad = McChecker.bad.set.iterator();
+		while(itBad.hasNext())
+		{
+			String s = itBad.next();
+			if(s.startsWith(urlBase))
+				itBad.remove();
+		}
+		
+		//forget the learned hashes
+		Iterator<String> itLearned = McChecker.learner.map.keySet().iterator();
+		while(itLearned.hasNext())
+		{
+			String s = itLearned.next();
+			if(s.startsWith(urlBase))
+				itLearned.remove();
+		}
+	}
+
 	/**
 	 * dl all files from an amazonAws website
 	 * @throws IOException 
