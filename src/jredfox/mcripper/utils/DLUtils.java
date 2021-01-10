@@ -135,7 +135,12 @@ public class DLUtils {
 	
 	public static File dlMove(String url, String path, File saveAs) throws FileNotFoundException, IOException
 	{
-		File tmpFile = dlToFile(url, new File(McChecker.tmp, path));
+		return dlMove(url, path, saveAs, -1);
+	}
+	
+	public static File dlMove(String url, String path, File saveAs, long timestamp) throws FileNotFoundException, IOException
+	{
+		File tmpFile = dlToFile(url, new File(McChecker.tmp, path), timestamp);
 		String hash = RippedUtils.getSHA1(tmpFile);
 		File moved = dl(RippedUtils.toURL(tmpFile).toString(), saveAs, tmpFile.lastModified(), hash);
 		tmpFile.delete();
