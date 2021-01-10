@@ -45,7 +45,7 @@ public class McRipperCommands {
 			System.out.println("CHECKING THE DISK FOR CUSTOM JSONS:");
 			McRipperCommands.checkDisk.run(params);
 			this.clear();
-			System.out.println("Finished checkAll in:" + (System.currentTimeMillis() - start) / 1000D);
+			System.out.println("Finished checkAll in:" + (System.currentTimeMillis() - start) / 1000D + " seconds" + (McChecker.oldMajorCount > 0 ? " oldMajor:" + McChecker.oldMajorCount : "") + " major:" + McChecker.majorCount + (McChecker.oldMinor > 0 ? " oldMinor:" + McChecker.oldMinor : "") + " minor:" + McChecker.minorCount + " assets:" + McChecker.assetsCount);
 		}
 	};
 	

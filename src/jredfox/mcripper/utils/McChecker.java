@@ -197,6 +197,8 @@ public class McChecker {
 	@SuppressWarnings("rawtypes")
 	public static Set<File> checkOldMajor(File oldJson, boolean skipSnaps)
 	{
+		if(!checkJsons.add(oldJson))
+			return Collections.emptySet();
 		String urlBase = "http://s3.amazonaws.com/Minecraft.Download/";
 		JSONObject json = RippedUtils.getJSON(oldJson);
 		JSONArray arr = json.getJSONArray("versions");

@@ -86,9 +86,7 @@ public class DLUtils {
 		URL url = new URL(sURL);
 		URLConnection con = url.openConnection();
 		if(timestamp == -1)
-		{
 			timestamp = RippedUtils.getTime(con);
-		}
 		con.setConnectTimeout(1000 * 15);
 		InputStream inputStream = con.getInputStream();
 		directDL(inputStream, output, timestamp);
