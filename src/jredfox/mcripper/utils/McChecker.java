@@ -416,9 +416,9 @@ public class McChecker {
 		{
 			JSONObject assetJson = objects.getJSONObject(key);
 			String assetSha1 = assetJson.getString("hash");
-			String assetSha1Char = assetSha1.substring(0, 2);
-			String assetUrl = "https://resources.download.minecraft.net/" + assetSha1Char + "/" + assetSha1;
-			DLUtils.dl(assetUrl, new File(mojang, "assets/objects/" + assetSha1Char + "/" + assetSha1), assetSha1);
+			String twoChar = assetSha1.substring(0, 2);
+			String assetUrl = "https://resources.download.minecraft.net/" + twoChar + "/" + assetSha1;
+			DLUtils.dl(assetUrl, new File(mojang, "assets/objects/" + twoChar + "/" + assetSha1), assetSha1);
 		}
 		assetsCount++;
 	}
