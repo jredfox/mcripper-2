@@ -24,7 +24,7 @@ import jredfox.selfcmd.util.OSUtil;
 public class McChecker {
 	
 	//global vars
-	public static final FileSet checkJsons = new FileSet(2 + 534 + 11);
+	public static final FileSet checkJsons = new FileSet(2 + 533 + 20);
 	public static final File tmp =  new File(OSUtil.getAppData(), McRipper.appId + "/tmp");
 	public static File root;
 	public static File mcripped;
@@ -151,7 +151,12 @@ public class McChecker {
 
 	public static void checkOldVersions(boolean skipSnaps) throws FileNotFoundException, IOException 
 	{
-		File oldJson = DLUtils.dlMove("http://s3.amazonaws.com/Minecraft.Download/versions/versions.json", "old/Minecraft.Download/versions.json", new File(jsonOldMajor, "versions.json"));
+		File oldJson = DLUtils.safeDlMove("http://s3.amazonaws.com/Minecraft.Download/versions/versions.json", "old/Minecraft.Download/versions.json", new File(jsonOldMajor, "versions.json"));
+		if(oldJson == null)
+		{
+			System.err.println("Old Major is missing index skipping");
+			return;
+		}
 		Set<File> oldMinors = checkOldMajor(oldJson, skipSnaps);
 		Set<File> oldAssets = new FileSet(jsonAssets.exists() ? jsonAssets.listFiles().length + 10 : 20);
 		for(File oldMinor : oldMinors)
@@ -444,13 +449,24 @@ public class McChecker {
 
 	public static File[] dlMojang() throws FileNotFoundException, IOException 
 	{
-		return new File[]{dlMajor("version_manifest.json"), dlMajor("version_manifest_v2.json")};
+		File v1 = dlMajor("version_manifest.json");
+		File v2 = dlMajor("version_manifest_v2.json");
+		
+		if(v1 == null)
+			System.err.println("missing mojang v1 index from: https://launchermeta.mojang.com/mc/game/version_manifest.json report to https://github.com/jredfox/mcripper-2/issues");
+		if(v2 == null)
+			System.err.println("missing mojang v2 index from: https://launchermeta.mojang.com/mc/game/version_manifest_v2.json report to https://github.com/jredfox/mcripper-2/issues");
+		
+		FileSet set = new FileSet(2);
+		set.add(v1);
+		set.add(v2);
+		return DeDuperUtil.toArray(set, File.class);
 	}
 	
 	private static File dlMajor(String vname) throws FileNotFoundException, MalformedURLException, IOException
 	{ 
 		File saveAs = new File(jsonMajor, vname);
-		return DLUtils.dlMove("https://launchermeta.mojang.com/mc/game/" + vname, vname, saveAs);
+		return DLUtils.safeDlMove("https://launchermeta.mojang.com/mc/game/" + vname, vname, saveAs);
 	}
 	
 	public static void setRoot(File appDir) throws IOException

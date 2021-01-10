@@ -312,7 +312,12 @@ public class DLUtils {
 		//dl the index file
 		String xmlUrl = baseUrl + "/" + name + "_files.xml";
 		name = name + "_files.xml";
-		File xmlFile = dlMove(xmlUrl, dirPath + "/" + name, new File(webDir, name));
+		File xmlFile = safeDlMove(xmlUrl, dirPath + "/" + name, new File(webDir, name));
+		if(xmlFile == null)
+		{
+			System.err.println("web archive xml index missing for:" + xmlUrl + " skipping");
+			return;
+		}
 		
 		//start the dl process
 		Document doc = RippedUtils.parseXML(xmlFile);
