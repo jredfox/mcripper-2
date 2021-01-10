@@ -75,7 +75,7 @@ public class DLUtils {
 	
 	public static File learnExtractDL(Class<?> clazz, String path, File saveAs)
 	{
-		return DLUtils.learnDl(clazz.getClassLoader().getResource(path).toString(), saveAs, -1);
+		return DLUtils.learnDl(clazz.getClassLoader().getResource(path).toString(), saveAs);
 	}
 	
 	/**
@@ -93,9 +93,9 @@ public class DLUtils {
 	}
 
 	/**
-	 * direct dl with safegards in place to delete corrupted download files
+	 * direct dl with safegaurds of corrupted downloads. it's private so you you call the other method to fix -1 timestamps
 	 */
-	public static void directDL(InputStream inputStream, File output, long timestamp) throws FileNotFoundException, IOException 
+	private static void directDL(InputStream inputStream, File output, long timestamp) throws FileNotFoundException, IOException 
 	{
 		try
 		{
@@ -137,7 +137,7 @@ public class DLUtils {
 	{
 		File tmpFile = dlToFile(url, new File(McChecker.tmp, path));
 		String hash = RippedUtils.getSHA1(tmpFile);
-		File moved = dl(RippedUtils.toURL(tmpFile).toString(), saveAs, hash);
+		File moved = dl(RippedUtils.toURL(tmpFile).toString(), saveAs, tmpFile.lastModified(), hash);
 		tmpFile.delete();
 		return moved;
 	}
@@ -190,7 +190,8 @@ public class DLUtils {
 		//learn here
 		try
 		{	
-			File tmpFile = dlToFile(url, new File(McChecker.tmp, spath));
+			File tmpFile = dlToFile(url, new File(McChecker.tmp, spath), timestamp);
+			timestamp = tmpFile.lastModified();//use the one on the cached disk first
 			System.out.println("learned dl:" + spath + " from:" + url + ", " + timestamp);
 			String hash = RippedUtils.getSHA1(tmpFile);
 			File moved = dl(RippedUtils.toURL(tmpFile).toString(), saveAs, timestamp, hash);
