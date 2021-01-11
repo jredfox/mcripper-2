@@ -19,6 +19,7 @@ import jredfox.filededuper.command.exception.CommandParseException;
 import jredfox.filededuper.util.DeDuperUtil;
 import jredfox.filededuper.util.IOUtils;
 import jredfox.filededuper.util.JarUtil;
+import jredfox.mcripper.printer.Learner;
 import jredfox.mcripper.printer.Printer;
 import jredfox.mcripper.utils.DLUtils;
 import jredfox.mcripper.utils.McChecker;
@@ -253,22 +254,15 @@ public class McRipperCommands {
 		{
 			try 
 			{
-				this.deletePrinter(McChecker.hash);
-				this.deletePrinter(McChecker.bad);
-				this.deletePrinter(McChecker.learner);
-				this.deletePrinter(McChecker.learnedIndexes);
-				McChecker.parseHashes();
+				McChecker.closePrinters();//close the streams
+				McChecker.hash.log.delete();//delete the index.hash
+				IOUtils.deleteDirectory(McChecker.lRoot);//delete any machine learned data
+				McChecker.parseHashes();//reparse everything
 			}
 			catch (Exception e)
 			{
 				e.printStackTrace();
 			}
-		}
-
-		private void deletePrinter(Printer p) throws IOException 
-		{
-			IOUtils.close(p);
-			p.log.delete();
 		}
 	};
 	

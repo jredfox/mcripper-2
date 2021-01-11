@@ -18,6 +18,7 @@ import jredfox.mcripper.McRipper;
 import jredfox.mcripper.data.FileSet;
 import jredfox.mcripper.printer.CSVPrinter;
 import jredfox.mcripper.printer.HashPrinter;
+import jredfox.mcripper.printer.Learner;
 import jredfox.mcripper.printer.MapPrinter;
 import jredfox.mcripper.printer.SetPrinter;
 import jredfox.selfcmd.util.OSUtil;
@@ -28,6 +29,7 @@ public class McChecker {
 	public static final FileSet checkJsons = new FileSet(2 + 533 + 20);
 	public static final File tmp =  new File(OSUtil.getAppData(), McRipper.appId + "/tmp");
 	public static File root;
+	public static File lRoot;
 	public static File mcripped;
 	public static File mojang;
 	public static File jsonDir;
@@ -46,9 +48,6 @@ public class McChecker {
 	
 	//printers
 	public static HashPrinter hash;
-	public static MapPrinter learner;
-	public static SetPrinter bad;
-	public static MapPrinter learnedIndexes;
 
 	//mc dirs
 	public static final File mcDefaultDir = RippedUtils.getMinecraftDir();
@@ -476,6 +475,7 @@ public class McChecker {
 	public static void setRoot(File appDir) throws IOException
 	{
 		root = appDir;
+		lRoot = new File(root, "learned");
 		mcripped = new File(root, "mcripped");
 		mojang = new File(mcripped, "mojang");
 		jsonDir = new File(mcripped, "jsons");
@@ -486,17 +486,12 @@ public class McChecker {
 		jsonOldMinor = new File(jsonDir, "oldminors");
 		
 		hash = new HashPrinter(root, new File(root, "index.hash"), 10000);
-		learner = new MapPrinter(root, new File(root, "learned.rhash"), 600);
-		bad = new SetPrinter(root, new File(root, "bad.paths"), 300);
-		learnedIndexes = new MapPrinter(root, new File(root, "learned_indexes.rhash"), 15);
 	}
 
 	public static void parseHashes() throws IOException, URISyntaxException
 	{
 		long ms = System.currentTimeMillis();
 		hash.load();
-		learner.load();
-		bad.load();
 		System.out.println("parsed hashes & data in:" + (System.currentTimeMillis() - ms) + "ms");
 		extractJsons();
 	}
@@ -504,9 +499,8 @@ public class McChecker {
 	public static void closePrinters()
 	{
 		IOUtils.close(hash);
-		IOUtils.close(learner);
-		IOUtils.close(bad);
-		IOUtils.close(learnedIndexes);
+		for(Learner learner : Learner.learners.values())
+			IOUtils.close(learner);
 	}
 
 }

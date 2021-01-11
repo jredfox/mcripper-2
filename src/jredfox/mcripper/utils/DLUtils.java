@@ -20,6 +20,7 @@ import org.xml.sax.SAXException;
 
 import jredfox.filededuper.util.DeDuperUtil;
 import jredfox.mcripper.printer.HashPrinter;
+import jredfox.mcripper.printer.Learner;
 import jredfox.selfcmd.util.OSUtil;
 
 public class DLUtils {
@@ -161,11 +162,24 @@ public class DLUtils {
 		return f;
 	}
 	
-	public static File learnDl(String index, String url, File saveAs) 
+	public static File learnDl(String url, File saveAs)
 	{
-		return learnDl(index, url, saveAs, -1);
+		return learnDl(url, saveAs, -1);
+	}
+	
+	public static File learnDl(String url, File saveAs, long timestamp) 
+	{
+		return learnDl("global", "null", url, saveAs, timestamp);
+	}
+	
+	public static File learnDl(String index, String indexHash, String url, File saveAs) 
+	{
+		return learnDl(index, indexHash, url, saveAs, -1);
 	}
 
+	/**
+	 * the main method for learnDl. input the index and indexHash to get the specific learner rather then having everything as global. If the hash is mismatched it won't parse the data and will delete the files
+	 */
 	public static File learnDl(String index, String indexHash, String url, File saveAs, long timestamp) 
 	{
 		String spath = DeDuperUtil.getRealtivePath(McChecker.mcripped, saveAs.getAbsoluteFile());
@@ -173,16 +187,10 @@ public class DLUtils {
 		if(urlPath.contains("file:") || urlPath.contains("jar:"))
 			urlPath = spath;
 		
-		//TODO: make it so if the learned index's hash has changed to forgot everything and start from scratch
-		if(McChecker.learnedIndexes.contains(index) && !McChecker.learnedIndexes.map.get(index).equals(indexHash))
-		{
-			System.out.println("it's time to forget everything....");
-			forget(index);
-		}
-		
-		if(McChecker.bad.contains(urlPath))
+		Learner learner = getLearner(index, indexHash);
+		if(learner.bad.contains(urlPath))
 			return null;
-		String cachedHash = McChecker.learner.get(urlPath);
+		String cachedHash = learner.learner.get(urlPath);
 		//recall learning
 		if(cachedHash != null && McChecker.hash.contains(cachedHash))
 		{
@@ -210,7 +218,7 @@ public class DLUtils {
 			String hash = RippedUtils.getSHA1(tmpFile);
 			File moved = dl(RippedUtils.toURL(tmpFile).toString(), saveAs, timestamp, hash);
 			tmpFile.delete();
-			McChecker.learner.append(urlPath, hash);
+			learner.learner.append(urlPath, hash);
 			return moved;
 		}
 		catch(IOException e)
@@ -219,12 +227,12 @@ public class DLUtils {
 			if(e instanceof FileNotFoundException || msg.contains("HTTP response code:"))
 			{
 				System.err.println(msg);
-				McChecker.bad.append(urlPath);
+				learner.bad.append(urlPath);
 			}
 			else
 			{
 				e.printStackTrace();
-				McChecker.bad.parse(urlPath);
+				learner.bad.parse(urlPath);
 			}
 		}
 		catch(Exception e)
@@ -234,28 +242,23 @@ public class DLUtils {
 		return null;
 	}
 	
-	/**
-	 * forget all learned domains from the index path
-	 */
-	public static void forget(String urlBase) 
+	public static Learner getLearner(String index, String indexHash) 
 	{
-		//forget the bad paths
-		Iterator<String> itBad = McChecker.bad.set.iterator();
-		while(itBad.hasNext())
+		index = String.valueOf(index);
+		Learner learner = Learner.learners.get(index);
+		if(learner == null)
 		{
-			String s = itBad.next();
-			if(s.startsWith(urlBase))
-				itBad.remove();
+			learner = new Learner(McChecker.lRoot, index, indexHash);
+			try
+			{
+				learner.parse();
+			} 
+			catch (IOException e) 
+			{
+				e.printStackTrace();
+			}
 		}
-		
-		//forget the learned hashes
-		Iterator<String> itLearned = McChecker.learner.map.keySet().iterator();
-		while(itLearned.hasNext())
-		{
-			String s = itLearned.next();
-			if(s.startsWith(urlBase))
-				itLearned.remove();
-		}
+		return learner;
 	}
 
 	/**
@@ -292,6 +295,8 @@ public class DLUtils {
 			System.err.println("XML file appears to be missing Contents:" + xmlFile.getAbsolutePath() + " from:" + baseUrl);
 			return;
 		}
+		String index = DeDuperUtil.getTrueName(baseDir);
+		String indexHash = RippedUtils.getSHA1(xmlFile);
 		for(int i=0; i < nlist.getLength(); i++)
 		{
 			Node node = nlist.item(i);
@@ -305,7 +310,7 @@ public class DLUtils {
 				long timestamp = RippedUtils.parseZTime(strTime);
 				String fileUrl = baseUrl + "/" + key;
 				File saveAs = new File(baseDir, key);
-				learnDl(fileUrl, saveAs, timestamp);
+				learnDl(index, indexHash, fileUrl, saveAs, timestamp);
 			}
 		}
 	}

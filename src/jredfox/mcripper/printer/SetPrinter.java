@@ -11,7 +11,7 @@ import jredfox.filededuper.util.IOUtils;
 public class SetPrinter extends Printer{
 
 	public Set<String> set;
-	public SetPrinter(File root, File log, int capacity) throws IOException 
+	public SetPrinter(File root, File log, int capacity)
 	{
 		super(root, log);
 		this.set = new LinkedHashSet<>(capacity);
