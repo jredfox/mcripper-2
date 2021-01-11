@@ -47,10 +47,10 @@ public class Learner implements Closeable{
 			String cachedSha1 = IOUtils.getFileLines(IOUtils.getReader(this.sha1File)).get(0).trim();
 			if(!this.sha1.equals(cachedSha1))
 			{
-				System.out.print("resetting machine learning index mismatch expected:" + this.sha1 + " actual:" + cachedSha1);
+				System.out.println("resetting machine learning index mismatch expected:" + this.sha1 + " actual:" + cachedSha1);
 				this.bad.log.delete();
 				this.learner.log.delete();
-				return;
+				this.saveSha1();
 			}
 		}
 		else

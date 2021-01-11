@@ -19,6 +19,7 @@ import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
 import jredfox.filededuper.util.DeDuperUtil;
+import jredfox.mcripper.McRipper;
 import jredfox.mcripper.printer.HashPrinter;
 import jredfox.mcripper.printer.Learner;
 import jredfox.selfcmd.util.OSUtil;
@@ -77,7 +78,7 @@ public class DLUtils {
 	
 	public static File learnExtractDL(Class<?> clazz, String path, File saveAs)
 	{
-		return DLUtils.learnDl(clazz.getClassLoader().getResource(path).toString(), saveAs);
+		return DLUtils.learnDl("extraction", McRipper.version, clazz.getClassLoader().getResource(path).toString(), saveAs);
 	}
 	
 	/**
@@ -244,7 +245,6 @@ public class DLUtils {
 	
 	public static Learner getLearner(String index, String indexHash) 
 	{
-		index = String.valueOf(index);
 		Learner learner = Learner.learners.get(index);
 		if(learner == null)
 		{
