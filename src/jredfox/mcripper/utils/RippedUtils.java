@@ -6,7 +6,6 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.net.JarURLConnection;
 import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.net.URL;
@@ -303,7 +302,12 @@ public class RippedUtils {
 	 */
 	public static long parseOffsetTime(String strTime) throws DateTimeParseException
 	{
-		return OffsetDateTime.parse(strTime).toInstant().toEpochMilli();
+		try {
+			return OffsetDateTime.parse(strTime).toInstant().toEpochMilli();
+		}
+		catch(DateTimeParseException e){}
+		
+		return -1;
 	}
 	
 	public static long getTime(URLConnection con)

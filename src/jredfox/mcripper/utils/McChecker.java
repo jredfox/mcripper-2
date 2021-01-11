@@ -379,14 +379,7 @@ public class McChecker {
 		File oldMcDir = new File(mcripped, "old/Minecraft.Download");
 		String assetsId = json.getString("assets");
 		String version = json.getString("id");
-		try
-		{
-			long clientTime = RippedUtils.parseOffsetTime(json.getString("releaseTime"));
-		}
-		catch(Exception e)
-		{
-			System.err.println(file.getAbsolutePath());
-		}
+		long clientTime = RippedUtils.parseOffsetTime(json.getString("releaseTime"));
 		String type = json.getString("type");
 		
 		String checkPath = version + ".json";
@@ -405,7 +398,7 @@ public class McChecker {
 		assets.add(DLUtils.learnDl(urlBase + "indexes/" + checkPath, checkFile));
 		assets.add(DLUtils.learnDl(urlBase + "indexes/" + assetsPath, assetsFile));
 		
-		DLUtils.learnDl(urlBase + "versions/" + version + "/" + version + ".jar", jarFile, -1);
+		DLUtils.learnDl(urlBase + "versions/" + version + "/" + version + ".jar", jarFile, clientTime);
 		DLUtils.learnDl(urlBase + "versions/" + version + "/" + "minecraft_server." + version + ".jar", serverJarFile);
 		DLUtils.learnDl(urlBase + "versions/" + version + "/" + "minecraft_server." + version + ".exe", serverExeFile);
 		oldMinor++;
