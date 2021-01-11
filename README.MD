@@ -1,15 +1,15 @@
 Rip Minecraft assets from mojang for archiving purposes. You will still need to buy an account to run the game of course. this program is for archiving purposes only. You can rip from .minecraft
 
 Commands
-- rip dir/version.json/assetsIndex.json outputDir --mcDir=value -s -a
-- rip assetsIndex.json & minecraft.jar & outputDir -s -a
-- checkAll (WARNING: this could dl up to 21GB+ worth of data if none of the other commands were ran)
-- checkMojang --skipSnaps --mcDir=value
-- checkDisk --skipSnaps --skipOldMajors --mcDir=value
+- rip dir/version.json/assetsIndex.json outputDir `--mcDir=value -s -a`
+- rip assetsIndex.json & minecraft.jar & outputDir `-s -a`
+- checkAll `-c` (WARNING: this could dl up to 21GB+ worth of data if none of the other commands were ran)
+- checkMojang `--skipSnaps --mcDir=value`
+- checkDisk `--skipSnaps --skipOldMajors --mcDir=value`
 - checkOmni
-- checkOld --mcDir=value --skipSnaps
+- checkOld `--mcDir=value --skipSnaps -c`
 - recomputeHashes
-- verify
+- verify `--info`
 - help
 
 Details:
@@ -21,6 +21,9 @@ Details:
 - `checkOld` checks files of older minecraft sites such as s3.amazonaws.com all minecraft domains and uses legacy json apis. the major json is found at http://s3.amazonaws.com/Minecraft.Download/versions/versions.json
 - `verify` verifies the integraty of your current archive downloads and deletes invalid files without the `--info` flag. As checking the hash integraty of every download would slow down the process and mojang's files don't always read the hash the json/url provides
 - `recomputeHashes` use this command after the verify command to recompute your index.hash and reset your machine learned data
+-  the `-c` flag resets global learned data and forces it to be re-checked(aka downloaded)
+- `--mcDir=path` sets the dir of the minecraft
+- `--skipSnaps` skips snapshots
 
 Links / API notes:
 ```
