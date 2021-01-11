@@ -16,11 +16,8 @@ import jredfox.filededuper.util.DeDuperUtil;
 import jredfox.filededuper.util.IOUtils;
 import jredfox.mcripper.McRipper;
 import jredfox.mcripper.data.FileSet;
-import jredfox.mcripper.printer.CSVPrinter;
 import jredfox.mcripper.printer.HashPrinter;
 import jredfox.mcripper.printer.Learner;
-import jredfox.mcripper.printer.MapPrinter;
-import jredfox.mcripper.printer.SetPrinter;
 import jredfox.selfcmd.util.OSUtil;
 
 public class McChecker {
