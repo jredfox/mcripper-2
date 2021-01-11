@@ -135,7 +135,7 @@ public class McChecker {
 		{
 			DLUtils.dlAmazonAws("http://s3.amazonaws.com/MinecraftResources", "old/MinecraftResources");
 			DLUtils.dlAmazonAws("http://s3.amazonaws.com/Minecraft.Resources", "old/Minecraft.Resources");
-			DLUtils.dlAmazonAws("http://assets.minecraft.net", extractAssetsXml());
+			DLUtils.dlAmazonAws("http://assets.minecraft.net", "old/assets_minecraft_net", extractAssetsXml());
 			DLUtils.dlAmazonAws("http://s3.amazonaws.com/MinecraftDownload", "old/MinecraftDownload");
 			checkOldVersions(skipSnaps);
 		}
@@ -147,7 +147,7 @@ public class McChecker {
 	
 	public static File extractAssetsXml() 
 	{
-		return DLUtils.learnExtractDL(McChecker.class, "resources/mcripper/aws/assets.minecraft.net-2016-11-06.xml", new File(McChecker.mcripped, "old/assets_minecraft_net/assets_minecraft_net.xml"));
+		return DLUtils.learnExtractDL(McChecker.class, "resources/mcripper/aws/assets_minecraft_net-2016-11-06.xml", new File(McChecker.mcripped, "old/assets_minecraft_net/assets_minecraft_net.xml"));
 	}
 
 	public static void checkOldVersions(boolean skipSnaps) throws FileNotFoundException, IOException 
@@ -379,7 +379,14 @@ public class McChecker {
 		File oldMcDir = new File(mcripped, "old/Minecraft.Download");
 		String assetsId = json.getString("assets");
 		String version = json.getString("id");
-		long clientTime = RippedUtils.parseOffsetTime(json.getString("releaseTime"));
+		try
+		{
+			long clientTime = RippedUtils.parseOffsetTime(json.getString("releaseTime"));
+		}
+		catch(Exception e)
+		{
+			System.err.println(file.getAbsolutePath());
+		}
 		String type = json.getString("type");
 		
 		String checkPath = version + ".json";
@@ -398,7 +405,7 @@ public class McChecker {
 		assets.add(DLUtils.learnDl(urlBase + "indexes/" + checkPath, checkFile));
 		assets.add(DLUtils.learnDl(urlBase + "indexes/" + assetsPath, assetsFile));
 		
-		DLUtils.learnDl(urlBase + "versions/" + version + "/" + version + ".jar", jarFile, clientTime);
+		DLUtils.learnDl(urlBase + "versions/" + version + "/" + version + ".jar", jarFile, -1);
 		DLUtils.learnDl(urlBase + "versions/" + version + "/" + "minecraft_server." + version + ".jar", serverJarFile);
 		DLUtils.learnDl(urlBase + "versions/" + version + "/" + "minecraft_server." + version + ".exe", serverExeFile);
 		oldMinor++;

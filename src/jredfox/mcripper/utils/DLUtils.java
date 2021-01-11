@@ -259,19 +259,27 @@ public class DLUtils {
 		}
 		return learner;
 	}
+	
+	/**
+	 * dl all files from an amazonAws website
+	 * @return the xmlIndex if it returns null it did not succeed
+	 */
+	public static void dlAmazonAws(String url, String path) throws FileNotFoundException, IOException, SAXException, ParserConfigurationException
+	{
+		dlAmazonAws(url, path, null);
+	}
 
 	/**
 	 * dl all files from an amazonAws website
-	 * @throws IOException 
-	 * @throws FileNotFoundException 
-	 * @throws ParserConfigurationException 
-	 * @throws SAXException 
+	 * @return the xmlIndex if it returns null it did not succeed
 	 */
-	public static void dlAmazonAws(String url, String path) throws FileNotFoundException, IOException, SAXException, ParserConfigurationException
+	public static void dlAmazonAws(String url, String path, File extracted) throws FileNotFoundException, IOException, SAXException, ParserConfigurationException
 	{
 		File baseDir = new File(McChecker.mcripped, path);
 		String xname = DeDuperUtil.getTrueName(baseDir) + ".xml";
 		File xmlFile = safeDlMove(url, path + "/" + xname, new File(baseDir, xname));
+		if(xmlFile == null)
+			xmlFile = extracted;
 		dlAmazonAws(url, baseDir, xmlFile);
 	}
 	
