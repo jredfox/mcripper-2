@@ -22,8 +22,8 @@ Details:
 - `verify` verifies the integraty of your current archive downloads and deletes invalid files without the `--info` flag. As checking the hash integraty of every download would slow down the process and mojang's files don't always read the hash the json/url provides
 - `recomputeHashes` use this command after the verify command to recompute your index.hash and reset your machine learned data
 -  the `-c` flag resets global learned data and forces it to be re-checked(aka downloaded)
-- `-mcDir=path` sets the dir of the minecraft
-- `-skipSnaps` skips snapshots
+- `--mcDir=path` sets the dir of the minecraft
+- `--skipSnaps` skips snapshots
 
 Links / API notes:
 ```
