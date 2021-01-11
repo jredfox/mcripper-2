@@ -298,11 +298,19 @@ public class RippedUtils {
 	}
 	
 	/**
-	 * parse the offset times. example: 2015-11-10T16:43:29-0500 and 2014-05-14T17:29:23+00:00
+	 * parse the offset times. example: 2015-11-10T16:43:29-0500 and 2014-05-14T17:29:23+00:00. returns -1 if not found
 	 */
 	public static long parseOffsetTime(String strTime)
 	{
-		return OffsetDateTime.parse(strTime).toInstant().toEpochMilli();
+		try
+		{
+			return OffsetDateTime.parse(strTime).toInstant().toEpochMilli();
+		}
+		catch(Exception e)
+		{
+			System.err.println(e.getMessage());
+		}
+		return -1;
 	}
 	
 	public static long getTime(URLConnection con)

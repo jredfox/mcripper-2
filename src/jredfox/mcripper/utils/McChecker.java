@@ -234,8 +234,8 @@ public class McChecker {
 			return null;
 		}
 		//check legacy assetsIndex
-		if(fCheckOld || !json.containsKey("assetIndex"))
-			assets.addAll(checkOldMinor(json));
+		if(fCheckOld || !json.containsKey("assetIndex") || !json.containsKey("downloads"))
+			assets.addAll(checkOldMinor(version, json));
 		
 		//download the asset indexes
 		if(json.containsKey("assetIndex"))
@@ -372,7 +372,7 @@ public class McChecker {
 		return assets;
 	}
 	
-	public static Set<File> checkOldMinor(JSONObject json) 
+	public static Set<File> checkOldMinor(File file, JSONObject json) 
 	{
 		Set<File> assets = new FileSet(2);
 		String urlBase = "http://s3.amazonaws.com/Minecraft.Download/";
@@ -482,8 +482,8 @@ public class McChecker {
 		jsonMajor = new File(jsonDir, "major");
 		jsonMinor = new File(jsonDir, "minor");
 		jsonAssets = new File(jsonDir, "assets");
-		jsonOldMajor = new File(jsonDir, "oldmajors");
-		jsonOldMinor = new File(jsonDir, "oldminors");
+		jsonOldMajor = new File(jsonDir, "oldmajor");
+		jsonOldMinor = new File(jsonDir, "oldminor");
 		
 		hash = new HashPrinter(root, new File(root, "index.hash"), 10000);
 	}
