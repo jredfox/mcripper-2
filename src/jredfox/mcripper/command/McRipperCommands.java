@@ -19,8 +19,6 @@ import jredfox.filededuper.command.exception.CommandParseException;
 import jredfox.filededuper.util.DeDuperUtil;
 import jredfox.filededuper.util.IOUtils;
 import jredfox.filededuper.util.JarUtil;
-import jredfox.mcripper.printer.Learner;
-import jredfox.mcripper.printer.Printer;
 import jredfox.mcripper.utils.DLUtils;
 import jredfox.mcripper.utils.McChecker;
 import jredfox.mcripper.utils.RippedUtils;
@@ -29,13 +27,15 @@ public class McRipperCommands {
 	
 	private static final String skipSnaps = "skipSnaps";
 	private static final String mcDir = "mcDir=value";
+	protected static final char clear = 'c';
 	
-	public static RipperCommand checkAll = new RipperCommand(new String[]{"--" + mcDir, "--" + skipSnaps}, "checkAll")
+	public static RipperCommand checkAll = new RipperCommand(new String[]{"--" + mcDir, "--" + skipSnaps, "-" + clear}, "checkAll")
 	{
 		@Override
 		public void run(ParamList<Object> params) 
 		{
 			long start = System.currentTimeMillis();
+			this.clearGlobal(params);
 			params.options.add(new CommandOption("--internal"));
 			System.out.println("CHECKING MOJANG:");
 			McRipperCommands.checkMojang.run(params);
@@ -45,7 +45,7 @@ public class McRipperCommands {
 			McRipperCommands.checkOld.run(params);
 			System.out.println("CHECKING THE DISK FOR CUSTOM JSONS:");
 			McRipperCommands.checkDisk.run(params);
-			this.clear();
+			this.clear(params);
 			System.out.println("Finished checkAll in:" + (System.currentTimeMillis() - start) / 1000D + " seconds" + (McChecker.oldMajorCount > 0 ? " oldMajor:" + McChecker.oldMajorCount : "") + " major:" + McChecker.majorCount + (McChecker.oldMinor > 0 ? " oldMinor:" + McChecker.oldMinor : "") + " minor:" + McChecker.minorCount + " assets:" + McChecker.assetsCount);
 		}
 	};
@@ -96,12 +96,13 @@ public class McRipperCommands {
 		}
 	};
 	
-	public static RipperCommand checkOld = new RipperCommand(new String[]{"--" + mcDir, "--" + skipSnaps}, "checkOld")
+	public static RipperCommand checkOld = new RipperCommand(new String[]{"--" + mcDir, "--" + skipSnaps, "-" + clear}, "checkOld")
 	{
 		@Override
 		public void run(ParamList<Object> params)
 		{
 			this.start(params);
+			this.clearGlobal(params);
 			McChecker.checkOldMc(params.hasFlag("skipSnaps"));
 			this.finish(params);
 		}

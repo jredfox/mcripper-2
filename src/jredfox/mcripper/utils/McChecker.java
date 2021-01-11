@@ -492,7 +492,7 @@ public class McChecker {
 	{
 		long ms = System.currentTimeMillis();
 		hash.load();
-		System.out.println("parsed hashes & data in:" + (System.currentTimeMillis() - ms) + "ms");
+		System.out.println("parsed hashes in:" + (System.currentTimeMillis() - ms) + "ms");
 		extractJsons();
 	}
 

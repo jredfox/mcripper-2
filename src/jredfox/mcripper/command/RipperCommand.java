@@ -4,6 +4,7 @@ import java.io.File;
 
 import jredfox.filededuper.command.Command;
 import jredfox.filededuper.command.ParamList;
+import jredfox.filededuper.util.IOUtils;
 import jredfox.mcripper.utils.McChecker;
 
 public abstract class RipperCommand extends Command<Object>{
@@ -40,11 +41,22 @@ public abstract class RipperCommand extends Command<Object>{
 	{
 		if(params.hasFlag("internal"))
 			return;
-		this.clear();
+		this.clear(params);
 		System.out.println("Done in:" + (System.currentTimeMillis() - ms) / 1000D + " seconds" + (McChecker.oldMajorCount > 0 ? " oldMajor:" + McChecker.oldMajorCount : "") + " major:" + McChecker.majorCount + (McChecker.oldMinor > 0 ? " oldMinor:" + McChecker.oldMinor : "") + " minor:" + McChecker.minorCount + " assets:" + McChecker.assetsCount);
 	}
 	
-	public void clear() 
+	public void clearGlobal(ParamList<?> params)
+	{
+		if(params.hasFlag("internal"))
+			return;
+		if(params.hasFlag(McRipperCommands.clear))
+		{
+			IOUtils.deleteDirectory(new File(McChecker.lRoot, "global"));
+			System.out.println("forgot global learning data");
+		}
+	}
+	
+	public void clear(ParamList<?> params) 
 	{
 		this.setMcDefault();
 		McChecker.checkJsons.clear();

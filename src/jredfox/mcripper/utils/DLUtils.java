@@ -8,7 +8,6 @@ import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
-import java.util.Iterator;
 
 import javax.xml.parsers.ParserConfigurationException;
 
@@ -295,7 +294,7 @@ public class DLUtils {
 			System.err.println("XML file appears to be missing Contents:" + xmlFile.getAbsolutePath() + " from:" + baseUrl);
 			return;
 		}
-		String index = DeDuperUtil.getTrueName(baseDir);
+		String index = DeDuperUtil.getTrueName(xmlFile);
 		String indexHash = RippedUtils.getSHA1(xmlFile);
 		for(int i=0; i < nlist.getLength(); i++)
 		{
