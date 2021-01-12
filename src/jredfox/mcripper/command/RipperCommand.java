@@ -60,6 +60,7 @@ public abstract class RipperCommand extends Command<Object>{
 	{
 		this.setMcDefault();
 		McChecker.checkJsons.clear();
+		IOUtils.deleteDirectory(McChecker.tmp);
 	}
 
 	public void setMcDefault()

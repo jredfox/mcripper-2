@@ -215,7 +215,7 @@ public class DLUtils {
 			File tmpFile = dlToFile(url, new File(McChecker.tmp, spath), timestamp);
 			timestamp = tmpFile.lastModified();//use the one on the cached disk first
 			String hash = RippedUtils.getSHA1(tmpFile);
-			System.out.println("learned:" + url + ", " + hash + ", " + timestamp);
+			System.out.println("learned:" + url + ", " + hash);
 			File moved = dl(RippedUtils.toURL(tmpFile).toString(), saveAs, timestamp, hash);
 			tmpFile.delete();
 			learner.learner.append(urlPath, hash);

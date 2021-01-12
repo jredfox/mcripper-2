@@ -38,12 +38,6 @@ public class McRipper {
 			McChecker.parseHashes();
 		cmd.run();
 		McChecker.closePrinters();
-		if(McChecker.tmp.exists())
-		{
-			System.out.println("deleting temp folder");
-			IOUtils.deleteDirectory(McChecker.tmp);
-			System.out.println("shutting down...");
-		}
 	}
 	
 	public static void loadCfg() throws IOException
