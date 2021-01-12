@@ -18,7 +18,7 @@ Details:
 - `checkMojang` rips all assets obtainable from checking mojang's master json files from https://launchermeta.mojang.com/mc/game/version_manifest.json and https://launchermeta.mojang.com/mc/game/version_manifest_v2.json
 - `checkDisk` checks all jsons files stored at `mcripped/jsons/*` the purpose of this command is to recheck all jsons stored on the disk even custom ones no longer obtainable
 - `checkOmni` checks omni archive that has mc versions that the current launcher does not
-- `checkOld` checks files of older minecraft sites such as s3.amazonaws.com all minecraft domains and uses legacy json apis. the major json is found at http://s3.amazonaws.com/Minecraft.Download/versions/versions.json
+- `checkOld` checks files of older minecraft sites such as s3.amazonaws.com all minecraft domains and uses legacy json apis. the major json is found at http://s3.amazonaws.com/Minecraft.Download/versions/versions.json . Also goes through a list of all snapshots from beta 1.8 - 1.16.4 and some 1.17
 - `verify` verifies the integraty of your current archive downloads and deletes invalid files without the `--info` flag. As checking the hash integraty of every download would slow down the process and mojang's files don't always read the hash the json/url provides
 - `recomputeHashes` use this command after the verify command to recompute your index.hash and reset your machine learned data
 -  the `-c` flag resets global learned data and forces it to be re-checked(aka downloaded)
