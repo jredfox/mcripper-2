@@ -2,7 +2,6 @@ package jredfox.mcripper.printer;
 
 import java.io.BufferedWriter;
 import java.io.File;
-import java.io.IOException;
 import java.util.LinkedHashSet;
 import java.util.Set;
 

@@ -24,7 +24,7 @@ public class McRipper {
 	}
 	
 	public static final String appId = "Mcripper";
-	public static final String version = "rc.1-nightly-1-11-2021-03:12:37.Z";
+	public static final String version = "rc.1-nightly-1-11-2021-23:54:07.Z";
 	public static final String appName = "MC Ripper 2 Build: " + version;
 	
 	public static void main(String[] args) throws Exception
@@ -38,7 +38,12 @@ public class McRipper {
 			McChecker.parseHashes();
 		cmd.run();
 		McChecker.closePrinters();
-		IOUtils.deleteDirectory(McChecker.tmp);
+		if(McChecker.tmp.exists())
+		{
+			System.out.println("deleting temp folder");
+			IOUtils.deleteDirectory(McChecker.tmp);
+			System.out.println("shutting down...");
+		}
 	}
 	
 	public static void loadCfg() throws IOException

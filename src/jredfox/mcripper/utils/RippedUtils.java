@@ -228,6 +228,11 @@ public class RippedUtils {
 		return new File(McChecker.root, path);
 	}
 	
+	public static InputStream getInputStreamFromJar(Class<?> clazz, String path)
+	{
+		return clazz.getClassLoader().getResourceAsStream(path);
+	}
+	
 	public static Set<String> getPathsFromDir(Class<?> clazz, String path) throws URISyntaxException, IOException 
 	{
 		return getPathsFromDir(clazz, path, "*");

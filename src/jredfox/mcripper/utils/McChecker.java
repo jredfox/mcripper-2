@@ -162,6 +162,18 @@ public class McChecker {
 			Set<File> assets = checkMinor(oldMinor, skipSnaps, true);
 			oldAssets.addAll(assets);//populate anything checking a minor may update
 		}
+		
+		//manually download missing versions
+		if(!skipSnaps)
+		{
+			List<String> list = IOUtils.getFileLines(IOUtils.getReader("resources/mcripper/snapshots.txt"));
+			File oldMcDir = new File(mcripped, "old/Minecraft.Download");
+			for(String snapId : list)
+			{
+				McChecker.dlOldMinor(oldMcDir, "snapshot", snapId, snapId, -1);
+			}
+		}
+		
 		for(File oldAsset : oldAssets)
 		{
 			checkAssets(oldAsset);
@@ -232,7 +244,7 @@ public class McChecker {
 		}
 		//check legacy assetsIndex
 		if(fCheckOld || !json.containsKey("assetIndex") || !json.containsKey("downloads"))
-			assets.addAll(checkOldMinor(version, json));
+			assets.addAll(checkOldMinor(json));
 		
 		//download the asset indexes
 		if(json.containsKey("assetIndex"))
@@ -369,16 +381,22 @@ public class McChecker {
 		return assets;
 	}
 	
-	public static Set<File> checkOldMinor(File file, JSONObject json) 
+	public static Set<File> checkOldMinor(JSONObject json) 
 	{
-		Set<File> assets = new FileSet(2);
-		String urlBase = "http://s3.amazonaws.com/Minecraft.Download/";
 		File oldMcDir = new File(mcripped, "old/Minecraft.Download");
 		String assetsId = json.getString("assets");
 		String version = json.getString("id");
 		long clientTime = RippedUtils.parseOffsetTime(json.getString("releaseTime"));
 		String type = json.getString("type");
-		
+		Set<File> assets = dlOldMinor(oldMcDir, type, version, assetsId, clientTime);
+		oldMinor++;
+		return assets;
+	}
+	
+	public static Set<File> dlOldMinor(File oldMcDir, String type, String version, String assetsId, long clientTime)
+	{
+		Set<File> assets = new FileSet(2);
+		String urlBase = "http://s3.amazonaws.com/Minecraft.Download/";
 		String checkPath = version + ".json";
 		String assetsPath = assetsId + ".json";
 		String jarPath ="versions/" + type + "/" + version + "/" + version + ".jar";
@@ -391,14 +409,17 @@ public class McChecker {
 		File serverJarFile = new File(oldMcDir, serverPath);
 		File serverExeFile = new File(oldMcDir, serverExePath);
 		
+		//dl the files
+		File dlClient = DLUtils.learnDl(urlBase + "versions/" + version + "/" + version + ".jar", jarFile, clientTime);
+		if(dlClient == null)
+			return assets;//no need to continue here the rest should return 404
+		
+		DLUtils.learnDl(urlBase + "versions/" + version + "/" + "minecraft_server." + version + ".jar", serverJarFile);
+		DLUtils.learnDl(urlBase + "versions/" + version + "/" + "minecraft_server." + version + ".exe", serverExeFile);
+		
 		//dl the assetIndexes
 		assets.add(DLUtils.learnDl(urlBase + "indexes/" + checkPath, checkFile));
 		assets.add(DLUtils.learnDl(urlBase + "indexes/" + assetsPath, assetsFile));
-		
-		DLUtils.learnDl(urlBase + "versions/" + version + "/" + version + ".jar", jarFile, clientTime);
-		DLUtils.learnDl(urlBase + "versions/" + version + "/" + "minecraft_server." + version + ".jar", serverJarFile);
-		DLUtils.learnDl(urlBase + "versions/" + version + "/" + "minecraft_server." + version + ".exe", serverExeFile);
-		oldMinor++;
 		return assets;
 	}
 	
