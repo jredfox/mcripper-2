@@ -7,7 +7,6 @@ import jredfox.filededuper.command.Command;
 import jredfox.filededuper.command.CommandInvalid;
 import jredfox.filededuper.command.Commands;
 import jredfox.filededuper.config.simple.MapConfig;
-import jredfox.filededuper.util.IOUtils;
 import jredfox.mcripper.command.McRipperCommands;
 import jredfox.mcripper.utils.McChecker;
 import jredfox.selfcmd.SelfCommandPrompt;
@@ -24,7 +23,7 @@ public class McRipper {
 	}
 	
 	public static final String appId = "Mcripper";
-	public static final String version = "rc.1-nightly-1-11-2021-23:54:07.Z";
+	public static final String version = "rc.2-nightly-1-12-2021-04:44:56.Z";
 	public static final String appName = "MC Ripper 2 Build: " + version;
 	
 	public static void main(String[] args) throws Exception
