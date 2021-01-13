@@ -129,11 +129,8 @@ public class McRipperCommands {
 			}
 			
 			File jsonFile = new File(inputs[0]);
-			boolean hasJar = !skip && !this.isMinor(RippedUtils.getJSON(jsonFile));
-			File jarFile =  hasJar ? new File(inputs[1]) : null;
-			File outDir = new File(inputs[hasJar ? 2 : 1]);
-			if(jarFile != null && jsonFile.isDirectory())
-				throw new CommandParseException("illegal state minecraft.jar cannot be assigned to a directory of assetsIndexes!");
+			File jarFile = skip || jsonFile.isDirectory() || this.isMinor(RippedUtils.getJSON(jsonFile)) ? null : new File(inputs[1]);
+			File outDir = new File(inputs[jarFile != null ? 2 : 1]);
 			return new File[]{jsonFile, jarFile, outDir};
 		}
 
