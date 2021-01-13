@@ -71,7 +71,7 @@ public class LogPrinter extends Printer{
 
 		    @Override
 		    public void print(long l) {
-		    	this.print( String.valueOf(l));
+		    	this.print(String.valueOf(l));
 		    }
 
 		    @Override
@@ -92,12 +92,12 @@ public class LogPrinter extends Printer{
 		    @Override
 		    public void print(char[] s) {
 		        super.print(s);
-		        notifyListener(String.valueOf(s));
+		        listen(String.valueOf(s));
 		    }
 		    
 		    @Override
 		    public PrintStream append(CharSequence csq, int start, int end) {
-		        notifyListener(String.valueOf(csq)); // TODO will need some special handling
+		        listen(String.valueOf(csq)); // TODO will need some special handling
 		        return super.append(csq, start, end);
 		    }
 
@@ -105,14 +105,14 @@ public class LogPrinter extends Printer{
 		    public void print(String s) 
 		    {
 		        super.print(s);
-		        notifyListener(s);
+		        listen(s);
 		    }
 		    
 		    @Override
 		    public void println()
 		    {
 		    	super.println();
-		    	this.notifyListener("\n");
+		    	this.listenln("");
 		    }
 		    
 		    @Override
@@ -162,13 +162,19 @@ public class LogPrinter extends Printer{
 		    @Override
 		    public void println(String x)
 		    {
-		    	super.println(x);
-		    	notifyListener("\n");
+		    	this.child.println(x);
+		    	listenln(x);
 		    }
 
-		    public synchronized void notifyListener(String line)
+		    public void listen(String str)
 		    {
-		    	this.printer.print(line.replaceAll("\n", "\n[" + Instant.now() + "]" + " [" + (this.isErr ? "Err" : "STD") + "]" + ": "));
+		    	this.printer.print(str);
+		    }
+		    
+		    public void listenln(String line)
+		    {
+		    	String info = "[" + Instant.now() + "]" + " [" + (this.isErr ? "Err" : "STD") + "]" + ": ";
+		    	this.printer.println(info + line.replaceAll("\n", "\n" + info));
 		    }
 	}
 

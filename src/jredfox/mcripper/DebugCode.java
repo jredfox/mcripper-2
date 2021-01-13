@@ -12,7 +12,8 @@ public class DebugCode {
 		{
 			LogPrinter log = new LogPrinter(new File("log.txt").getAbsoluteFile(), System.out, System.err);
 			System.out.println("printing to file?????");
-			System.out.println("testing");
+			System.out.println();
+			System.err.println("testing");
 			System.err.print("a b c");
 			System.err.print("d\n");
 			System.err.println("err 404");
