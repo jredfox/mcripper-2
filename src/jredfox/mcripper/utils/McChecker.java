@@ -420,6 +420,9 @@ public class McChecker {
 		//dl the assetIndexes
 		assets.add(DLUtils.learnDl(urlBase + "indexes/" + checkPath, checkFile));
 		assets.add(DLUtils.learnDl(urlBase + "indexes/" + assetsPath, assetsFile));
+		
+		//dl the json in case it's being invoked directly instead of calling checkOldMajor
+		DLUtils.learnDl(urlBase + "versions/" + version + "/" + version + ".json", new File(jsonOldMinor, type + "/" + version + ".json"));
 		return assets;
 	}
 	
