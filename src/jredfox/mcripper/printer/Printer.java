@@ -89,6 +89,8 @@ public abstract class Printer implements Closeable{
 	
 	public void setPrintWriter() throws IOException 
 	{
+		if(!this.log.getParentFile().exists())
+			this.log.mkdirs();
 		this.out = new PrintWriter(new BufferedWriter(new FileWriter(this.log, true)), true);
 	}
 
@@ -109,6 +111,12 @@ public abstract class Printer implements Closeable{
 	public void println(Object obj)
 	{
 		this.println(String.valueOf(obj));
+	}
+	
+	public void print(String line)
+	{
+		this.out.print(line);
+    	this.out.flush();
 	}
 	
 	public void println(String line)
