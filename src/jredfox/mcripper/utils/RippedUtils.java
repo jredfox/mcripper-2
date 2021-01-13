@@ -223,6 +223,12 @@ public class RippedUtils {
 		return DeDuperUtil.getRealtivePath(McChecker.root, output.getAbsoluteFile());
 	}
 
+	public static File getFileFromHash(String hash)
+	{
+		String path = McChecker.hash.hashes.get(hash);
+		return path == null ? null : RippedUtils.getSimpleFile(path);
+	}
+	
 	public static File getSimpleFile(String path) 
 	{
 		return new File(McChecker.root, path);

@@ -118,10 +118,22 @@ public class DLUtils {
 		return dlToFile(url, output, -1);
 	}
 	
+	public static File dlToFile(String url, File output, boolean print) throws FileNotFoundException, IOException
+	{
+		return dlToFile(url, output, -1, print);
+	}
+	
 	public static File dlToFile(String url, File output, long timestamp) throws FileNotFoundException, IOException
+	{
+		return dlToFile(url, output, timestamp, false);
+	}
+	
+	public static File dlToFile(String url, File output, long timestamp, boolean print) throws FileNotFoundException, IOException
 	{
 		output = getFixedFile(output);
 		directDL(getFixedUrl(url), output, timestamp);
+		if(print)
+			System.out.println("dl:" + output + " from:" + url);
 		return output;
 	}
 	
@@ -149,14 +161,26 @@ public class DLUtils {
 		return moved;
 	}
 	
+	/**
+	 * get a mc file from the specified path or dl it to the mcDir if not applicable
+	 */
+	public static File getOrDlFromMc(File mcDir, String url, String path, String hash) throws FileNotFoundException, IOException
+	{
+		File saveAs = new File(mcDir, path).getAbsoluteFile();
+		File cached = saveAs;
+		cached = cached.exists() ? cached : McChecker.hash.contains(hash) ? RippedUtils.getFileFromHash(hash) : cached;
+		return cached.exists() && hash.equals(RippedUtils.getSHA1(cached)) ? cached : DLUtils.dlToFile(url, saveAs, true);
+	}
+	
+	/**
+	 * dl it from the cached mcDir if applicable otherwise download it from the url
+	 */
 	public static File dlFromMc(File mcDir, String url, File saveAs, String path, String hash) throws FileNotFoundException, IOException
 	{
 		File cached = new File(mcDir, path).getAbsoluteFile();
-		cached = cached.exists() ? cached : new File(McChecker.mojang, path);
-		boolean exists = cached.exists();
-		long timestamp = exists ? cached.lastModified() : -1;
-		url = exists && hash.equals(RippedUtils.getSHA1(cached)) ? RippedUtils.toURL(cached).toString() : url;
-		File f = dlToFile(url, saveAs, timestamp);
+		cached = cached.exists() ? cached : McChecker.hash.contains(hash) ? RippedUtils.getFileFromHash(hash) : cached;
+		url = cached.exists() && hash.equals(RippedUtils.getSHA1(cached)) ? RippedUtils.toURL(cached).toString() : url;
+		File f = dlToFile(url, saveAs);
 		if(!url.startsWith("file:"))
 			System.out.println("dl:" + f.getPath() + " from:" + url);
 		return f;
