@@ -29,7 +29,6 @@ public class McRipper {
 	public static void main(String[] args) throws Exception
 	{
 		args = SelfCommandPrompt.wrapWithCMD("input a command: ", appId, appName, args, true, true);
-		System.out.println("starting:" + appName);
 		loadCfg();
 		args = args.length == 0 ? new String[]{"rip"} : args;
 		Command<?> cmd = Command.fromArgs(args);
@@ -47,6 +46,7 @@ public class McRipper {
 		appdir = new File(cfg.get(McRipper.appId + "Dir", appdir.getPath())).getAbsoluteFile();
 		cfg.save();
 		McChecker.setRoot(appdir);
+		System.out.println("starting:" + appName);
 	}
 
 }

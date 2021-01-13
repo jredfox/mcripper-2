@@ -18,6 +18,7 @@ import jredfox.mcripper.McRipper;
 import jredfox.mcripper.data.FileSet;
 import jredfox.mcripper.printer.HashPrinter;
 import jredfox.mcripper.printer.Learner;
+import jredfox.mcripper.printer.LogPrinter;
 import jredfox.selfcmd.util.OSUtil;
 
 public class McChecker {
@@ -507,6 +508,7 @@ public class McChecker {
 		jsonOldMinor = new File(jsonDir, "oldminor");
 		
 		hash = new HashPrinter(root, new File(root, "index.hash"), 10000);
+		new LogPrinter(new File(root, "log.txt"), System.out, System.err);
 	}
 
 	public static void parseHashes() throws IOException, URISyntaxException
