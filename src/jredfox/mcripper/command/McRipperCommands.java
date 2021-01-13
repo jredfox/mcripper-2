@@ -15,7 +15,6 @@ import com.jml.evilnotch.lib.json.JSONObject;
 import jredfox.filededuper.command.Command;
 import jredfox.filededuper.command.CommandOption;
 import jredfox.filededuper.command.ParamList;
-import jredfox.filededuper.command.exception.CommandParseException;
 import jredfox.filededuper.util.DeDuperUtil;
 import jredfox.filededuper.util.IOUtils;
 import jredfox.filededuper.util.JarUtil;

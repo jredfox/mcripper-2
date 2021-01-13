@@ -28,7 +28,7 @@ public class McRipper {
 	
 	public static void main(String[] args) throws Exception
 	{
-		args = SelfCommandPrompt.wrapWithCMD("input a command: ", appId, appName, args, false, true);
+		args = SelfCommandPrompt.wrapWithCMD("input a command: ", appId, appName, args, true, true);
 		System.out.println("starting:" + appName);
 		loadCfg();
 		args = args.length == 0 ? new String[]{"rip"} : args;
