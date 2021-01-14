@@ -12,8 +12,7 @@ public class LogPrinter extends Printer {
 
 	public LogWrapper out;
 	public LogWrapper err;
-	protected boolean childHeader;
-	protected boolean logHeader;
+	public volatile boolean hasStarted;
 	
 	public LogPrinter(File log, PrintStream out, PrintStream err) throws IOException
 	{
@@ -23,9 +22,6 @@ public class LogPrinter extends Printer {
 	public LogPrinter(File log, PrintStream out, PrintStream err, boolean cHeader, boolean logHeader) throws IOException
 	{
 		super(log.getParentFile(), log);
-		
-		this.childHeader = cHeader;
-		this.logHeader = logHeader;
 
 		// reset the log file
 		if(log.exists())
@@ -37,21 +33,16 @@ public class LogPrinter extends Printer {
 		// set the streams
 		if(out != null) 
 		{
-			this.out = new LogPrinter.LogWrapper(this, out, false, this.childHeader, this.logHeader);
+			this.out = new LogPrinter.LogWrapper(this, out, false, cHeader, logHeader);
 			System.setOut(this.out);
 		}
 		
 		if(err != null)
 		{
-			this.err = new LogPrinter.LogWrapper(this, err, true, this.childHeader, this.logHeader);
+			this.err = new LogPrinter.LogWrapper(this, err, true, cHeader, logHeader);
 			System.setErr(this.err);
 		}
 	}
-	
-	public boolean hasChildHeader() { return this.childHeader;}
-	public boolean hasLogHeader(){ return this.logHeader; }
-	public void setChildHeader(boolean b) { this.childHeader = b;}
-	public void setLogHeader(boolean b) { this.logHeader = b; }
 
 	@Override
 	public void parse(String line) {}
@@ -62,14 +53,13 @@ public class LogPrinter extends Printer {
 
 	public class LogWrapper extends PrintStream {
 		
-		public Printer printer;
+		public LogPrinter printer;
 		public PrintStream child;
 		public final boolean isErr;
-		public boolean hasStarted;
-		public boolean childHeader;
-		public boolean logHeader;
+		public volatile boolean childHeader;
+		public volatile boolean logHeader;
 
-		public LogWrapper(Printer printer, PrintStream out, boolean isErr, boolean cHeader, boolean lHeader)
+		public LogWrapper(LogPrinter printer, PrintStream out, boolean isErr, boolean cHeader, boolean lHeader)
 		{
 			super(out, true);
 			this.printer = printer;
@@ -78,6 +68,11 @@ public class LogPrinter extends Printer {
 			this.childHeader = cHeader;
 			this.logHeader = lHeader;
 		}
+
+		public boolean hasChildHeader() { return this.childHeader;}
+		public boolean hasLogHeader(){ return this.logHeader; }
+		public void setChildHeader(boolean b) { this.childHeader = b;}
+		public void setLogHeader(boolean b) { this.logHeader = b; }
 
 		@Override
 		public void print(boolean b)
@@ -221,26 +216,16 @@ public class LogPrinter extends Printer {
 		
 		protected void writeDirect(String s)
 		{
-			String starter = this.hasStarted ? "" : this.getLogMsg();
+			String starter = this.printer.hasStarted ? "" : this.getLogMsg();
 			this.child.print(this.childHeader ? (starter + s) : s);
 			this.printer.print(this.logHeader ? (starter + s) : s);
-			this.hasStarted = !s.contains("\n");
+			this.printer.hasStarted = !s.contains("\n");
 		}
 
 		public String getLogMsg()
 		{
 			return "[" + Instant.now() + "]" + " [" + (this.isErr ? "Err" : "STD") + "]" + ": ";
 		}
-	}
-
-	public int count(String s, char lf) {
-		int count = 0;
-		for(char c : s.toCharArray())
-		{
-			if(c == lf)
-				count++;
-		}
-		return count;
 	}
 
 }
