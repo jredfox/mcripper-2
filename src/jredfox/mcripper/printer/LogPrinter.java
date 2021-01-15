@@ -27,9 +27,6 @@ public class LogPrinter extends Printer {
 		if(log.exists())
 			log.delete();
 
-		// set the printer
-		super.setPrintWriter();
-
 		// set the streams
 		if(out != null) 
 		{

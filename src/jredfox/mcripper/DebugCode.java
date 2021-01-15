@@ -11,6 +11,7 @@ public class DebugCode {
 		try
 		{
 			LogPrinter log = new LogPrinter(new File("log.txt").getAbsoluteFile(), System.out, System.err);
+			log.load();
 			System.out.println("printing to file?????");
 			System.out.println();
 			System.err.print("null point exceptiion");

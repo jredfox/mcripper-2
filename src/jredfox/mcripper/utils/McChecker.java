@@ -46,6 +46,7 @@ public class McChecker {
 	
 	//printers
 	public static HashPrinter hash;
+	public static LogPrinter logger;// the logger for the program
 
 	//mc dirs
 	public static final File mcDefaultDir = RippedUtils.getMinecraftDir();
@@ -507,8 +508,10 @@ public class McChecker {
 		jsonOldMajor = new File(jsonDir, "oldmajor");
 		jsonOldMinor = new File(jsonDir, "oldminor");
 		
-		hash = new HashPrinter(root, new File(root, "index.hash"), 10000);
-		new LogPrinter(new File(root, "log.txt"), System.out, System.err);
+		IOUtils.close(logger);
+		hash = new HashPrinter(root, new File(root, "index.hash"), 23000);
+		logger = new LogPrinter(new File(root, "log.txt"), System.out, System.err);
+		logger.load();
 	}
 
 	public static void parseHashes() throws IOException, URISyntaxException
