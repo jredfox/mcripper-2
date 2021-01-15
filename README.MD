@@ -5,7 +5,7 @@ Commands
 - rip assetsIndex.json & minecraft.jar & outputDir `-s -a`
 - checkAll `-c` (WARNING: this could dl up to 21GB+ worth of data if none of the other commands were ran)
 - checkMojang `--skipSnaps --mcDir=value`
-- checkDisk `--skipSnaps --skipOldMajors --mcDir=value`
+- checkDisk `--skipSnaps --mcDir=value`
 - checkOmni
 - checkOld `--mcDir=value --skipSnaps -c`
 - recomputeHashes
