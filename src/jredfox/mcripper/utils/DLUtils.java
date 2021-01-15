@@ -202,7 +202,10 @@ public class DLUtils {
 	public static String getMcURL(File mcDir, String url, String path, String hash) throws MalformedURLException
 	{
 		File cached = new File(mcDir, path);
-		return cached.exists() && RippedUtils.getSHA1(cached).equals(hash) ? RippedUtils.toURL(cached).toString() : url;
+		String fixedUrl = cached.exists() && RippedUtils.getSHA1(cached).equals(hash) ? RippedUtils.toURL(cached).toString() : url;
+		if(fixedUrl.contains("file:"))
+			System.out.println("fetched URL from:" + fixedUrl);
+		return fixedUrl;
 	}
 	
 	public static File learnDl(String url, File saveAs)

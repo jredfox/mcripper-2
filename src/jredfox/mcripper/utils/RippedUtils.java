@@ -327,4 +327,10 @@ public class RippedUtils {
 		return ms != 0 ? ms : System.currentTimeMillis();
 	}
 
+	public static String getExtensionFull(String fname) 
+	{
+		String ext = DeDuperUtil.getExtension(fname);
+		return ext.isEmpty() ? "" : "." + ext;
+	}
+
 }

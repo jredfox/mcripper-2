@@ -199,7 +199,7 @@ public class McChecker {
 			if(skipSnaps && type.startsWith("snapshot"))
 				continue;
 			long time = RippedUtils.parseOffsetTime(jsonVersion.getString("time"));
-			File minor = DLUtils.dl(url, "versions/" + version + ".json", new File(jsonMinor, type + "/" + version + ".json"), time, minorHash);
+			File minor = DLUtils.dl(url, "versions/" + version + "/" + version + ".json", new File(jsonMinor, type + "/" + version + ".json"), time, minorHash);
 			minors.add(minor.getAbsoluteFile());
 		}
 		majorCount++;
@@ -286,7 +286,7 @@ public class McChecker {
 				String dataUrl = data.getString("url");
 				String[] dataUrlSplit = dataUrl.replace("\\", "/").split("/");
 				String name = dataUrlSplit[dataUrlSplit.length - 1];
-				DLUtils.dl(dataUrl, "versions/" + versionName + "/" + versionName + DeDuperUtil.getExtension(name), new File(mojang, "versions/" + type + "/" + versionName + "/" + versionName + "-" + name), time, dataSha1);
+				DLUtils.dl(dataUrl, "versions/" + versionName + "/" + versionName + RippedUtils.getExtensionFull(name), new File(mojang, "versions/" + type + "/" + versionName + "/" + versionName + "-" + name), time, dataSha1);
 			}
 		}
 		
