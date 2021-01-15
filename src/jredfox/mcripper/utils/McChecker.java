@@ -199,7 +199,7 @@ public class McChecker {
 			if(skipSnaps && type.startsWith("snapshot"))
 				continue;
 			long time = RippedUtils.parseOffsetTime(jsonVersion.getString("time"));
-			File minor = DLUtils.dl(url, new File(jsonMinor, type + "/" + version + ".json"), time, minorHash);
+			File minor = DLUtils.dl(url, "versions/" + version + ".json", new File(jsonMinor, type + "/" + version + ".json"), time, minorHash);
 			minors.add(minor.getAbsoluteFile());
 		}
 		majorCount++;
@@ -255,7 +255,7 @@ public class McChecker {
 			String id = aIndex.getString("id");
 			String sha1 = aIndex.getString("sha1").toLowerCase();
 			String url = aIndex.getString("url");
-			assets.add(DLUtils.dl(url, new File(jsonAssets, id + ".json"), sha1));
+			assets.add(DLUtils.dl(url, "assets/indexes/" + id + ".json", new File(jsonAssets, id + ".json"), sha1));
 		}
 		
 		//download the logging
@@ -269,7 +269,8 @@ public class McChecker {
 				String logId = logFile.getString("id");
 				String logSha1 = logFile.getString("sha1");
 				String logUrl = logFile.getString("url");
-				DLUtils.dl(logUrl, new File(mojang, "assets/log_configs/" + logId), logSha1);
+				String logPath = "assets/log_configs/" + logId;
+				DLUtils.dl(logUrl, logPath, new File(mojang, logPath), logSha1);
 			}
 		}
 		
@@ -285,7 +286,7 @@ public class McChecker {
 				String dataUrl = data.getString("url");
 				String[] dataUrlSplit = dataUrl.replace("\\", "/").split("/");
 				String name = dataUrlSplit[dataUrlSplit.length - 1];
-				DLUtils.dl(dataUrl, new File(mojang, "versions/" + type + "/" + versionName + "/" + versionName + "-" + name), time, dataSha1);
+				DLUtils.dl(dataUrl, "versions/" + versionName + "/" + versionName + DeDuperUtil.getExtension(name), new File(mojang, "versions/" + type + "/" + versionName + "/" + versionName + "-" + name), time, dataSha1);
 			}
 		}
 		
@@ -306,7 +307,7 @@ public class McChecker {
 						String libPath = artifact.getString("path");
 						String libSha1 = artifact.getString("sha1");
 						String libUrl = artifact.getString("url");
-						DLUtils.dl(libUrl, new File(mojang, "libraries/" + libPath), libSha1);
+						DLUtils.dl(libUrl, "libraries/" + libPath, new File(mojang, "libraries/" + libPath), libSha1);
 					}
 					//download the classifiers
 					if(downloads.containsKey("classifiers"))
@@ -318,7 +319,7 @@ public class McChecker {
 							String clPath = cl.getString("path");
 							String clSha1 = cl.getString("sha1");
 							String clUrl = cl.getString("url");
-							DLUtils.dl(clUrl, new File(mojang, "libraries/" + clPath), clSha1);
+							DLUtils.dl(clUrl, "libraries/" + clPath, new File(mojang, "libraries/" + clPath), clSha1);
 						}
 					}
 				}
@@ -444,7 +445,8 @@ public class McChecker {
 			String assetSha1 = assetJson.getString("hash");
 			String twoChar = assetSha1.substring(0, 2);
 			String assetUrl = "https://resources.download.minecraft.net/" + twoChar + "/" + assetSha1;
-			DLUtils.dl(assetUrl, new File(mojang, "assets/objects/" + twoChar + "/" + assetSha1), assetSha1);
+			String assetPath = "assets/objects/" + twoChar + "/" + assetSha1;
+			DLUtils.dl(assetUrl, assetPath, new File(mojang, assetPath), assetSha1);
 		}
 		assetsCount++;
 	}

@@ -25,24 +25,34 @@ import jredfox.selfcmd.util.OSUtil;
 
 public class DLUtils {
 	
-	public static File dl(String url, File saveAs, String hash) throws FileNotFoundException, IOException
+	public static File dl(String url, File saveAs, String hash) throws FileNotFoundException, IllegalArgumentException, IOException
 	{
 		return dl(url, saveAs, -1, hash);
 	}
 	
+	public static File dl(String url, File saveAs, long timestamp, String hash) throws FileNotFoundException, IllegalArgumentException, IOException 
+	{
+		return dl(url, null, saveAs, timestamp, hash);
+	}
+	
+	public static File dl(String url, String mcPath, File saveAs, String hash) throws FileNotFoundException, IOException, IllegalArgumentException
+	{
+		return dl(url, mcPath, saveAs, -1, hash);
+	}
+
 	/**
 	 * download a file to the path specified. With timestamp and hashing support. 
 	 * The hash is in case the file destination already exists. To allow override pass "override" as the hash
 	 */
-	public static File dl(String url, File saveAs, long timestamp, String hash) throws FileNotFoundException, IOException, IllegalArgumentException
+	public static File dl(String url, String mcPath, File saveAs, long timestamp, String hash) throws FileNotFoundException, IOException, IllegalArgumentException
 	{
-		HashPrinter printer = McChecker.hash;
-		url = getFixedUrl(url);
 		if(hash == null)
 			throw new IllegalArgumentException("hash cannot be null!");
 		
-		long time = System.currentTimeMillis();
+		HashPrinter printer = McChecker.hash;
+		url = getFixedUrl(url);
 		saveAs = getFixedFile(saveAs);
+		long time = System.currentTimeMillis();
 		
 		try
 		{	
@@ -62,6 +72,9 @@ public class DLUtils {
 				}
 				saveAs = hfile;
 			}
+			
+			if(mcPath != null)
+				url = DLUtils.getMcURL(McChecker.mcDir, url, mcPath, hash);
 			
 			directDL(url, saveAs, timestamp);
 			System.out.println("dl:" + RippedUtils.getSimplePath(saveAs) + " in:" + (System.currentTimeMillis() - time) + "ms " + " from:" + url);
@@ -184,6 +197,12 @@ public class DLUtils {
 		if(!url.startsWith("file:"))
 			System.out.println("dl:" + f.getPath() + " from:" + url);
 		return f;
+	}
+	
+	public static String getMcURL(File mcDir, String url, String path, String hash) throws MalformedURLException
+	{
+		File cached = new File(mcDir, path);
+		return cached.exists() && RippedUtils.getSHA1(cached).equals(hash) ? RippedUtils.toURL(cached).toString() : url;
 	}
 	
 	public static File learnDl(String url, File saveAs)
