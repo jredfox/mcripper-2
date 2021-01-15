@@ -333,4 +333,21 @@ public class RippedUtils {
 		return ext.isEmpty() ? "" : "." + ext;
 	}
 
+	public static long getTime(String old) 
+	{
+		try
+		{
+			URLConnection con = new URL(old).openConnection();
+			con.setConnectTimeout(15000);
+			long time = getTime(con);
+			con.getInputStream().close();
+			return time;
+		}
+		catch(Exception e)
+		{
+			e.printStackTrace();
+		}
+		return -1;
+	}
+
 }

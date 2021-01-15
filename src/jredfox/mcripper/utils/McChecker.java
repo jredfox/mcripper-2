@@ -445,8 +445,7 @@ public class McChecker {
 			String assetSha1 = assetJson.getString("hash");
 			String twoChar = assetSha1.substring(0, 2);
 			String assetUrl = "https://resources.download.minecraft.net/" + twoChar + "/" + assetSha1;
-			String assetPath = "assets/objects/" + twoChar + "/" + assetSha1;
-			DLUtils.dl(assetUrl, assetPath, new File(mojang, assetPath), assetSha1);
+			DLUtils.dl(assetUrl, new File(mojang, "assets/objects/" + twoChar + "/" + assetSha1), assetSha1);//runs actually faster just dling it from online because the server is really fast
 		}
 		assetsCount++;
 	}

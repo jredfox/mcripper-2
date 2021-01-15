@@ -74,7 +74,13 @@ public class DLUtils {
 			}
 			
 			if(mcPath != null)
+			{
+				long ms = System.currentTimeMillis();
+				String old = url;
 				url = DLUtils.getMcURL(McChecker.mcDir, url, mcPath, hash);
+				if(timestamp == -1 && !url.equals(old))
+					timestamp = RippedUtils.getTime(old);
+			}
 			
 			directDL(url, saveAs, timestamp);
 			System.out.println("dl:" + RippedUtils.getSimplePath(saveAs) + " in:" + (System.currentTimeMillis() - time) + "ms " + " from:" + url);
@@ -203,8 +209,6 @@ public class DLUtils {
 	{
 		File cached = new File(mcDir, path);
 		String fixedUrl = cached.exists() && RippedUtils.getSHA1(cached).equals(hash) ? RippedUtils.toURL(cached).toString() : url;
-		if(fixedUrl.contains("file:"))
-			System.out.println("fetched URL from:" + fixedUrl);
 		return fixedUrl;
 	}
 	
