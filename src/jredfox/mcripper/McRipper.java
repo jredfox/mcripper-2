@@ -8,6 +8,7 @@ import jredfox.filededuper.command.CommandInvalid;
 import jredfox.filededuper.command.Commands;
 import jredfox.filededuper.config.simple.MapConfig;
 import jredfox.mcripper.command.McRipperCommands;
+import jredfox.mcripper.command.RipperCommand;
 import jredfox.mcripper.utils.McChecker;
 import jredfox.selfcmd.SelfCommandPrompt;
 import jredfox.selfcmd.util.OSUtil;
@@ -23,7 +24,7 @@ public class McRipper {
 	}
 	
 	public static final String appId = "Mcripper";
-	public static final String version = "rc.2-nightly-1-14-2021-23:12:32.Z";
+	public static final String version = "rc.2";
 	public static final String appName = "MC Ripper 2 Build: " + version;
 	
 	public static void main(String[] args) throws Exception
@@ -32,10 +33,15 @@ public class McRipper {
 		loadCfg();
 		args = args.length == 0 ? new String[]{"rip"} : args;
 		Command<?> cmd = Command.fromArgs(args);
-		if(!(cmd instanceof CommandInvalid) && cmd != McRipperCommands.recomputeHashes)
-			McChecker.parseHashes();
+		if(shouldParseHashes(cmd))
+			McChecker.parseHashes(cmd != McRipperCommands.verify);
 		cmd.run();
 		McChecker.closePrinters();
+	}
+	
+	public static boolean shouldParseHashes(Command<?> cmd)
+	{
+		return cmd instanceof RipperCommand && cmd != McRipperCommands.recomputeHashes && cmd != McRipperCommands.rip && !McChecker.loaded;
 	}
 	
 	public static void loadCfg() throws IOException

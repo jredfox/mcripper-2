@@ -24,6 +24,7 @@ import jredfox.selfcmd.util.OSUtil;
 public class McChecker {
 	
 	//global vars
+	public static boolean loaded;
 	public static final FileSet checkJsons = new FileSet(2 + 533 + 20);
 	public static final File tmp =  new File(OSUtil.getAppData(), McRipper.appId + "/tmp");
 	public static File root;
@@ -511,16 +512,18 @@ public class McChecker {
 		
 		IOUtils.close(logger);
 		hash = new HashPrinter(root, new File(root, "index.hash"), 23000);
-		logger = new LogPrinter(new File(root, "log.txt"), System.out, System.err);
+		logger = new LogPrinter(new File(root, "log.txt"), System.out, System.err, false, true);
 		logger.load();
 	}
 
-	public static void parseHashes() throws IOException, URISyntaxException
+	public static void parseHashes(boolean extract) throws IOException, URISyntaxException
 	{
 		long ms = System.currentTimeMillis();
 		hash.load();
 		System.out.println("parsed hashes in:" + (System.currentTimeMillis() - ms) + "ms");
-		extractJsons();
+		if(extract)
+			extractJsons();
+		loaded = true;
 	}
 
 	public static void closePrinters()

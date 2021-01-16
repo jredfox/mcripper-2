@@ -243,7 +243,7 @@ public class McRipperCommands {
 		return key.equals("pack.mcmeta") || key.equals("pack.png");
 	}
 	
-	public static RipperCommand recomputeHashes = new RipperCommand("recomputeHashes")
+	public static Command<Object> recomputeHashes = new RipperCommand("recomputeHashes")
 	{
 		@Override
 		public void run(ParamList<Object> params)
@@ -253,7 +253,7 @@ public class McRipperCommands {
 				McChecker.closePrinters();//close the streams
 				McChecker.hash.log.delete();//delete the index.hash
 				IOUtils.deleteDirectory(McChecker.lRoot);//delete any machine learned data
-				McChecker.parseHashes();//reparse everything
+				McChecker.parseHashes(true);//reparse everything
 			}
 			catch (Exception e)
 			{
@@ -271,6 +271,7 @@ public class McRipperCommands {
 			{
 				boolean delete = !params.hasFlag("info");
 				boolean shouldSave = false;
+				boolean hasErr = false;
 				Iterator<Map.Entry<String, String>> it = McChecker.hash.hashes.entrySet().iterator();
 				while(it.hasNext())
 				{
@@ -281,6 +282,7 @@ public class McRipperCommands {
 					if(!h.equals(RippedUtils.getSHA1(f)))
 					{
 						System.err.println("file has been modified removing:" + path);
+						hasErr = true;
 						if(delete)
 						{
 							it.remove();
@@ -295,8 +297,10 @@ public class McRipperCommands {
 					McChecker.hash.save();
 					McChecker.hash.setPrintWriter();
 				}
+				else if(hasErr)
+					System.err.println("Files have been verified with errors");
 				else
-					System.out.println("All files have been verified with no errors");
+					System.out.println("Files have been verified with NO errors");
 			}
 			catch (Exception e)
 			{
