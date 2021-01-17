@@ -73,8 +73,11 @@ public class McChecker {
 		}
 	}
 	
-	public static void checkDisk(boolean skipSnaps) throws FileNotFoundException, IOException
+	public static void checkDisk(boolean skipSnaps) throws FileNotFoundException, IOException, URISyntaxException
 	{
+		//extract the custom jsons
+		extractJsons();
+		
 		//do majors
 		List<File> majors = DeDuperUtil.getDirFiles(jsonMajor);
 		for(File major : majors)
@@ -245,9 +248,14 @@ public class McChecker {
 		{
 			return null;
 		}
+		
+		boolean isOld = false;
 		//check legacy assetsIndex
 		if(fCheckOld || !json.containsKey("assetIndex") || !json.containsKey("downloads"))
+		{
+			isOld = true;
 			assets.addAll(checkOldMinor(json));
+		}
 		
 		//download the asset indexes
 		if(json.containsKey("assetIndex"))
@@ -381,7 +389,8 @@ public class McChecker {
 				}
 			}
 		}
-		minorCount++;
+		if(!isOld)
+			minorCount++;
 		return assets;
 	}
 	
@@ -516,13 +525,11 @@ public class McChecker {
 		logger.load();
 	}
 
-	public static void parseHashes(boolean extract) throws IOException, URISyntaxException
+	public static void parseHashes() throws IOException, URISyntaxException
 	{
 		long ms = System.currentTimeMillis();
 		hash.load();
 		System.out.println("parsed hashes in:" + (System.currentTimeMillis() - ms) + "ms");
-		if(extract)
-			extractJsons();
 		loaded = true;
 	}
 

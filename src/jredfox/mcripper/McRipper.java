@@ -4,7 +4,6 @@ import java.io.File;
 import java.io.IOException;
 
 import jredfox.filededuper.command.Command;
-import jredfox.filededuper.command.CommandInvalid;
 import jredfox.filededuper.command.Commands;
 import jredfox.filededuper.config.simple.MapConfig;
 import jredfox.mcripper.command.McRipperCommands;
@@ -24,7 +23,7 @@ public class McRipper {
 	}
 	
 	public static final String appId = "Mcripper";
-	public static final String version = "rc.2";
+	public static final String version = "rc.2-nightly-1-17-2021-08:49:34Z";
 	public static final String appName = "MC Ripper 2 Build: " + version;
 	
 	public static void main(String[] args) throws Exception
@@ -34,7 +33,7 @@ public class McRipper {
 		args = args.length == 0 ? new String[]{"rip"} : args;
 		Command<?> cmd = Command.fromArgs(args);
 		if(shouldParseHashes(cmd))
-			McChecker.parseHashes(cmd != McRipperCommands.verify);
+			McChecker.parseHashes();
 		cmd.run();
 		McChecker.closePrinters();
 	}

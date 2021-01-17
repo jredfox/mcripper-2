@@ -107,7 +107,7 @@ public class McRipperCommands {
 		}
 	};
 	
-	public static Command<File> rip = new Command<File>(new String[]{"-s", "-a", "--" + mcDir}, "rip")
+	public static Command<File> rip = new Command<File>(new Object[]{"-s", new CommandOption(new String[]{"-s"}, "-a"), "--" + mcDir}, "rip")
 	{
 		@Override
 		public String[] displayArgs() 
@@ -253,7 +253,7 @@ public class McRipperCommands {
 				McChecker.closePrinters();//close the streams
 				McChecker.hash.log.delete();//delete the index.hash
 				IOUtils.deleteDirectory(McChecker.lRoot);//delete any machine learned data
-				McChecker.parseHashes(true);//reparse everything
+				McChecker.parseHashes();//reparse everything
 			}
 			catch (Exception e)
 			{
