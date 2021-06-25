@@ -136,10 +136,10 @@ public class McChecker {
 	{
 		try
 		{
-			DLUtils.dlAmazonAws("http://s3.amazonaws.com/MinecraftResources", "old/MinecraftResources");
-			DLUtils.dlAmazonAws("http://s3.amazonaws.com/Minecraft.Resources", "old/Minecraft.Resources");
-			DLUtils.dlAmazonAws("http://assets.minecraft.net", "old/assets_minecraft_net", extractAssetsXml());
-			DLUtils.dlAmazonAws("http://s3.amazonaws.com/MinecraftDownload", "old/MinecraftDownload");
+			DLUtils.dlAmazonAws("https://s3.amazonaws.com/MinecraftResources", "old/MinecraftResources");
+			DLUtils.dlAmazonAws("https://s3.amazonaws.com/Minecraft.Resources", "old/Minecraft.Resources");
+			DLUtils.dlAmazonAws("https://assets.minecraft.net", "old/assets_minecraft_net", extractAssetsXml());
+			DLUtils.dlAmazonAws("https://s3.amazonaws.com/MinecraftDownload", "old/MinecraftDownload");
 			checkOldVersions(skipSnaps);
 		}
 		catch(Exception e)
@@ -155,7 +155,7 @@ public class McChecker {
 
 	public static void checkOldVersions(boolean skipSnaps) throws FileNotFoundException, IOException 
 	{
-		File oldJson = DLUtils.safeDlMove("http://s3.amazonaws.com/Minecraft.Download/versions/versions.json", "old/Minecraft.Download/versions.json", new File(jsonOldMajor, "versions.json"));
+		File oldJson = DLUtils.safeDlMove("https://s3.amazonaws.com/Minecraft.Download/versions/versions.json", "old/Minecraft.Download/versions.json", new File(jsonOldMajor, "versions.json"));
 		if(oldJson == null)
 		{
 			System.err.println("Old Major is missing index skipping");
@@ -215,7 +215,7 @@ public class McChecker {
 	{
 		if(!checkJsons.add(oldJson))
 			return Collections.emptySet();
-		String urlBase = "http://s3.amazonaws.com/Minecraft.Download/";
+		String urlBase = "https://s3.amazonaws.com/Minecraft.Download/";
 		JSONObject json = RippedUtils.getJSON(oldJson);
 		JSONArray arr = json.getJSONArray("versions");
 		Set<File> oldMinors = new FileSet(json.size());
@@ -409,7 +409,7 @@ public class McChecker {
 	public static Set<File> dlOldMinor(File oldMcDir, String type, String version, String assetsId, long clientTime)
 	{
 		Set<File> assets = new FileSet(2);
-		String urlBase = "http://s3.amazonaws.com/Minecraft.Download/";
+		String urlBase = "https://s3.amazonaws.com/Minecraft.Download/";
 		String checkPath = version + ".json";
 		String assetsPath = assetsId + ".json";
 		String jarPath ="versions/" + type + "/" + version + "/" + version + ".jar";
