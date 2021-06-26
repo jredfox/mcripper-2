@@ -6,10 +6,12 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLConnection;
+import java.net.UnknownHostException;
 import java.time.Instant;
 import java.time.OffsetDateTime;
 import java.time.format.DateTimeParseException;
@@ -350,4 +352,39 @@ public class RippedUtils {
 		return -1;
 	}
 
+	public static int getResponseCode(String url) 
+	{
+		HttpURLConnection con = null;
+		if(url.startsWith("http"))
+		{
+			try {
+				con = (HttpURLConnection) new URL(url).openConnection();
+			} 
+			catch (IOException e1) {
+				e1.printStackTrace();
+			}
+			
+			try 
+			{
+				return con != null ? con.getResponseCode() : -1;
+			}
+			catch (IOException e) 
+			{
+				return -1;
+			}
+			finally
+			{
+				con.disconnect();
+			}
+		}
+		return -1;
+	}
+
+	public static boolean containsNum(int code, int[] is) 
+	{
+		for(int i : is)
+			if(code == i)
+				return true;
+		return false;
+	}
 }

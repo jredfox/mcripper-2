@@ -5,6 +5,7 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
@@ -227,6 +228,7 @@ public class DLUtils {
 		return learnDl(index, indexHash, url, saveAs, -1);
 	}
 
+	private static int[] http404Codes = new int[]{401, 403, 404, 405, 410, 414, 451};
 	/**
 	 * the main method for learnDl. input the index and indexHash to get the specific learner rather then having everything as global. If the hash is mismatched it won't parse the data and will delete the files
 	 */
@@ -273,17 +275,17 @@ public class DLUtils {
 		}
 		catch(IOException e)
 		{
-			String msg = e.getMessage();
-			if(e instanceof FileNotFoundException || msg.contains("HTTP response code:"))
+			int code = RippedUtils.getResponseCode(urlPath);
+			if(code != -1)
 			{
-				System.err.println(msg);
-				learner.bad.append(urlPath);
+				if(RippedUtils.containsNum(code, http404Codes))
+				{
+					System.err.println(e.getMessage());
+					learner.bad.append(urlPath);
+				}
 			}
 			else
-			{
 				e.printStackTrace();
-				learner.bad.parse(urlPath);
-			}
 		}
 		catch(Exception e)
 		{
@@ -380,10 +382,7 @@ public class DLUtils {
 		}
 		catch(IOException io)
 		{
-			if(!(io instanceof FileNotFoundException))
-				System.err.println(io.getMessage());
-			else
-				System.err.println("HTTP 404:" + url);
+			System.err.println(io.getMessage());
 		}
 		catch(Exception e)
 		{

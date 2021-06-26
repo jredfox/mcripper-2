@@ -5,6 +5,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URISyntaxException;
+import java.time.Instant;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
@@ -204,7 +205,7 @@ public class McChecker {
 				continue;
 			long time = RippedUtils.parseOffsetTime(jsonVersion.getString("time"));
 			File minor = DLUtils.dl(url, "versions/" + version + "/" + version + ".json", new File(jsonMinor, type + "/" + version + ".json"), time, minorHash);
-			minors.add(minor.getAbsoluteFile());
+			minors.add(minor);
 		}
 		majorCount++;
 		return minors;
@@ -520,7 +521,7 @@ public class McChecker {
 		jsonOldMinor = new File(jsonDir, "oldminor");
 		IOUtils.close(logger);
 		hash = new HashPrinter(new File(root, "index.hash"), 23000);
-		logger = new LogPrinter(new File(root, "log.txt"), System.out, System.err, false, true);
+		logger = new LogPrinter(new File(root, "logs/log-" + Instant.now().toString().replaceAll(":", ".") + ".txt"), System.out, System.err, false, true);
 		logger.load();
 	}
 

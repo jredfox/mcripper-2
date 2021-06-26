@@ -45,6 +45,7 @@ public class HashPrinter extends Printer {
 		{
 			System.out.println("deleting hash:" + hash + "," + fname);
 			this.dirty = true;
+			return;
 		}
 		this.hashes.put(hash, fname);
 	}
