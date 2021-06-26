@@ -12,9 +12,9 @@ public class MapPrinter extends Printer{
 
 	public Map<String, String> map;
 	
-	public MapPrinter(File root, File log, int capacity) throws IOException 
+	public MapPrinter(File log, int capacity) throws IOException 
 	{
-		super(root, log);
+		super(log);
 		this.map = new LinkedHashMap<>(capacity);
 	}
 

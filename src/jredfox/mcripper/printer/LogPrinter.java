@@ -21,7 +21,7 @@ public class LogPrinter extends Printer {
 
 	public LogPrinter(File log, PrintStream out, PrintStream err, boolean cHeader, boolean logHeader) throws IOException
 	{
-		super(log.getParentFile(), log);
+		super(log);
 
 		// reset the log file
 		if(log.exists())

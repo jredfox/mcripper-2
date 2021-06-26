@@ -22,9 +22,10 @@ public abstract class Printer implements Closeable{
 	public File log;
 	public PrintWriter out;
 	
-	public Printer(File root, File log) throws IOException 
+	public Printer(File log) throws IOException 
 	{
-		this.root = root;
+		log = log.getAbsoluteFile();
+		this.root = log.getParentFile();
 		this.rootPath = root.getPath();
 		this.log = log;
 		this.sanityCheck();
@@ -75,7 +76,6 @@ public abstract class Printer implements Closeable{
 		{
 			e.printStackTrace();
 		}
-		this.setPrintWriter();
 	}
 	
 	public void save()
@@ -92,12 +92,9 @@ public abstract class Printer implements Closeable{
 
 	public void sanityCheck() throws IOException 
 	{
-		if(!this.root.exists())
+		if(!this.root.exists() && !this.root.mkdirs())
 		{
-			if(!this.root.mkdirs())
-			{
-				throw new IOException("Log Directory cannot be found nor created!");
-			}
+			throw new IOException("Log Directory cannot be found nor created for:" + this.log);
 		}
 	}
 

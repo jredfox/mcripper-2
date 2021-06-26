@@ -519,7 +519,7 @@ public class McChecker {
 		jsonOldMajor = new File(jsonDir, "oldmajor");
 		jsonOldMinor = new File(jsonDir, "oldminor");
 		IOUtils.close(logger);
-		hash = new HashPrinter(root, new File(root, "index.hash"), 23000);
+		hash = new HashPrinter(new File(root, "index.hash"), 23000);
 		logger = new LogPrinter(new File(root, "log.txt"), System.out, System.err, false, true);
 		logger.load();
 	}
@@ -528,6 +528,7 @@ public class McChecker {
 	{
 		long ms = System.currentTimeMillis();
 		hash.load();
+		System.out.println(hash.getClass());
 		System.out.println("parsed hashes in:" + (System.currentTimeMillis() - ms) + "ms");
 		loaded = true;
 	}

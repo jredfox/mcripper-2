@@ -3,6 +3,7 @@ package jredfox.mcripper.printer;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.IOException;
+import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -16,9 +17,9 @@ public class HashPrinter extends Printer {
 
 	public volatile Map<String, String> hashes;
 	
-	public HashPrinter(File root, File log, int capacity) throws IOException 
+	public HashPrinter(File log, int capacity) throws IOException 
 	{
-		super(root, log);
+		super(log);
 		this.hashes = new LinkedHashMap<>(capacity);
 	}
 	
@@ -44,7 +45,6 @@ public class HashPrinter extends Printer {
 		{
 			System.out.println("deleting hash:" + hash + "," + fname);
 			this.dirty = true;
-			return;
 		}
 		this.hashes.put(hash, fname);
 	}

@@ -11,9 +11,9 @@ import jredfox.filededuper.util.IOUtils;
 public class CSVPrinter extends Printer{
 
 	public CSV csv;
-	public CSVPrinter(File root, File log, int capacity) throws IOException 
+	public CSVPrinter(File log, int capacity) throws IOException 
 	{
-		super(root, log);
+		super(log);
 		this.csv = new CSV(this.log, capacity);
 	}
 

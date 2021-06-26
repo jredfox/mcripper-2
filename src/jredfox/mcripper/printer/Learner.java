@@ -34,8 +34,8 @@ public class Learner implements Closeable{
 		this.index = index;
 		this.sha1 = indexHash;
 		this.sha1File = new File(this.dir, "checksum.sha1");
-		this.bad =  new SetPrinter(this.dir, new File(this.dir, "bad.paths"), 300);
-		this.learner = new MapPrinter(this.dir, new File(this.dir, "learned.rhash"), 600);
+		this.bad =  new SetPrinter(new File(this.dir, "bad.paths"), 300);
+		this.learner = new MapPrinter(new File(this.dir, "learned.rhash"), 600);
 		if(register)
 			Learner.register(index, this);
 	}
