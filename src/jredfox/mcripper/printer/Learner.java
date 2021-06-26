@@ -23,12 +23,12 @@ public class Learner implements Closeable{
 	 */
 	public static Map<String, Learner> learners = new HashMap<>(3);
 	
-	public Learner(File lRoot, String index, String indexHash)
+	public Learner(File lRoot, String index, String indexHash) throws IOException
 	{
 		this(lRoot, index, indexHash, true);
 	}
 	
-	public Learner(File lRoot, String index, String indexHash, boolean register)
+	public Learner(File lRoot, String index, String indexHash, boolean register) throws IOException
 	{
 		this.dir = new File(lRoot, index);
 		this.index = index;

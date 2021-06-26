@@ -28,7 +28,7 @@ public class LogPrinter extends Printer {
 			log.delete();
 
 		// set the streams
-		if(out != null) 
+		if(out != null)
 		{
 			this.out = new LogPrinter.LogWrapper(this, out, false, cHeader, logHeader);
 			System.setOut(this.out);

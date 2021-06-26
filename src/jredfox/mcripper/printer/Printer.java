@@ -22,11 +22,12 @@ public abstract class Printer implements Closeable{
 	public File log;
 	public PrintWriter out;
 	
-	public Printer(File root, File log) 
+	public Printer(File root, File log) throws IOException 
 	{
 		this.root = root;
 		this.rootPath = root.getPath();
 		this.log = log;
+		this.sanityCheck();
 	}
 	
 	public abstract void parse(String line);
@@ -35,11 +36,7 @@ public abstract class Printer implements Closeable{
 	
 	public void load() throws IOException
 	{
-		if(!this.log.exists())
-		{
-			this.setPrintWriter();
-			return;
-		}
+		this.setPrintWriter();
 		BufferedReader reader = IOUtils.getReader(this.log);
 		try
 		{
@@ -89,9 +86,19 @@ public abstract class Printer implements Closeable{
 	
 	public void setPrintWriter() throws IOException 
 	{
-		if(!this.log.getParentFile().exists())
-			this.log.mkdirs();
+		this.sanityCheck();
 		this.out = new PrintWriter(new BufferedWriter(new FileWriter(this.log, true)), true);
+	}
+
+	public void sanityCheck() throws IOException 
+	{
+		if(!this.root.exists())
+		{
+			if(!this.root.mkdirs())
+			{
+				throw new IOException("Log Directory cannot be found nor created!");
+			}
+		}
 	}
 
 	public File getLog()

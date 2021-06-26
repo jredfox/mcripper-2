@@ -1,7 +1,6 @@
 package jredfox.mcripper;
 
 import java.io.File;
-import java.io.IOException;
 
 import jredfox.filededuper.command.Command;
 import jredfox.filededuper.command.Commands;
@@ -43,13 +42,17 @@ public class McRipper {
 		return cmd instanceof RipperCommand && cmd != McRipperCommands.recomputeHashes && cmd != McRipperCommands.rip && !McChecker.loaded;
 	}
 	
-	public static void loadCfg() throws IOException
+	public static void loadCfg() throws Exception
 	{
 		File appdir = new File(OSUtil.getAppData(), McRipper.appId);
 		MapConfig cfg = new MapConfig(new File(System.getProperty("user.dir"), McRipper.appId + ".cfg"));
 		cfg.load();
 		appdir = new File(cfg.get(McRipper.appId + "Dir", appdir.getPath())).getAbsoluteFile();
 		cfg.save();
+		if(!appdir.exists() && !appdir.mkdirs())
+		{
+			throw new RuntimeException("appdata \"" + appdir + "\" doesn't exist and cannot be created. Please reconfigure Mc Ripper 2 to a valid path!");
+		}
 		McChecker.setRoot(appdir);
 		System.out.println("starting:" + appName);
 	}

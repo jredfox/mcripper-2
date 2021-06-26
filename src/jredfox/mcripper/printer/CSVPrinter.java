@@ -2,6 +2,7 @@ package jredfox.mcripper.printer;
 
 import java.io.BufferedWriter;
 import java.io.File;
+import java.io.IOException;
 
 import jredfox.filededuper.config.csv.CSV;
 import jredfox.filededuper.util.DeDuperUtil;
@@ -10,7 +11,7 @@ import jredfox.filededuper.util.IOUtils;
 public class CSVPrinter extends Printer{
 
 	public CSV csv;
-	public CSVPrinter(File root, File log, int capacity) 
+	public CSVPrinter(File root, File log, int capacity) throws IOException 
 	{
 		super(root, log);
 		this.csv = new CSV(this.log, capacity);

@@ -2,6 +2,7 @@ package jredfox.mcripper.printer;
 
 import java.io.BufferedWriter;
 import java.io.File;
+import java.io.IOException;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -11,7 +12,7 @@ public class MapPrinter extends Printer{
 
 	public Map<String, String> map;
 	
-	public MapPrinter(File root, File log, int capacity) 
+	public MapPrinter(File root, File log, int capacity) throws IOException 
 	{
 		super(root, log);
 		this.map = new LinkedHashMap<>(capacity);

@@ -506,7 +506,7 @@ public class McChecker {
 		return DLUtils.safeDlMove("https://launchermeta.mojang.com/mc/game/" + vname, vname, saveAs);
 	}
 	
-	public static void setRoot(File appDir) throws IOException
+	public static void setRoot(File appDir) throws Exception
 	{
 		root = appDir;
 		lRoot = new File(root, "learned");
@@ -518,7 +518,6 @@ public class McChecker {
 		jsonAssets = new File(jsonDir, "assets");
 		jsonOldMajor = new File(jsonDir, "oldmajor");
 		jsonOldMinor = new File(jsonDir, "oldminor");
-		
 		IOUtils.close(logger);
 		hash = new HashPrinter(root, new File(root, "index.hash"), 23000);
 		logger = new LogPrinter(new File(root, "log.txt"), System.out, System.err, false, true);

@@ -297,9 +297,9 @@ public class DLUtils {
 		Learner learner = Learner.learners.get(index);
 		if(learner == null)
 		{
-			learner = new Learner(McChecker.lRoot, index, indexHash);
 			try
 			{
+				learner = new Learner(McChecker.lRoot, index, indexHash);
 				learner.parse();
 			} 
 			catch (IOException e) 
