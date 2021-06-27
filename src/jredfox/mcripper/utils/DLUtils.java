@@ -86,7 +86,7 @@ public class DLUtils {
 			}
 			
 			directDL(url, saveAs, timestamp);
-			System.out.println("dl:" + RippedUtils.getSimplePath(saveAs) + " in:" + (System.currentTimeMillis() - time) + "ms " + " from:" + url);
+			System.out.println("dl:" + RippedUtils.getSimplePath(saveAs).replaceAll("\\\\", "/") + " in:" + (System.currentTimeMillis() - time) + "ms " + " from:" + url);
 			printer.append(hash, saveAs);
 			return saveAs;
 		}
@@ -155,7 +155,7 @@ public class DLUtils {
 		output = getFixedFile(output);
 		directDL(getFixedUrl(url), output, timestamp);
 		if(print)
-			System.out.println("dl:" + output + " from:" + url);
+			System.out.println("dl:" + output.getPath().replaceAll("\\\\", "/") + " from:" + url);
 		return output;
 	}
 	
@@ -204,7 +204,7 @@ public class DLUtils {
 		url = cached.exists() && hash.equals(RippedUtils.getSHA1(cached)) ? RippedUtils.toURL(cached).toString() : url;
 		File f = dlToFile(url, saveAs);
 		if(!url.startsWith("file:"))
-			System.out.println("dl:" + f.getPath() + " from:" + url);
+			System.out.println("dl:" + f.getPath().replaceAll("\\\\", "/") + " from:" + url);
 		return f;
 	}
 	

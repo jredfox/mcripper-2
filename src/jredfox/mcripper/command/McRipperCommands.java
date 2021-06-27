@@ -40,12 +40,12 @@ public class McRipperCommands {
 			params.options.add(new CommandOption("--internal"));
 			System.out.println("CHECKING MOJANG:");
 			McRipperCommands.checkMojang.run(params);
+			System.out.println("CHECKING THE DISK FOR CUSTOM JSONS:");
+			McRipperCommands.checkDisk.run(params);
 			System.out.println("CHECKING OMNI-ARCHIVE:");
 			McRipperCommands.checkOmni.run(params);
 			System.out.println("CHECKING OLD(LEGACY) MINECRAFT DOMAINS:");
 			McRipperCommands.checkOld.run(params);
-			System.out.println("CHECKING THE DISK FOR CUSTOM JSONS:");
-			McRipperCommands.checkDisk.run(params);
 			this.finish(params);
 			System.out.println(lboarder + "Finished checkAll in:" + (System.currentTimeMillis() - start) / 1000D + " seconds" + (McChecker.oldMajorCount > 0 ? " oldMajor:" + McChecker.oldMajorCount : "") + " major:" + McChecker.majorCount + (McChecker.oldMinor > 0 ? " oldMinor:" + McChecker.oldMinor : "") + " minor:" + McChecker.minorCount + " assets:" + McChecker.assetsCount + rboarder);
 		}

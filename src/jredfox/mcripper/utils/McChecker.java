@@ -86,18 +86,18 @@ public class McChecker {
 			checkMajor(major, skipSnaps);
 		}
 		
-		//do oldMajors
-		List<File> oldMajors = DeDuperUtil.getDirFiles(jsonOldMajor);
-		for(File oldMajor : oldMajors)
-		{
-			checkOldMajor(oldMajor, skipSnaps);
-		}
-		
 		//do minors
 		List<File> minors = DeDuperUtil.getDirFiles(jsonMinor);
 		for(File minor : minors)
 		{
 			checkMinor(minor, skipSnaps, false);
+		}
+		
+		//do oldMajors
+		List<File> oldMajors = DeDuperUtil.getDirFiles(jsonOldMajor);
+		for(File oldMajor : oldMajors)
+		{
+			checkOldMajor(oldMajor, skipSnaps);
 		}
 		
 		//do oldMinors
