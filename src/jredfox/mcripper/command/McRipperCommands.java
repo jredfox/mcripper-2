@@ -46,8 +46,14 @@ public class McRipperCommands {
 			McRipperCommands.checkOld.run(params);
 			System.out.println("CHECKING THE DISK FOR CUSTOM JSONS:");
 			McRipperCommands.checkDisk.run(params);
-			this.clear(params);
+			this.finish(params);
 			System.out.println(lboarder + "Finished checkAll in:" + (System.currentTimeMillis() - start) / 1000D + " seconds" + (McChecker.oldMajorCount > 0 ? " oldMajor:" + McChecker.oldMajorCount : "") + " major:" + McChecker.majorCount + (McChecker.oldMinor > 0 ? " oldMinor:" + McChecker.oldMinor : "") + " minor:" + McChecker.minorCount + " assets:" + McChecker.assetsCount + rboarder);
+		}
+		
+		@Override
+		public void finish(ParamList<?> params)
+		{
+			this.clear(params);
 		}
 	};
 	
@@ -255,7 +261,7 @@ public class McRipperCommands {
 				McChecker.closePrinters();//close the streams
 				McChecker.hash.log.delete();//delete the index.hash
 				IOUtils.deleteDirectory(McChecker.lRoot);//delete any machine learned data
-				McChecker.parseHashes();//reparse everything
+				McChecker.hash.load();
 			}
 			catch (Exception e)
 			{
@@ -307,9 +313,9 @@ public class McRipperCommands {
 					McChecker.hash.setPrintWriter();
 				}
 				else if(hasErr)
-					System.err.println("Files have been verified with errors");
+					System.err.println("Files have been verified WITH ERRORS");
 				else
-					System.out.println("Files have been verified with NO errors");
+					System.out.println("Files have been verified with NO Errors");
 			}
 			catch (Exception e)
 			{
@@ -330,6 +336,9 @@ public class McRipperCommands {
 		System.out.println(McRipperCommands.lboarder + "Done in:" + (System.currentTimeMillis() - ms) / 1000D + " seconds" + McRipperCommands.rboarder);
 	}
 
+	/**
+	 * enforces that the static anomous command classes are instantiated
+	 */
 	public static void load() {}
 
 }

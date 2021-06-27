@@ -27,10 +27,7 @@ public class HashPrinter extends Printer {
 	public void load() throws IOException
 	{
 		if(!this.log.exists())
-		{
 			this.computeHashes();
-			this.setPrintWriter();
-		}
 		else
 			super.load();
 	}
@@ -56,6 +53,7 @@ public class HashPrinter extends Printer {
 		return this.hashes.containsKey(key);
 	}
 	
+	//don't re-parse them as parsing verifies file's location
 	public void append(String hash, File out)
 	{
 		String path = RippedUtils.getSimplePath(out);
@@ -63,17 +61,17 @@ public class HashPrinter extends Printer {
 		this.println(hash + "," + path);
 	}
 
-	public void computeHashes() 
+	public void computeHashes() throws IOException 
 	{
+		this.setPrintWriter();
 		long ms = System.currentTimeMillis();
 		System.out.println("computing hashes this will take a while. Unless it's your first launch");
 		List<File> files = DeDuperUtil.getDirFiles(McChecker.mcripped);
 		for(File f : files)
 		{
 			String hash = RippedUtils.getSHA1(f);
-			this.hashes.put(hash, DeDuperUtil.getRealtivePath(this.root, f));
+			this.append(hash, f);
 		}
-		this.save();
 		System.out.println("finished computing & saving hashes in:" + (System.currentTimeMillis() - ms) / 1000D + " seconds");
 	}
 	
