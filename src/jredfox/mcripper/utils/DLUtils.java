@@ -234,8 +234,9 @@ public class DLUtils {
 	 */
 	public static File learnDl(String index, String indexHash, String url, File saveAs, long timestamp) 
 	{
+		url = getFixedUrl(url);
 		String spath = DeDuperUtil.getRealtivePath(McChecker.mcripped, saveAs.getAbsoluteFile());
-		String urlPath = getFixedUrl(url);
+		String urlPath = url;
 		if(urlPath.contains("file:") || urlPath.contains("jar:"))
 			urlPath = spath;
 		
@@ -275,7 +276,7 @@ public class DLUtils {
 		}
 		catch(IOException e)
 		{
-			int code = RippedUtils.getResponseCode(urlPath);
+			int code = RippedUtils.getResponseCode(url);
 			if(code != -1)
 			{
 				if(RippedUtils.containsNum(code, http404Codes))
