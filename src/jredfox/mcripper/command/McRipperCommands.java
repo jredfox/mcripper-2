@@ -27,6 +27,8 @@ public class McRipperCommands {
 	private static final String skipSnaps = "skipSnaps";
 	private static final String mcDir = "mcDir=value";
 	protected static final char clear = 'c';
+	protected static final String lboarder = "\n#############################################################################\n#############################################################################\n";
+	protected static final String rboarder = "\n#############################################################################\n#############################################################################";
 	
 	public static RipperCommand checkAll = new RipperCommand(new String[]{"--" + mcDir, "--" + skipSnaps, "-" + clear}, "checkAll")
 	{
@@ -45,7 +47,7 @@ public class McRipperCommands {
 			System.out.println("CHECKING THE DISK FOR CUSTOM JSONS:");
 			McRipperCommands.checkDisk.run(params);
 			this.clear(params);
-			System.out.println("Finished checkAll in:" + (System.currentTimeMillis() - start) / 1000D + " seconds" + (McChecker.oldMajorCount > 0 ? " oldMajor:" + McChecker.oldMajorCount : "") + " major:" + McChecker.majorCount + (McChecker.oldMinor > 0 ? " oldMinor:" + McChecker.oldMinor : "") + " minor:" + McChecker.minorCount + " assets:" + McChecker.assetsCount);
+			System.out.println(lboarder + "Finished checkAll in:" + (System.currentTimeMillis() - start) / 1000D + " seconds" + (McChecker.oldMajorCount > 0 ? " oldMajor:" + McChecker.oldMajorCount : "") + " major:" + McChecker.majorCount + (McChecker.oldMinor > 0 ? " oldMinor:" + McChecker.oldMinor : "") + " minor:" + McChecker.minorCount + " assets:" + McChecker.assetsCount + rboarder);
 		}
 	};
 	
@@ -259,6 +261,13 @@ public class McRipperCommands {
 			{
 				e.printStackTrace();
 			}
+			this.finish(params);
+		}
+		
+		@Override
+		public void print()
+		{
+			McRipperCommands.printDefault(this.ms);
 		}
 	};
 	
@@ -306,8 +315,20 @@ public class McRipperCommands {
 			{
 				e.printStackTrace();
 			}
+			this.finish(params);
+		}
+		
+		@Override
+		public void print()
+		{
+			McRipperCommands.printDefault(this.ms);
 		}
 	};
+	
+	public static void printDefault(long ms)
+	{
+		System.out.println(McRipperCommands.lboarder + "Done in:" + (System.currentTimeMillis() - ms) / 1000D + " seconds" + McRipperCommands.rboarder);
+	}
 
 	public static void load() {}
 

@@ -85,22 +85,22 @@ public class RippedUtils {
 	    return s.matches("^[a-fA-F0-9]{64}$");
 	}
 	
-	public static String getUnsafeHash(File f) 
-	{
-		String hash = null;
-		String name = DeDuperUtil.getTrueName(f);
-		if(name.contains("-"))
-		{
-			String[] splited = DeDuperUtil.split(name, '-', '?', '?');
-			String possibleHash = splited[splited.length - 1];
-			hash = isValidSHA1(possibleHash) ? possibleHash.toLowerCase() : getSHA1(f);
-		}
-		else
-		{
-			hash = getSHA1(f);
-		}
-		return hash;
-	}
+//	public static String getUnsafeHash(File f) 
+//	{
+//		String hash = null;
+//		String name = DeDuperUtil.getTrueName(f);
+//		if(name.contains("-"))
+//		{
+//			String[] splited = DeDuperUtil.split(name, '-', '?', '?');
+//			String possibleHash = splited[splited.length - 1];
+//			hash = isValidSHA1(possibleHash) ? possibleHash.toLowerCase() : getSHA1(f);
+//		}
+//		else
+//		{
+//			hash = getSHA1(f);
+//		}
+//		return hash;
+//	}
 	
 	public static String getSHA1(File f) 
 	{

@@ -22,7 +22,7 @@ public class McRipper {
 	}
 	
 	public static final String appId = "Mcripper";
-	public static final String version = "rc.2.2.0";
+	public static final String version = "rc.3";
 	public static final String appName = "MC Ripper 2 Build: " + version;
 	
 	public static void main(String[] args) throws Exception
@@ -49,10 +49,13 @@ public class McRipper {
 		cfg.load();
 		appdir = new File(cfg.get(McRipper.appId + "Dir", appdir.getPath())).getAbsoluteFile();
 		cfg.save();
+		
+		//sanity check for custom appdir
 		if(!appdir.exists() && !appdir.mkdirs())
 		{
 			throw new RuntimeException("appdata \"" + appdir + "\" doesn't exist and cannot be created. Please reconfigure Mc Ripper 2 to a valid path!");
 		}
+		
 		McChecker.setRoot(appdir);
 		System.out.println("starting:" + appName);
 	}

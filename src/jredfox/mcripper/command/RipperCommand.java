@@ -42,9 +42,14 @@ public abstract class RipperCommand extends Command<Object>{
 		if(params.hasFlag("internal"))
 			return;
 		this.clear(params);
-		System.out.println("Done in:" + (System.currentTimeMillis() - ms) / 1000D + " seconds" + (McChecker.oldMajorCount > 0 ? " oldMajor:" + McChecker.oldMajorCount : "") + " major:" + McChecker.majorCount + (McChecker.oldMinor > 0 ? " oldMinor:" + McChecker.oldMinor : "") + " minor:" + McChecker.minorCount + " assets:" + McChecker.assetsCount);
+		this.print();
 	}
 	
+	public void print() 
+	{
+		System.out.println(McRipperCommands.lboarder + "Done in:" + (System.currentTimeMillis() - ms) / 1000D + " seconds" + (McChecker.oldMajorCount > 0 ? " oldMajor:" + McChecker.oldMajorCount : "") + " major:" + McChecker.majorCount + (McChecker.oldMinor > 0 ? " oldMinor:" + McChecker.oldMinor : "") + " minor:" + McChecker.minorCount + " assets:" + McChecker.assetsCount + McRipperCommands.rboarder);
+	}
+
 	public void clearGlobal(ParamList<?> params)
 	{
 		if(params.hasFlag("internal"))

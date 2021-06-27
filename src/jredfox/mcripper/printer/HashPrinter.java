@@ -70,7 +70,7 @@ public class HashPrinter extends Printer {
 		List<File> files = DeDuperUtil.getDirFiles(McChecker.mcripped);
 		for(File f : files)
 		{
-			String hash = RippedUtils.getUnsafeHash(f);
+			String hash = RippedUtils.getSHA1(f);
 			this.hashes.put(hash, DeDuperUtil.getRealtivePath(this.root, f));
 		}
 		this.save();

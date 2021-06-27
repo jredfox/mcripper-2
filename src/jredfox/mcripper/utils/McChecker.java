@@ -529,7 +529,6 @@ public class McChecker {
 	{
 		long ms = System.currentTimeMillis();
 		hash.load();
-		System.out.println(hash.getClass());
 		System.out.println("parsed hashes in:" + (System.currentTimeMillis() - ms) + "ms");
 		loaded = true;
 	}
