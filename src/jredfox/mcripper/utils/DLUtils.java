@@ -242,15 +242,15 @@ public class DLUtils {
 		Learner learner = getLearner(index, indexHash);
 		if(learner.bad.contains(urlPath))
 			return null;
+		
 		String cachedHash = learner.learner.get(urlPath);
-		//recall learning
-		if(cachedHash != null && McChecker.hash.contains(cachedHash))
+		if(cachedHash != null)
 		{
-			return RippedUtils.getSimpleFile(McChecker.hash.hashes.get(cachedHash));
-		}
-		else if(cachedHash != null)
-		{
-			//if file doesn't exist recall hash and direct dl it here
+			//recall location of file
+			if(McChecker.hash.contains(cachedHash))
+				return RippedUtils.getSimpleFile(McChecker.hash.hashes.get(cachedHash));
+			
+			//re-download if file does not exist
 			try
 			{
 				return dl(url, saveAs, timestamp, cachedHash);
