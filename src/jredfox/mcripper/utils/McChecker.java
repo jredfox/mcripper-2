@@ -137,11 +137,11 @@ public class McChecker {
 	{
 		try
 		{
+			checkOldVersions(skipSnaps);
 			DLUtils.dlAmazonAws("https://s3.amazonaws.com/MinecraftResources", "old/MinecraftResources");
 			DLUtils.dlAmazonAws("https://s3.amazonaws.com/Minecraft.Resources", "old/Minecraft.Resources");
 			DLUtils.dlAmazonAws("https://assets.minecraft.net", "old/assets_minecraft_net", extractAssetsXml());
 			DLUtils.dlAmazonAws("https://s3.amazonaws.com/MinecraftDownload", "old/MinecraftDownload");
-			checkOldVersions(skipSnaps);
 		}
 		catch(Exception e)
 		{
@@ -253,10 +253,7 @@ public class McChecker {
 		boolean isOld = false;
 		//check legacy assetsIndex
 		if(fCheckOld || !json.containsKey("assetIndex") || !json.containsKey("downloads"))
-		{
 			isOld = true;
-			assets.addAll(checkOldMinor(json));
-		}
 		
 		//download the asset indexes
 		if(json.containsKey("assetIndex"))
@@ -392,6 +389,8 @@ public class McChecker {
 		}
 		if(!isOld)
 			minorCount++;
+		else
+			assets.addAll(checkOldMinor(json));//check Old Minors here prefer newer mojang servers over older legacy servers when checking minor jsons
 		return assets;
 	}
 	
