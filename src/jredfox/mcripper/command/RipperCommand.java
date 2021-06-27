@@ -47,7 +47,7 @@ public abstract class RipperCommand extends Command<Object>{
 	
 	public void print() 
 	{
-		System.out.println(McRipperCommands.lboarder + "Done in:" + (System.currentTimeMillis() - ms) / 1000D + " seconds" + (McChecker.oldMajorCount > 0 ? " oldMajor:" + McChecker.oldMajorCount : "") + " major:" + McChecker.majorCount + (McChecker.oldMinor > 0 ? " oldMinor:" + McChecker.oldMinor : "") + " minor:" + McChecker.minorCount + " assets:" + McChecker.assetsCount + McRipperCommands.rboarder);
+		System.out.println(McRipperCommands.lboarder + "Done in:" + (System.currentTimeMillis() - this.ms) / 1000D + " seconds" + (McChecker.oldMajorCount > 0 ? " oldMajor:" + McChecker.oldMajorCount : "") + " major:" + McChecker.majorCount + (McChecker.oldMinor > 0 ? " oldMinor:" + McChecker.oldMinor : "") + " minor:" + McChecker.minorCount + " assets:" + McChecker.assetsCount + McRipperCommands.rboarder);
 	}
 
 	public void clearGlobal(ParamList<?> params)

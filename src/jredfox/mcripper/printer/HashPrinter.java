@@ -3,7 +3,6 @@ package jredfox.mcripper.printer;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.IOException;
-import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -72,7 +71,7 @@ public class HashPrinter extends Printer {
 			String hash = RippedUtils.getSHA1(f);
 			this.append(hash, f);
 		}
-		System.out.println("finished computing & saving hashes in:" + (System.currentTimeMillis() - ms) / 1000D + " seconds");
+		System.out.println("finished computing & saving hashes in:" + ((System.currentTimeMillis() - ms) / 1000D) + " seconds");
 	}
 	
 	@Override

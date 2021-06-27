@@ -98,6 +98,7 @@ public class McRipperCommands {
 		@Override
 		public void run(ParamList<Object> params)
 		{
+			this.start(params);
 			McChecker.checkOmni();
 			this.finish(params);
 		}
@@ -256,6 +257,7 @@ public class McRipperCommands {
 		@Override
 		public void run(ParamList<Object> params)
 		{
+			this.start(params);
 			try 
 			{
 				McChecker.closePrinters();//close the streams
@@ -275,6 +277,12 @@ public class McRipperCommands {
 		{
 			McRipperCommands.printDefault(this.ms);
 		}
+		
+		@Override
+		public void start(ParamList<?> params)
+		{
+			this.ms = System.currentTimeMillis();
+		}
 	};
 	
 	public static RipperCommand verify = new RipperCommand(new String[]{"--info"}, "verify")
@@ -282,6 +290,7 @@ public class McRipperCommands {
 		@Override
 		public void run(ParamList<Object> params)
 		{
+			this.start(params);
 			try 
 			{
 				boolean delete = !params.hasFlag("info");
@@ -322,6 +331,12 @@ public class McRipperCommands {
 				e.printStackTrace();
 			}
 			this.finish(params);
+		}
+		
+		@Override
+		public void start(ParamList<?> params)
+		{
+			this.ms = System.currentTimeMillis();
 		}
 		
 		@Override
