@@ -107,6 +107,8 @@ public class DLUtils {
 	 */
 	public static void directDL(String sURL, File output, long timestamp) throws MalformedURLException, IOException
 	{
+		if(McChecker.https)
+			sURL = sURL.replaceAll("http:", "https:");
 		URL url = new URL(sURL);
 		URLConnection con = url.openConnection();
 		if(timestamp == -1)

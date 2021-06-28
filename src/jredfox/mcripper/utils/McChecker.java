@@ -28,6 +28,7 @@ public class McChecker {
 	public static boolean loaded;
 	public static final FileSet checkJsons = new FileSet(2 + 533 + 20);
 	public static final File tmp =  new File(OSUtil.getAppData(), McRipper.appId + "/tmp");
+	public static boolean https;
 	public static File root;
 	public static File lRoot;
 	public static File mcripped;
