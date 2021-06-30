@@ -148,9 +148,20 @@ public class RippedUtils {
 		return new File(OSUtil.getAppData(), OSUtil.isMac() ? "minecraft" : ".minecraft");
 	}
 	
-	public static URL toURL(File file) throws MalformedURLException
+	/**
+	 * returns null if it's maulformed
+	*/
+	public static URL toURL(File file)
 	{
-		return file.toURI().toURL();
+		try
+		{
+			return file.toURI().toURL();
+		}
+		catch(Exception e)
+		{
+			e.printStackTrace();
+			return null;
+		}
 	}
 	
 	/**
