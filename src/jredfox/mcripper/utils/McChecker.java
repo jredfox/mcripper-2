@@ -3,7 +3,6 @@ package jredfox.mcripper.utils;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.time.Instant;
 import java.util.Collections;
@@ -75,7 +74,7 @@ public class McChecker {
 		}
 	}
 	
-	public static void checkDisk(boolean skipSnaps) throws FileNotFoundException, IOException, URISyntaxException
+	public static void checkDisk(boolean skipSnaps)
 	{
 		//extract the custom jsons
 		extractJsons();
@@ -118,46 +117,32 @@ public class McChecker {
 	
 	public static void checkOmni() 
 	{
-		try 
-		{
-			DLUtils.dlWebArchive("https://archive.org/download/Minecraft-JE-Pre-Classic", "Omniarchive/Pre-Classic");
-			DLUtils.dlWebArchive("https://archive.org/download/Minecraft-JE-Classic", "Omniarchive/JE-Classic");
-			DLUtils.dlWebArchive("https://archive.org/download/Minecraft-JE-Indev", "Omniarchive/JE-Indev");
-			DLUtils.dlWebArchive("https://archive.org/download/Minecraft-JE-Infdev", "Omniarchive/JE-Infdev");
-			DLUtils.dlWebArchive("https://archive.org/download/Minecraft-JE-Alpha", "Omniarchive/JE-Alpha");
-			DLUtils.dlWebArchive("https://archive.org/download/Minecraft-JE-Beta", "Omniarchive/JE-Beta");
-			DLUtils.dlWebArchive("https://archive.org/download/Minecraft-JE-Sounds", "Omniarchive/JE-Sounds");
-		}
-		catch (Exception e)
-		{
-			e.printStackTrace();
-		}
+		DLUtils.dlWebArchive(hash, "https://archive.org/download/Minecraft-JE-Pre-Classic", "Omniarchive/Pre-Classic");
+		DLUtils.dlWebArchive(hash, "https://archive.org/download/Minecraft-JE-Classic", "Omniarchive/JE-Classic");
+		DLUtils.dlWebArchive(hash, "https://archive.org/download/Minecraft-JE-Indev", "Omniarchive/JE-Indev");
+		DLUtils.dlWebArchive(hash, "https://archive.org/download/Minecraft-JE-Infdev", "Omniarchive/JE-Infdev");
+		DLUtils.dlWebArchive(hash, "https://archive.org/download/Minecraft-JE-Alpha", "Omniarchive/JE-Alpha");
+		DLUtils.dlWebArchive(hash, "https://archive.org/download/Minecraft-JE-Beta", "Omniarchive/JE-Beta");
+		DLUtils.dlWebArchive(hash, "https://archive.org/download/Minecraft-JE-Sounds", "Omniarchive/JE-Sounds");
 	}
 
 	public static void checkOldMc(boolean skipSnaps)
 	{
-		try
-		{
-			checkOldVersions(skipSnaps);
-			DLUtils.dlAmazonAws("https://s3.amazonaws.com/MinecraftResources", "old/MinecraftResources");
-			DLUtils.dlAmazonAws("https://s3.amazonaws.com/Minecraft.Resources", "old/Minecraft.Resources");
-			DLUtils.dlAmazonAws("https://assets.minecraft.net", "old/assets_minecraft_net", extractAssetsXml());
-			DLUtils.dlAmazonAws("https://s3.amazonaws.com/MinecraftDownload", "old/MinecraftDownload");
-		}
-		catch(Exception e)
-		{
-			e.printStackTrace();
-		}
+		checkOldVersions(skipSnaps);
+		DLUtils.dlAmazonAws(hash, "https://s3.amazonaws.com/MinecraftResources", "old/MinecraftResources");
+		DLUtils.dlAmazonAws(hash, "https://s3.amazonaws.com/Minecraft.Resources", "old/Minecraft.Resources");
+		DLUtils.dlAmazonAws(hash, "https://assets.minecraft.net", "old/assets_minecraft_net", extractAssetsXml());
+		DLUtils.dlAmazonAws(hash, "https://s3.amazonaws.com/MinecraftDownload", "old/MinecraftDownload");
 	}
 	
 	public static File extractAssetsXml() 
 	{
-		return DLUtils.learnExtractDL(McChecker.class, "resources/mcripper/aws/assets_minecraft_net-2016-11-06.xml", new File(McChecker.mcripped, "old/assets_minecraft_net/assets_minecraft_net.xml"));
+		return DLUtils.learnExtractDL(hash, McRipper.version, McChecker.class, "resources/mcripper/aws/assets_minecraft_net-2016-11-06.xml", new File(McChecker.mcripped, "old/assets_minecraft_net/assets_minecraft_net.xml"));
 	}
 
-	public static void checkOldVersions(boolean skipSnaps) throws FileNotFoundException, IOException 
+	public static void checkOldVersions(boolean skipSnaps)
 	{
-		File oldJson = DLUtils.safeDlMove("https://s3.amazonaws.com/Minecraft.Download/versions/versions.json", "old/Minecraft.Download/versions.json", new File(jsonOldMajor, "versions.json"));
+		File oldJson = DLUtils.dlMove(hash, "https://s3.amazonaws.com/Minecraft.Download/versions/versions.json", "old/Minecraft.Download/versions.json", new File(jsonOldMajor, "versions.json"));
 		if(oldJson == null)
 		{
 			System.err.println("Old Major is missing index skipping");
@@ -188,7 +173,7 @@ public class McChecker {
 		}
 	}
 	
-	public static Set<File> checkMajor(File master, boolean skipSnaps) throws FileNotFoundException, IOException
+	public static Set<File> checkMajor(File master, boolean skipSnaps)
 	{
 		if(!checkJsons.add(master))
 			return Collections.emptySet();
@@ -205,7 +190,7 @@ public class McChecker {
 			if(skipSnaps && type.startsWith("snapshot"))
 				continue;
 			long time = RippedUtils.parseOffsetTime(jsonVersion.getString("time"));
-			File minor = DLUtils.dl(url, "versions/" + version + "/" + version + ".json", new File(jsonMinor, type + "/" + version + ".json"), time, minorHash);
+			File minor = DLUtils.dlSingleton(hash, url, "versions/" + version + "/" + version + ".json", new File(jsonMinor, type + "/" + version + ".json"), time, minorHash);
 			minors.add(minor);
 		}
 		majorCount++;
@@ -231,14 +216,14 @@ public class McChecker {
 			long time = RippedUtils.parseOffsetTime(versionEntry.getString("time"));
 			String clientPath = type + "/" + version + ".json";
 			File minorFile = new File(jsonOldMinor, clientPath);
-			File dlMinor = DLUtils.learnDl(urlBase + "versions/" + version + "/" + version + ".json", minorFile, time);
+			File dlMinor = DLUtils.learnDl(hash, urlBase + "versions/" + version + "/" + version + ".json", minorFile, time);
 			oldMinors.add(dlMinor);
 		}
 		oldMajorCount++;
 		return oldMinors;
 	}
 	
-	public static Set<File> checkMinor(File version, boolean skipSnaps, boolean fCheckOld) throws FileNotFoundException, IOException 
+	public static Set<File> checkMinor(File version, boolean skipSnaps, boolean fCheckOld)
 	{
 		if(!checkJsons.add(version))
 			return Collections.emptySet();
@@ -263,7 +248,7 @@ public class McChecker {
 			String id = aIndex.getString("id");
 			String sha1 = aIndex.getString("sha1").toLowerCase();
 			String url = aIndex.getString("url");
-			assets.add(DLUtils.dl(url, "assets/indexes/" + id + ".json", new File(jsonAssets, id + ".json"), sha1));
+			assets.add(DLUtils.dlSingleton(hash, url, "assets/indexes/" + id + ".json", new File(jsonAssets, id + ".json"), sha1));
 		}
 		
 		//download the logging
@@ -278,7 +263,7 @@ public class McChecker {
 				String logSha1 = logFile.getString("sha1");
 				String logUrl = logFile.getString("url");
 				String logPath = "assets/log_configs/" + logId;
-				DLUtils.dl(logUrl, logPath, new File(mojang, logPath), logSha1);
+				DLUtils.dlSingleton(hash, logUrl, logPath, new File(mojang, logPath), logSha1);
 			}
 		}
 		
@@ -294,7 +279,7 @@ public class McChecker {
 				String dataUrl = data.getString("url");
 				String[] dataUrlSplit = dataUrl.replace("\\", "/").split("/");
 				String name = dataUrlSplit[dataUrlSplit.length - 1];
-				DLUtils.dl(dataUrl, "versions/" + versionName + "/" + versionName + RippedUtils.getExtensionFull(name), new File(mojang, "versions/" + type + "/" + versionName + "/" + versionName + "-" + name), time, dataSha1);
+				DLUtils.dlSingleton(hash, dataUrl, "versions/" + versionName + "/" + versionName + RippedUtils.getExtensionFull(name), new File(mojang, "versions/" + type + "/" + versionName + "/" + versionName + "-" + name), time, dataSha1);
 			}
 		}
 		
@@ -315,7 +300,7 @@ public class McChecker {
 						String libPath = artifact.getString("path");
 						String libSha1 = artifact.getString("sha1");
 						String libUrl = artifact.getString("url");
-						DLUtils.dl(libUrl, "libraries/" + libPath, new File(mojang, "libraries/" + libPath), libSha1);
+						DLUtils.dlSingleton(hash, libUrl, "libraries/" + libPath, new File(mojang, "libraries/" + libPath), libSha1);
 					}
 					//download the classifiers
 					if(downloads.containsKey("classifiers"))
@@ -327,7 +312,7 @@ public class McChecker {
 							String clPath = cl.getString("path");
 							String clSha1 = cl.getString("sha1");
 							String clUrl = cl.getString("url");
-							DLUtils.dl(clUrl, "libraries/" + clPath, new File(mojang, "libraries/" + clPath), clSha1);
+							DLUtils.dlSingleton(hash, clUrl, "libraries/" + clPath, new File(mojang, "libraries/" + clPath), clSha1);
 						}
 					}
 				}
@@ -350,11 +335,11 @@ public class McChecker {
 					
 					if(!libBaseUrl.endsWith("/"))
 					{
-						DLUtils.learnDl(libBaseUrl, new File(mojang, "libraries/" + lpath));
+						DLUtils.learnDl(hash, libBaseUrl, new File(mojang, "libraries/" + lpath));
 					}
 					else if(!entry.containsKey("natives"))
 					{
-						DLUtils.learnDl(lUrl, new File(mojang, "libraries/" + lpath));
+						DLUtils.learnDl(hash, lUrl, new File(mojang, "libraries/" + lpath));
 					}
 					else
 					{
@@ -374,14 +359,14 @@ public class McChecker {
 								String path64 = lBasePath + "-" + nvalue + "64.jar";
 								String libURL32 = libBaseUrl + path32;
 								String libURL64 = libBaseUrl + path64;
-								DLUtils.learnDl(libURL32, new File(mojang, "libraries/" + path32));
-								DLUtils.learnDl(libURL64, new File(mojang, "libraries/" + path64));
+								DLUtils.learnDl(hash, libURL32, new File(mojang, "libraries/" + path32));
+								DLUtils.learnDl(hash, libURL64, new File(mojang, "libraries/" + path64));
 							}
 							else
 							{	
 								String npath = lBasePath + "-" + nvalue + ".jar";
 								String nUrl = libBaseUrl + npath;
-								DLUtils.learnDl(nUrl, new File(mojang, "libraries/" + npath));
+								DLUtils.learnDl(hash, nUrl, new File(mojang, "libraries/" + npath));
 							}
 						}
 					}
@@ -424,19 +409,19 @@ public class McChecker {
 		File serverExeFile = new File(oldMcDir, serverExePath);
 		
 		//dl the files
-		File dlClient = DLUtils.learnDl(urlBase + "versions/" + version + "/" + version + ".jar", jarFile, clientTime);
+		File dlClient = DLUtils.learnDl(hash, urlBase + "versions/" + version + "/" + version + ".jar", jarFile, clientTime);
 		if(dlClient == null)
 			return assets;//no need to continue here the rest should return 404
 		
-		DLUtils.learnDl(urlBase + "versions/" + version + "/" + "minecraft_server." + version + ".jar", serverJarFile);
-		DLUtils.learnDl(urlBase + "versions/" + version + "/" + "minecraft_server." + version + ".exe", serverExeFile);
+		DLUtils.learnDl(hash, urlBase + "versions/" + version + "/" + "minecraft_server." + version + ".jar", serverJarFile);
+		DLUtils.learnDl(hash, urlBase + "versions/" + version + "/" + "minecraft_server." + version + ".exe", serverExeFile);
 		
 		//dl the assetIndexes
-		assets.add(DLUtils.learnDl(urlBase + "indexes/" + checkPath, checkFile));
-		assets.add(DLUtils.learnDl(urlBase + "indexes/" + assetsPath, assetsFile));
+		assets.add(DLUtils.learnDl(hash, urlBase + "indexes/" + checkPath, checkFile));
+		assets.add(DLUtils.learnDl(hash, urlBase + "indexes/" + assetsPath, assetsFile));
 		
 		//dl the json in case it's being invoked directly instead of calling checkOldMajor
-		DLUtils.learnDl(urlBase + "versions/" + version + "/" + version + ".json", new File(jsonOldMinor, type + "/" + version + ".json"));
+		DLUtils.learnDl(hash, urlBase + "versions/" + version + "/" + version + ".json", new File(jsonOldMinor, type + "/" + version + ".json"));
 		return assets;
 	}
 	
@@ -444,7 +429,7 @@ public class McChecker {
 	 * NOTE: there is nothing to differentiate a snapshot only assets index and a non snapshot one. As types are not specified.
 	 * I got it working with checkMojang --skipSnaps but, that's because it uses only the return files it will fail with checkCustom --skipSnaps
 	 */
-	public static void checkAssets(File assetsIndexFile) throws FileNotFoundException, IOException
+	public static void checkAssets(File assetsIndexFile)
 	{
 		if(!checkJsons.add(assetsIndexFile))
 			return;
@@ -456,12 +441,12 @@ public class McChecker {
 			String assetSha1 = assetJson.getString("hash");
 			String twoChar = assetSha1.substring(0, 2);
 			String assetUrl = "https://resources.download.minecraft.net/" + twoChar + "/" + assetSha1;
-			DLUtils.dl(assetUrl, new File(mojang, "assets/objects/" + twoChar + "/" + assetSha1), assetSha1);//runs actually faster just dling it from online because the server is really fast
+			DLUtils.dlSingleton(hash, assetUrl, new File(mojang, "assets/objects/" + twoChar + "/" + assetSha1), assetSha1);//runs actually faster just dling it from online because the server is really fast
 		}
 		assetsCount++;
 	}
 	
-	public static void extractJsons() throws FileNotFoundException, IOException, URISyntaxException 
+	public static void extractJsons()
 	{
 		String base = "resources/mcripper/jsons";
 		Set<String> resources = RippedUtils.getPathsFromDir(McChecker.class, base);
@@ -469,7 +454,7 @@ public class McChecker {
 		for(String r : resources)
 		{
 			String path = DeDuperUtil.getRealtivePath(dir, new File(r));//get a relative path based on virtual files
-			DLUtils.learnExtractDL(McChecker.class, r, new File(jsonDir, path));
+			DLUtils.learnExtractDL(hash, McRipper.version, McChecker.class, r, new File(jsonDir, path));
 		}
 	}
 	
@@ -501,10 +486,10 @@ public class McChecker {
 		return DeDuperUtil.toArray(set, File.class);
 	}
 	
-	private static File dlMajor(String vname) throws FileNotFoundException, MalformedURLException, IOException
+	private static File dlMajor(String vname)
 	{ 
 		File saveAs = new File(jsonMajor, vname);
-		return DLUtils.safeDlMove("https://launchermeta.mojang.com/mc/game/" + vname, vname, saveAs);
+		return DLUtils.dlMove(hash, "https://launchermeta.mojang.com/mc/game/" + vname, vname, saveAs);
 	}
 	
 	public static void setRoot(File appDir) throws Exception

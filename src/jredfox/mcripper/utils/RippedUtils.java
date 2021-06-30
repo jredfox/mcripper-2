@@ -15,6 +15,7 @@ import java.net.UnknownHostException;
 import java.time.Instant;
 import java.time.OffsetDateTime;
 import java.time.format.DateTimeParseException;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -47,14 +48,22 @@ import jredfox.selfcmd.util.OSUtil;
  */
 public class RippedUtils {
 	
-	public static Document parseXML(File xmlFile) throws SAXException, IOException, ParserConfigurationException
+	public static Document parseXML(File xmlFile)
 	{
-		DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
-		dbFactory.setNamespaceAware(true);
-	    DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
-	    Document doc = dBuilder.parse(xmlFile);
-	    doc.getDocumentElement().normalize();
-	    return doc;
+		try
+		{
+			DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
+			dbFactory.setNamespaceAware(true);
+			DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
+			Document doc = dBuilder.parse(xmlFile);
+			doc.getDocumentElement().normalize();
+			return doc;
+		}
+		catch(Exception e)
+		{
+			e.printStackTrace();
+		}
+		return null;
 	}
 	
 	public static JSONObject getJSON(File file)
@@ -252,7 +261,7 @@ public class RippedUtils {
 		return clazz.getClassLoader().getResourceAsStream(path);
 	}
 	
-	public static Set<String> getPathsFromDir(Class<?> clazz, String path) throws URISyntaxException, IOException 
+	public static Set<String> getPathsFromDir(Class<?> clazz, String path)
 	{
 		return getPathsFromDir(clazz, path, "*");
 	}
@@ -260,25 +269,32 @@ public class RippedUtils {
 	/**
 	 * getResource Paths from a jar/IDE from a directory
 	 */
-	public static Set<String> getPathsFromDir(Class<?> clazz, String path, String ext) throws URISyntaxException, IOException 
+	public static Set<String> getPathsFromDir(Class<?> clazz, String path, String ext)
 	{
 		Set<String> paths = new HashSet<>();
-		File jarFile = new File(clazz.getProtectionDomain().getCodeSource().getLocation().toURI());
-		if(!jarFile.isDirectory())
+		try
 		{
-			ZipFile jar = JarUtil.getZipFile(jarFile);
-			List<ZipEntry> li = JarUtil.getEntriesFromDir(jar, path, ext);
-			for(ZipEntry e : li)
-				paths.add(e.getName());
-		}
-		else
-		{
-			for(File f : DeDuperUtil.getDirFiles(new File(jarFile, path), ext))
+			File jarFile = new File(clazz.getProtectionDomain().getCodeSource().getLocation().toURI());
+			if(!jarFile.isDirectory())
 			{
-				paths.add(DeDuperUtil.getRealtivePath(jarFile, f));
+				ZipFile jar = JarUtil.getZipFile(jarFile);
+				List<ZipEntry> li = JarUtil.getEntriesFromDir(jar, path, ext);
+				for(ZipEntry e : li)
+					paths.add(e.getName());
 			}
+			else
+			{
+				for(File f : DeDuperUtil.getDirFiles(new File(jarFile, path), ext))
+				{
+					paths.add(DeDuperUtil.getRealtivePath(jarFile, f));
+				}
+			}
+			return paths;
 		}
-		return paths;
+		catch(Throwable t)
+		{
+			return Collections.emptySet();
+		}
 	}
 	
 	public static void copy(InputStream in, OutputStream out) throws IOException
