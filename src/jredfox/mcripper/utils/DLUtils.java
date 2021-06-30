@@ -21,34 +21,33 @@ import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
 import jredfox.filededuper.util.DeDuperUtil;
-import jredfox.mcripper.exception.url.HTTPException;
-import jredfox.mcripper.exception.url.URLException;
 import jredfox.mcripper.printer.HashPrinter;
 import jredfox.mcripper.printer.Learner;
+import jredfox.mcripper.url.exception.URLException;
 import jredfox.selfcmd.util.OSUtil;
 
 public class DLUtils {
 	
-	public static File dlSingleton(HashPrinter p, String url, File saveAs, String hash)
+	public static Pair<Integer, File> dlSingleton(HashPrinter p, String url, File saveAs, String hash)
 	{
 		return dlSingleton(p, url, saveAs, -1, hash);
 	}
 	
-	public static File dlSingleton(HashPrinter p, String url, File saveAs, long timestamp, String hash)
+	public static Pair<Integer, File> dlSingleton(HashPrinter p, String url, File saveAs, long timestamp, String hash)
 	{
 		return dlSingleton(p, url, null, saveAs, timestamp, hash);
 	}
 	
-	public static File dlSingleton(HashPrinter p, String url, String mcPath, File saveAs, String hash)
+	public static Pair<Integer, File> dlSingleton(HashPrinter p, String url, String mcPath, File saveAs, String hash)
 	{
 		return dlSingleton(p, url, mcPath, saveAs, -1, hash);
 	}
 
 	/**
 	 * download a file to the path specified file if hash doesn't exist. Requires a HashPrinter
-	 * @support all protocols that java does by default
+	 * @return the Pair[HTTP Response --> File] NOTE: File will be null if an http error or IOException has occurred
 	 */
-	public static File dlSingleton(HashPrinter printer, String url, String mcPath, File saveAs, long timestamp, String hash)
+	public static Pair<Integer, File> dlSingleton(HashPrinter printer, String url, String mcPath, File saveAs, long timestamp, String hash)
 	{
 		if(!RippedUtils.isValidSHA1(hash))
 			throw new IllegalArgumentException("invalid sha1 hash:" + hash);
@@ -59,7 +58,7 @@ public class DLUtils {
 		
 		//prevent duplicate downloads
 		if(printer.hashes.containsKey(hash))
-			return RippedUtils.getSimpleFile(printer.hashes.get(hash));
+			return new Pair<>(304, RippedUtils.getSimpleFile(printer.hashes.get(hash)));
 		else if(saveAs.exists())
 		{
 			File hfile = new File(saveAs.getParent(), DeDuperUtil.getTrueName(saveAs) + "-" + hash + DeDuperUtil.getExtensionFull(saveAs));
@@ -69,7 +68,7 @@ public class DLUtils {
 				saveAs = hflag ? hfile : saveAs;
 				System.err.println("File is out of sync with " + printer.log.getName() + " skipping duplicate download:" + saveAs);
 				printer.append(hash, saveAs);
-				return saveAs;
+				return new Pair<>(304, saveAs);
 			}
 			saveAs = hfile;
 		}
@@ -87,16 +86,21 @@ public class DLUtils {
 		{
 			directDL(url, saveAs, timestamp);
 		}
+		catch(URLException h)
+		{
+			printWebIO(h);
+			return new Pair<>(h.errCode, null);
+		}
 		catch(IOException io)
 		{
-			printer.hashes.remove(hash);
+//			printer.hashes.remove(hash); shouldn't be needed anymore since if it fails it won't get added to begin with
 			printWebIO(io);
-			return null;
+			return new Pair<>(403, (File) null);
 		}
 		
 		System.out.println("dl:" + RippedUtils.getSimplePath(saveAs).replaceAll("\\\\", "/") + " in:" + (System.currentTimeMillis() - start) + "ms " + " from:" + url);
 		printer.append(hash, saveAs);
-		return saveAs;
+		return new Pair<>(200, saveAs);
 	}
 	
 	private static void printWebIO(Exception io) 
@@ -213,7 +217,7 @@ public class DLUtils {
 		if(tmpFile == null)
 			return null;
 		String hash = RippedUtils.getSHA1(tmpFile);
-		File moved = dlSingleton(p, RippedUtils.toURL(tmpFile).toString(), saveAs, tmpFile.lastModified(), hash);
+		File moved = dlSingleton(p, RippedUtils.toURL(tmpFile).toString(), saveAs, tmpFile.lastModified(), hash).getRight();
 		if(moved == null)
 			System.err.println("moved file is null this should never happen! " + getFixedFile(saveAs) + " report to github issues");
 		tmpFile.delete();
@@ -293,30 +297,27 @@ public class DLUtils {
 				return RippedUtils.getSimpleFile(McChecker.hash.hashes.get(cachedHash));
 			
 			//re-download if file does not exist
-			return dlSingleton(p, url, saveAs, timestamp, cachedHash);
+			return dlSingleton(p, url, saveAs, timestamp, cachedHash).getRight();
 		}
 		
 		//learn here
-		try
-		{	
-			File tmpFile = dlToFile(url, new File(McChecker.tmp, spath), timestamp);
-			timestamp = tmpFile.lastModified();//use the one on the cached disk first
-			String hash = RippedUtils.getSHA1(tmpFile);
-			System.out.println("learned:" + url + ", " + hash);
-			File moved = dlSingleton(p, RippedUtils.toURL(tmpFile).toString(), saveAs, timestamp, hash);
-			tmpFile.delete();
-			learner.learner.append(urlPath, hash);
-			return moved;
-		}
-		catch(HTTPException h)
+		File tmpFile = dlToFile(url, new File(McChecker.tmp, spath), timestamp);
+		timestamp = tmpFile.lastModified();//use the one on the cached disk first
+		String hash = RippedUtils.getSHA1(tmpFile);
+		System.out.println("learned:" + url + ", " + hash);
+		Pair<Integer, File> responce = dlSingleton(p, RippedUtils.toURL(tmpFile).toString(), saveAs, timestamp, hash);
+		int code = responce.getLeft();
+		File moved = responce.getRight();
+		//if an error has occured do not continue and add it to the bad paths if it can be added
+		if(moved == null)
 		{
-			if(RippedUtils.containsNum(h.errCode, http404Codes))
-			{
-				System.err.println(h.getMessage());
+			if(RippedUtils.containsNum(code, http404Codes))
 				learner.bad.append(urlPath);
-			}
+			return null;
 		}
-		return null;
+		tmpFile.delete();
+		learner.learner.append(urlPath, hash);
+		return moved;
 	}
 	
 	public static Learner getLearner(String index, String indexHash) 

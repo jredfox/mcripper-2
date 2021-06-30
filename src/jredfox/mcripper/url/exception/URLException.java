@@ -1,9 +1,9 @@
-package jredfox.mcripper.exception.url;
+package jredfox.mcripper.url.exception;
 
 import java.io.IOException;
 import java.net.URL;
 
-public class URLException extends IOException{
+public abstract class URLException extends IOException{
 	
 	public final String protocol;
 	public final String url;
@@ -13,9 +13,13 @@ public class URLException extends IOException{
 	{
 		super(msg);
 		this.protocol = url.getProtocol();
+		if(!this.isSupported(this.protocol))
+			throw new IllegalArgumentException("unsupported http protocal:" + this.protocol);
 		this.url = url.toString();
 		this.errCode = err;
 	}
+
+	public abstract boolean isSupported(String p);
 
 	/**
 	 * returns whether or not the exception is from the network rather then the current device / USB

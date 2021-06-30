@@ -190,7 +190,7 @@ public class McChecker {
 			if(skipSnaps && type.startsWith("snapshot"))
 				continue;
 			long time = RippedUtils.parseOffsetTime(jsonVersion.getString("time"));
-			File minor = DLUtils.dlSingleton(hash, url, "versions/" + version + "/" + version + ".json", new File(jsonMinor, type + "/" + version + ".json"), time, minorHash);
+			File minor = DLUtils.dlSingleton(hash, url, "versions/" + version + "/" + version + ".json", new File(jsonMinor, type + "/" + version + ".json"), time, minorHash).getRight();
 			minors.add(minor);
 		}
 		majorCount++;
@@ -248,7 +248,7 @@ public class McChecker {
 			String id = aIndex.getString("id");
 			String sha1 = aIndex.getString("sha1").toLowerCase();
 			String url = aIndex.getString("url");
-			assets.add(DLUtils.dlSingleton(hash, url, "assets/indexes/" + id + ".json", new File(jsonAssets, id + ".json"), sha1));
+			assets.add(DLUtils.dlSingleton(hash, url, "assets/indexes/" + id + ".json", new File(jsonAssets, id + ".json"), sha1).getRight());
 		}
 		
 		//download the logging
@@ -505,6 +505,7 @@ public class McChecker {
 		jsonOldMajor = new File(jsonDir, "oldmajor");
 		jsonOldMinor = new File(jsonDir, "oldminor");
 		IOUtils.close(logger);
+		closePrinters();
 		hash = new HashPrinter(new File(root, "index.hash"), 23000);
 		logger = new LogPrinter(new File(root, "logs/log-" + Instant.now().toString().replaceAll(":", ".") + ".txt"), System.out, System.err, false, true);
 		logger.load();

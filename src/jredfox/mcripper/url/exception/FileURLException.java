@@ -1,4 +1,4 @@
-package jredfox.mcripper.exception.url;
+package jredfox.mcripper.url.exception;
 
 import java.io.IOException;
 

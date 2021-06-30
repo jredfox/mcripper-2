@@ -1,21 +1,24 @@
-package jredfox.mcripper.exception.url;
+package jredfox.mcripper.url.exception;
+
+import java.net.URL;
 
 public class HTTPException extends URLException{
 	
 	private static final long serialVersionUID = 58925012983410284L;
 	
-	public HTTPException(int err, String msg)
+	protected HTTPException(URL url, int err, String msg)
 	{
-		this(false, err, msg);
-	}
-	
-	protected HTTPException(boolean https, int err, String msg)
-	{
-		super(https ? "https" : "http", err, msg);
+		super(url, err, msg);
 		if(this.errCode < 400)
 			throw new IllegalArgumentException("http error code must be 400-499!");
 	}
 	
+	@Override
+	public boolean isSupported(String p)
+	{
+		return p.equals("http") || p.equals("https");
+	}
+
 	public boolean isClientErr()
 	{
 		return this.errCode > 400 && this.errCode < 500;
