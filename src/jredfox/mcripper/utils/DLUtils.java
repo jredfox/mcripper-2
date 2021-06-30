@@ -9,6 +9,7 @@ import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
+import java.net.UnknownHostException;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -22,6 +23,7 @@ import org.xml.sax.SAXException;
 
 import jredfox.filededuper.util.DeDuperUtil;
 import jredfox.mcripper.McRipper;
+import jredfox.mcripper.exception.url.HTTPException;
 import jredfox.mcripper.printer.HashPrinter;
 import jredfox.mcripper.printer.Learner;
 import jredfox.selfcmd.util.OSUtil;
@@ -110,12 +112,27 @@ public class DLUtils {
 		if(McChecker.https)
 			sURL = sURL.replaceAll("http:", "https:");
 		URL url = new URL(sURL);
-		URLConnection con = url.openConnection();
-		if(timestamp == -1)
-			timestamp = RippedUtils.getTime(con);
-		con.setConnectTimeout(1000 * 15);
-		InputStream inputStream = con.getInputStream();
-		directDL(inputStream, output, timestamp);
+		URLConnection con = null;
+		try
+		{
+			con = url.openConnection();
+			if(timestamp == -1)
+				timestamp = RippedUtils.getTime(con);
+			con.setConnectTimeout(1000 * 15);
+			InputStream inputStream = con.getInputStream();
+			directDL(inputStream, output, timestamp);
+		}
+		catch(Exception e)
+		{
+			throw e;
+		}
+		finally
+		{
+			if(con instanceof HttpURLConnection)
+			{
+				((HttpURLConnection)con).disconnect(); 
+			}
+		}
 	}
 
 	/**
@@ -278,19 +295,13 @@ public class DLUtils {
 			learner.learner.append(urlPath, hash);
 			return moved;
 		}
-		catch(IOException e)
+		catch(HTTPException h)
 		{
-			int code = RippedUtils.getResponseCode(url);
-			if(code != -1)
+			if(RippedUtils.containsNum(h.errCode, http404Codes))
 			{
-				if(RippedUtils.containsNum(code, http404Codes))
-				{
-					System.err.println(e.getMessage());
-					learner.bad.append(urlPath);
-				}
+				System.err.println(h.getMessage());
+				learner.bad.append(urlPath);
 			}
-			else
-				e.printStackTrace();
 		}
 		catch(Exception e)
 		{
