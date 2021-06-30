@@ -77,7 +77,6 @@ public class DLUtils {
 		//TODO: separate from dlSingleton method
 		if(mcPath != null)
 		{
-			long ms = System.currentTimeMillis();
 			String old = url;
 			url = DLUtils.getMcURL(McChecker.mcDir, url, mcPath, hash);
 			if(timestamp == -1 && !url.equals(old))
