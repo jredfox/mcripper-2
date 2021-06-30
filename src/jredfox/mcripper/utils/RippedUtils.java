@@ -7,11 +7,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
-import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLConnection;
-import java.net.UnknownHostException;
 import java.time.Instant;
 import java.time.OffsetDateTime;
 import java.time.format.DateTimeParseException;
@@ -26,13 +23,11 @@ import java.util.zip.ZipFile;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
 
 import org.apache.commons.codec.digest.DigestUtils;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
-import org.xml.sax.SAXException;
 
 import com.jml.evilnotch.lib.JavaUtil;
 import com.jml.evilnotch.lib.json.JSONObject;
@@ -187,6 +182,7 @@ public class RippedUtils {
 		return arr[arr.length - 1];
 	}
 	
+	@SuppressWarnings("unused")
 	private <K,V> Map.Entry<K, V> getLast(LinkedHashMap<K, V> map) 
 	{
 		Map.Entry<K, V> e = null;

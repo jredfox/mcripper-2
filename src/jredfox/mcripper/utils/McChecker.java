@@ -197,7 +197,6 @@ public class McChecker {
 		return minors;
 	}
 	
-	@SuppressWarnings("rawtypes")
 	public static Set<File> checkOldMajor(File oldJson, boolean skipSnaps)
 	{
 		if(!checkJsons.add(oldJson))

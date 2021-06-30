@@ -5,6 +5,7 @@ import java.net.URL;
 
 public abstract class URLException extends IOException{
 	
+	private static final long serialVersionUID = 4489831757280655388L;
 	public final String protocol;
 	public final String url;
 	public final int errCode;

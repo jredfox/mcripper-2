@@ -53,9 +53,7 @@ public class McRipper {
 		
 		//sanity check for custom appdir
 		if(!appdir.exists() && !appdir.mkdirs())
-		{
 			throw new RuntimeException("appdata \"" + appdir + "\" doesn't exist and cannot be created. Please reconfigure Mc Ripper 2 to a valid path!");
-		}
 		
 		McChecker.setRoot(appdir);
 		System.out.println("starting:" + appName);

@@ -91,10 +91,10 @@ public class DLUtils {
 			printWebIO(h);
 			return new Pair<>(h.errCode, null);
 		}
-		catch(IOException io)
+		catch(Exception e)
 		{
 //			printer.hashes.remove(hash); shouldn't be needed anymore since if it fails it won't get added to begin with
-			printWebIO(io);
+			e.printStackTrace();
 			return new Pair<>(403, (File) null);
 		}
 		
@@ -308,7 +308,7 @@ public class DLUtils {
 		Pair<Integer, File> responce = dlSingleton(p, RippedUtils.toURL(tmpFile).toString(), saveAs, timestamp, hash);
 		int code = responce.getLeft();
 		File moved = responce.getRight();
-		//if an error has occured do not continue and add it to the bad paths if it can be added
+		//if an error has occurred do not continue and add it to the bad paths if it can be added
 		if(moved == null)
 		{
 			if(RippedUtils.containsNum(code, http404Codes))
