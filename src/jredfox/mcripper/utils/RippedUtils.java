@@ -6,9 +6,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.net.HttpURLConnection;
 import java.net.URL;
-import java.net.URLConnection;
 import java.time.Instant;
 import java.time.OffsetDateTime;
 import java.time.format.DateTimeParseException;
@@ -36,6 +34,7 @@ import com.jml.evilnotch.lib.json.serialize.JSONSerializer;
 import jredfox.filededuper.util.DeDuperUtil;
 import jredfox.filededuper.util.IOUtils;
 import jredfox.filededuper.util.JarUtil;
+import jredfox.mcripper.printer.HashPrinter;
 import jredfox.selfcmd.util.OSUtil;
 
 /**
@@ -88,23 +87,6 @@ public class RippedUtils {
 	public static boolean isValidSHA256(String s) {
 	    return s.matches("^[a-fA-F0-9]{64}$");
 	}
-	
-//	public static String getUnsafeHash(File f) 
-//	{
-//		String hash = null;
-//		String name = DeDuperUtil.getTrueName(f);
-//		if(name.contains("-"))
-//		{
-//			String[] splited = DeDuperUtil.split(name, '-', '?', '?');
-//			String possibleHash = splited[splited.length - 1];
-//			hash = isValidSHA1(possibleHash) ? possibleHash.toLowerCase() : getSHA1(f);
-//		}
-//		else
-//		{
-//			hash = getSHA1(f);
-//		}
-//		return hash;
-//	}
 	
 	public static String getSHA1(File f) 
 	{
@@ -235,22 +217,6 @@ public class RippedUtils {
 	{
 		return l.item(0).getTextContent();
 	}
-
-	public static String getSimplePath(File output)
-	{
-		return DeDuperUtil.getRealtivePath(McChecker.root, output.getAbsoluteFile());
-	}
-
-	public static File getFileFromHash(String hash)
-	{
-		String path = McChecker.hash.hashes.get(hash);
-		return path == null ? null : RippedUtils.getSimpleFile(path);
-	}
-	
-	public static File getSimpleFile(String path) 
-	{
-		return new File(McChecker.root, path);
-	}
 	
 	public static InputStream getInputStreamFromJar(Class<?> clazz, String path)
 	{
@@ -345,62 +311,11 @@ public class RippedUtils {
 		
 		return -1;
 	}
-	
-	public static long getTime(URLConnection con)
-	{
-		long ms = con.getLastModified();
-		return ms != 0 ? ms : System.currentTimeMillis();
-	}
 
 	public static String getExtensionFull(String fname) 
 	{
 		String ext = DeDuperUtil.getExtension(fname);
 		return ext.isEmpty() ? "" : "." + ext;
-	}
-
-	public static long getTime(String old) 
-	{
-		try
-		{
-			URLConnection con = new URL(old).openConnection();
-			con.setConnectTimeout(15000);
-			long time = getTime(con);
-			con.getInputStream().close();
-			return time;
-		}
-		catch(Exception e)
-		{
-			e.printStackTrace();
-		}
-		return -1;
-	}
-
-	public static int getResponseCode(String url) 
-	{
-		HttpURLConnection con = null;
-		if(url.startsWith("http"))
-		{
-			try {
-				con = (HttpURLConnection) new URL(url).openConnection();
-			} 
-			catch (IOException e1) {
-				e1.printStackTrace();
-			}
-			
-			try 
-			{
-				return con != null ? con.getResponseCode() : -1;
-			}
-			catch (IOException e) 
-			{
-				return -1;
-			}
-			finally
-			{
-				con.disconnect();
-			}
-		}
-		return -1;
 	}
 
 	public static boolean containsNum(int code, int[] is) 

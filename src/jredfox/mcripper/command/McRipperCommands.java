@@ -18,6 +18,7 @@ import jredfox.filededuper.command.ParamList;
 import jredfox.filededuper.util.DeDuperUtil;
 import jredfox.filededuper.util.IOUtils;
 import jredfox.filededuper.util.JarUtil;
+import jredfox.mcripper.printer.Learner;
 import jredfox.mcripper.utils.DLUtils;
 import jredfox.mcripper.utils.McChecker;
 import jredfox.mcripper.utils.RippedUtils;
@@ -36,7 +37,7 @@ public class McRipperCommands {
 		public void run(ParamList<Object> params) 
 		{
 			long start = System.currentTimeMillis();
-			this.clearGlobal(params);
+			this.start(params);
 			params.options.add(new CommandOption("--internal"));
 			System.out.println("CHECKING MOJANG:");
 			McRipperCommands.checkMojang.run(params);
@@ -51,13 +52,19 @@ public class McRipperCommands {
 		}
 		
 		@Override
+		public void start(ParamList<?> params)
+		{
+			this.clearLearners(params);
+		}
+		
+		@Override
 		public void finish(ParamList<?> params)
 		{
 			this.clear(params);
 		}
 	};
 	
-	public static RipperCommand checkDisk = new RipperCommand(new String[]{"--" + mcDir, "--" + skipSnaps}, "checkDisk")
+	public static RipperCommand checkDisk = new RipperCommand(new String[]{"--" + mcDir, "--" + skipSnaps, "-" + clear}, "checkDisk")
 	{
 		@Override
 		public void run(ParamList<Object> params)
@@ -75,7 +82,7 @@ public class McRipperCommands {
 		}
 	};
 	
-	public static RipperCommand checkMojang = new RipperCommand(new String[]{"--" + mcDir, "--" + skipSnaps}, "checkMojang")
+	public static RipperCommand checkMojang = new RipperCommand(new String[]{"--" + mcDir, "--" + skipSnaps, "-" + clear}, "checkMojang")
 	{
 		@Override
 		public void run(ParamList<Object> params)
@@ -93,7 +100,7 @@ public class McRipperCommands {
 		}
 	};
 	
-	public static RipperCommand checkOmni = new RipperCommand("checkOmni")
+	public static RipperCommand checkOmni = new RipperCommand(new String[]{"-" + clear}, "checkOmni")
 	{
 		@Override
 		public void run(ParamList<Object> params)
@@ -110,7 +117,6 @@ public class McRipperCommands {
 		public void run(ParamList<Object> params)
 		{
 			this.start(params);
-			this.clearGlobal(params);
 			McChecker.checkOldMc(params.hasFlag("skipSnaps"));
 			this.finish(params);
 		}
@@ -262,7 +268,8 @@ public class McRipperCommands {
 			{
 				McChecker.closePrinters();//close the streams
 				McChecker.hash.log.delete();//delete the index.hash
-				IOUtils.deleteDirectory(McChecker.lRoot);//delete any machine learned data
+				IOUtils.deleteDirectory(McChecker.hash.learned);//delete any machine learned data
+				Learner.learners.clear();
 				McChecker.hash.load();
 			}
 			catch (Exception e)
@@ -302,7 +309,7 @@ public class McRipperCommands {
 					Map.Entry<String, String> p = it.next();
 					String h = p.getKey();
 					String path = p.getValue();
-					File f = new File(McChecker.root, path);
+					File f = McChecker.hash.getSimpleFile(path);
 					if(!h.equals(RippedUtils.getSHA1(f)))
 					{
 						System.err.println("file has been modified removing:" + path);

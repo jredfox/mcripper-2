@@ -28,6 +28,8 @@ import jredfox.selfcmd.util.OSUtil;
 
 public class DLUtils {
 	
+	public static boolean https = true;
+	
 	public static Pair<Integer, File> dlSingleton(HashPrinter p, String url, File saveAs, String hash)
 	{
 		return dlSingleton(p, url, saveAs, -1, hash);
@@ -58,7 +60,7 @@ public class DLUtils {
 		
 		//prevent duplicate downloads
 		if(printer.hashes.containsKey(hash))
-			return new Pair<>(304, RippedUtils.getSimpleFile(printer.hashes.get(hash)));
+			return new Pair<>(304, printer.getFileFromHash(hash));
 		else if(saveAs.exists())
 		{
 			File hfile = new File(saveAs.getParent(), DeDuperUtil.getTrueName(saveAs) + "-" + hash + DeDuperUtil.getExtensionFull(saveAs));
@@ -79,9 +81,9 @@ public class DLUtils {
 			String old = url;
 			url = DLUtils.getMcURL(McChecker.mcDir, url, mcPath, hash);
 			if(timestamp == -1 && !url.equals(old))
-				timestamp = RippedUtils.getTime(old);//auto fill the real timestamp to prevent the file from dictating it from mc dir as it's always wrong
+				timestamp = getTime(old);//auto fill the real timestamp to prevent the file from dictating it from mc dir as it's always wrong
 		}
-			
+		
 		try
 		{
 			directDL(url, saveAs, timestamp);
@@ -93,17 +95,16 @@ public class DLUtils {
 		}
 		catch(Exception e)
 		{
-//			printer.hashes.remove(hash); shouldn't be needed anymore since if it fails it won't get added to begin with
 			e.printStackTrace();
 			return new Pair<>(403, (File) null);
 		}
 		
-		System.out.println("dl:" + RippedUtils.getSimplePath(saveAs).replaceAll("\\\\", "/") + " in:" + (System.currentTimeMillis() - start) + "ms " + " from:" + url);
+		System.out.println("dl:" + printer.getSimplePath(saveAs).replaceAll("\\\\", "/") + " in:" + (System.currentTimeMillis() - start) + "ms " + " from:" + url);
 		printer.append(hash, saveAs);
 		return new Pair<>(200, saveAs);
 	}
 	
-	private static void printWebIO(Exception io) 
+	public static void printWebIO(Exception io) 
 	{
 		if(io instanceof URLException && ((URLException)io).isWeb())
 			System.err.println(io.getMessage());
@@ -121,7 +122,7 @@ public class DLUtils {
 	 */
 	public static void directDL(String sURL, File output, long timestamp) throws MalformedURLException, IOException
 	{
-		if(McChecker.https)
+		if(https)
 			sURL = sURL.replaceAll("http:", "https:");
 		URL url = new URL(sURL);
 		URLConnection con = null;
@@ -129,7 +130,7 @@ public class DLUtils {
 		{
 			con = url.openConnection();
 			if(timestamp == -1)
-				timestamp = RippedUtils.getTime(con);
+				timestamp = getTime(con);
 			con.setConnectTimeout(1000 * 15);
 			InputStream inputStream = con.getInputStream();
 			directDL(inputStream, output, timestamp);
@@ -213,7 +214,7 @@ public class DLUtils {
 	
 	public static File dlMove(HashPrinter p, String url, String path, File saveAs, long timestamp)
 	{
-		File tmpFile = dlToFile(url, new File(McChecker.tmp, path), timestamp);
+		File tmpFile = dlToFile(url, new File(p.tmp, path), timestamp);
 		if(tmpFile == null)
 			return null;
 		String hash = RippedUtils.getSHA1(tmpFile);
@@ -231,7 +232,7 @@ public class DLUtils {
 	{
 		File saveAs = new File(mcDir, path).getAbsoluteFile();
 		File cached = saveAs;
-		cached = cached.exists() ? cached : McChecker.hash.contains(hash) ? RippedUtils.getFileFromHash(hash) : cached;
+		cached = cached.exists() ? cached : McChecker.hash.contains(hash) ? McChecker.hash.getFileFromHash(hash) : cached;
 		return cached.exists() && hash.equals(RippedUtils.getSHA1(cached)) ? cached : DLUtils.dlToFile(url, saveAs, true);
 	}
 	
@@ -241,7 +242,7 @@ public class DLUtils {
 	public static File dlFromMc(File mcDir, String url, File saveAs, String path, String hash)
 	{
 		File cached = new File(mcDir, path).getAbsoluteFile();
-		cached = cached.exists() ? cached : McChecker.hash.contains(hash) ? RippedUtils.getFileFromHash(hash) : cached;
+		cached = cached.exists() ? cached : McChecker.hash.contains(hash) ? McChecker.hash.getFileFromHash(hash) : cached;
 		url = cached.exists() && hash.equals(RippedUtils.getSHA1(cached)) ? RippedUtils.toURL(cached).toString() : url;
 		File f = dlToFile(url, saveAs);
 		if(f == null)
@@ -280,12 +281,12 @@ public class DLUtils {
 	public static File learnDl(HashPrinter p, String index, String indexHash, String url, File saveAs, long timestamp) 
 	{
 		url = getFixedUrl(url);
-		String spath = DeDuperUtil.getRealtivePath(McChecker.mcripped, saveAs.getAbsoluteFile());
+		String spath = DeDuperUtil.getRealtivePath(p.archiveDir, saveAs.getAbsoluteFile());
 		String urlPath = url;
 		if(urlPath.contains("file:") || urlPath.contains("jar:"))
 			urlPath = spath;
 		
-		Learner learner = getLearner(index, indexHash);
+		Learner learner = p.getLearner(index, indexHash);
 		if(learner.bad.contains(urlPath))
 			return null;
 		
@@ -293,15 +294,15 @@ public class DLUtils {
 		if(cachedHash != null)
 		{
 			//recall location of file
-			if(McChecker.hash.contains(cachedHash))
-				return RippedUtils.getSimpleFile(McChecker.hash.hashes.get(cachedHash));
+			if(p.contains(cachedHash))
+				return p.getFileFromHash(cachedHash);
 			
 			//re-download if file does not exist
 			return dlSingleton(p, url, saveAs, timestamp, cachedHash).getRight();
 		}
 		
 		//learn here
-		File tmpFile = dlToFile(url, new File(McChecker.tmp, spath), timestamp);
+		File tmpFile = dlToFile(url, new File(p.tmp, spath), timestamp);
 		timestamp = tmpFile.lastModified();//use the one on the cached disk first
 		String hash = RippedUtils.getSHA1(tmpFile);
 		System.out.println("learned:" + url + ", " + hash);
@@ -320,24 +321,6 @@ public class DLUtils {
 		return moved;
 	}
 	
-	public static Learner getLearner(String index, String indexHash) 
-	{
-		Learner learner = Learner.learners.get(index);
-		if(learner == null)
-		{
-			try
-			{
-				learner = new Learner(McChecker.lRoot, index, indexHash);
-				learner.parse();
-			} 
-			catch (IOException e) 
-			{
-				e.printStackTrace();
-			}
-		}
-		return learner;
-	}
-	
 	/**
 	 * dl all files from an amazonAws website
 	 * @return the xmlIndex if it returns null it did not succeed
@@ -353,7 +336,7 @@ public class DLUtils {
 	 */
 	public static void dlAmazonAws(HashPrinter p, String url, String path, File extracted)
 	{
-		File baseDir = new File(McChecker.mcripped, path);
+		File baseDir = new File(p.archiveDir, path);
 		String xname = DeDuperUtil.getTrueName(baseDir) + ".xml";
 		File xmlFile = dlMove(p, url, path + "/" + xname, new File(baseDir, xname));
 		if(xmlFile == null)
@@ -410,7 +393,7 @@ public class DLUtils {
 	public static void dlWebArchive(HashPrinter p, String baseUrl, String dirPath)
 	{
 		String name = RippedUtils.getLastSplit(baseUrl, "/");
-		File webDir = new File(McChecker.mcripped, dirPath);
+		File webDir = new File(p.archiveDir, dirPath);
 		
 		//dl the index file
 		String xmlUrl = baseUrl + "/" + name + "_files.xml";
@@ -465,5 +448,33 @@ public class DLUtils {
 				dlSingleton(p, baseUrl + "/" + nodeName, new File(webDir, nodeName), ms, sha1);
 			}
 		}
+	}
+	
+	public static long getTime(String url)
+	{
+		URLConnection con = null;
+		try
+		{
+			con = new URL(url).openConnection();
+			con.setConnectTimeout(15000);
+			long time = getTime(con);
+			return time;
+		}
+		catch(Exception e)
+		{
+			DLUtils.printWebIO(e);
+		}
+		finally
+		{
+			if(con instanceof HttpURLConnection)
+				((HttpURLConnection)con).disconnect();
+		}
+		return -1;
+	}
+	
+	public static long getTime(URLConnection con)
+	{
+		long ms = con.getLastModified();
+		return ms != 0 ? ms : System.currentTimeMillis();
 	}
 }

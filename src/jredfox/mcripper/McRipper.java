@@ -7,6 +7,7 @@ import jredfox.filededuper.command.Commands;
 import jredfox.filededuper.config.simple.MapConfig;
 import jredfox.mcripper.command.McRipperCommands;
 import jredfox.mcripper.command.RipperCommand;
+import jredfox.mcripper.utils.DLUtils;
 import jredfox.mcripper.utils.McChecker;
 import jredfox.selfcmd.SelfCommandPrompt;
 import jredfox.selfcmd.util.OSUtil;
@@ -48,7 +49,7 @@ public class McRipper {
 		MapConfig cfg = new MapConfig(new File(System.getProperty("user.dir"), McRipper.appId + ".cfg"));
 		cfg.load();
 		appdir = new File(cfg.get(McRipper.appId + "Dir", appdir.getPath())).getAbsoluteFile();
-		McChecker.https = cfg.get("alwaysHTTPS", true);
+		DLUtils.https = cfg.get("alwaysHTTPS", true);
 		cfg.save();
 		
 		//sanity check for custom appdir

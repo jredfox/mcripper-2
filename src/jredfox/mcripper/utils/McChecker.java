@@ -26,10 +26,7 @@ public class McChecker {
 	//global vars
 	public static boolean loaded;
 	public static final FileSet checkJsons = new FileSet(2 + 533 + 20);
-	public static final File tmp =  new File(OSUtil.getAppData(), McRipper.appId + "/tmp");
-	public static boolean https;
 	public static File root;
-	public static File lRoot;
 	public static File mcripped;
 	public static File mojang;
 	public static File jsonDir;
@@ -491,10 +488,11 @@ public class McChecker {
 		return DLUtils.dlMove(hash, "https://launchermeta.mojang.com/mc/game/" + vname, vname, saveAs);
 	}
 	
-	public static void setRoot(File appDir) throws Exception
+	public static void setRoot(File appDir) throws IOException
 	{
+		if(appDir.equals(root))
+			return;
 		root = appDir;
-		lRoot = new File(root, "learned");
 		mcripped = new File(root, "mcripped");
 		mojang = new File(mcripped, "mojang");
 		jsonDir = new File(mcripped, "jsons");
@@ -505,7 +503,7 @@ public class McChecker {
 		jsonOldMinor = new File(jsonDir, "oldminor");
 		IOUtils.close(logger);
 		closePrinters();
-		hash = new HashPrinter(new File(root, "index.hash"), 23000);
+		hash = new HashPrinter(root, new File(OSUtil.getAppData(), McRipper.appId + "/tmp"), "mcripped", new File(root, "index.hash"), 23000);
 		logger = new LogPrinter(new File(root, "logs/log-" + Instant.now().toString().replaceAll(":", ".") + ".txt"), System.out, System.err, false, true);
 		logger.load();
 	}

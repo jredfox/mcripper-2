@@ -5,6 +5,7 @@ import java.io.File;
 import jredfox.filededuper.command.Command;
 import jredfox.filededuper.command.ParamList;
 import jredfox.filededuper.util.IOUtils;
+import jredfox.mcripper.printer.Learner;
 import jredfox.mcripper.utils.McChecker;
 
 public abstract class RipperCommand extends Command<Object>{
@@ -35,6 +36,10 @@ public abstract class RipperCommand extends Command<Object>{
 	{
 		this.ms = System.currentTimeMillis();
 		McChecker.mcDir = params.hasFlag("mcDir") ? new File(params.getValue("mcDir")).getAbsoluteFile() : McChecker.mcDir;
+		if(params.hasFlag("internal"))
+			return;
+		if(params.hasFlag('c'))
+			this.clearLearners(params);
 	}
 	
 	public void finish(ParamList<?> params)
@@ -50,14 +55,15 @@ public abstract class RipperCommand extends Command<Object>{
 		System.out.println(McRipperCommands.lboarder + "Done in:" + (System.currentTimeMillis() - this.ms) / 1000D + " seconds" + (McChecker.oldMajorCount > 0 ? " oldMajor:" + McChecker.oldMajorCount : "") + " major:" + McChecker.majorCount + (McChecker.oldMinor > 0 ? " oldMinor:" + McChecker.oldMinor : "") + " minor:" + McChecker.minorCount + " assets:" + McChecker.assetsCount + McRipperCommands.rboarder);
 	}
 
-	public void clearGlobal(ParamList<?> params)
+	public void clearLearners(ParamList<?> params)
 	{
 		if(params.hasFlag("internal"))
 			return;
 		if(params.hasFlag(McRipperCommands.clear))
 		{
-			IOUtils.deleteDirectory(new File(McChecker.lRoot, "global"));
-			System.out.println("forgot global learning data");
+			IOUtils.deleteDirectory(McChecker.hash.learned);
+			Learner.learners.clear();
+			System.out.println("forgot all learning data");
 		}
 	}
 	
@@ -65,7 +71,7 @@ public abstract class RipperCommand extends Command<Object>{
 	{
 		this.setMcDefault();
 		McChecker.checkJsons.clear();
-		IOUtils.deleteDirectory(McChecker.tmp);
+		IOUtils.deleteDirectory(McChecker.hash.tmp);
 	}
 
 	public void setMcDefault()
