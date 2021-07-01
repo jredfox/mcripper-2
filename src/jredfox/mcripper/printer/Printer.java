@@ -14,19 +14,20 @@ import jredfox.mcripper.utils.RippedUtils;
 public abstract class Printer implements Closeable{
 
 	//Object vars
-	public File root;
-	public String rootPath;
+	public File logDir;
+	public String logDirPath;
 	public boolean dirty;
 	
 	//what matters
 	public File log;
 	public PrintWriter out;
+	protected boolean isLoading;
 	
 	public Printer(File log) throws IOException 
 	{
 		log = log.getAbsoluteFile();
-		this.root = log.getParentFile();
-		this.rootPath = root.getPath();
+		this.logDir = log.getParentFile();
+		this.logDirPath = logDir.getPath();
 		this.log = log;
 		this.sanityCheck();
 	}
@@ -39,6 +40,7 @@ public abstract class Printer implements Closeable{
 	{
 		this.setPrintWriter();
 		BufferedReader reader = IOUtils.getReader(this.log);
+		this.isLoading = true;
 		try
 		{
 			String s = reader.readLine();	
@@ -76,6 +78,7 @@ public abstract class Printer implements Closeable{
 		{
 			e.printStackTrace();
 		}
+		this.isLoading = false;
 	}
 	
 	public void save()
@@ -92,7 +95,7 @@ public abstract class Printer implements Closeable{
 
 	public void sanityCheck() throws IOException 
 	{
-		if(!this.root.exists() && !this.root.mkdirs())
+		if(!this.logDir.exists() && !this.logDir.mkdirs())
 		{
 			throw new IOException("Log Directory cannot be found nor created for:" + this.log);
 		}

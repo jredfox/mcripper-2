@@ -61,8 +61,7 @@ public abstract class RipperCommand extends Command<Object>{
 			return;
 		if(params.hasFlag(McRipperCommands.clear))
 		{
-			IOUtils.deleteDirectory(McChecker.hash.learned);
-			Learner.learners.clear();
+			McChecker.hash.clearLearners();
 			System.out.println("forgot all learning data");
 		}
 	}

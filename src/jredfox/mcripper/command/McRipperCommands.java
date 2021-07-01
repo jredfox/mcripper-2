@@ -268,8 +268,7 @@ public class McRipperCommands {
 			{
 				McChecker.closePrinters();//close the streams
 				McChecker.hash.log.delete();//delete the index.hash
-				IOUtils.deleteDirectory(McChecker.hash.learned);//delete any machine learned data
-				Learner.learners.clear();
+				McChecker.hash.clearLearners();
 				McChecker.hash.load();
 			}
 			catch (Exception e)

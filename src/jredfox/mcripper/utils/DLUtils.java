@@ -21,7 +21,6 @@ import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
 import jredfox.filededuper.util.DeDuperUtil;
-import jredfox.mcripper.printer.HashPrinter;
 import jredfox.mcripper.printer.Learner;
 import jredfox.mcripper.url.exception.URLException;
 import jredfox.selfcmd.util.OSUtil;
@@ -30,26 +29,26 @@ public class DLUtils {
 	
 	public static boolean https = true;
 	
-	public static Pair<Integer, File> dlSingleton(HashPrinter p, String url, File saveAs, String hash)
+	public static Pair<Integer, File> dlSingleton(ArchiveManager am, String url, File saveAs, String hash)
 	{
-		return dlSingleton(p, url, saveAs, -1, hash);
+		return dlSingleton(am, url, saveAs, -1, hash);
 	}
 	
-	public static Pair<Integer, File> dlSingleton(HashPrinter p, String url, File saveAs, long timestamp, String hash)
+	public static Pair<Integer, File> dlSingleton(ArchiveManager am, String url, File saveAs, long timestamp, String hash)
 	{
-		return dlSingleton(p, url, null, saveAs, timestamp, hash);
+		return dlSingleton(am, url, null, saveAs, timestamp, hash);
 	}
 	
-	public static Pair<Integer, File> dlSingleton(HashPrinter p, String url, String mcPath, File saveAs, String hash)
+	public static Pair<Integer, File> dlSingleton(ArchiveManager am, String url, String mcPath, File saveAs, String hash)
 	{
-		return dlSingleton(p, url, mcPath, saveAs, -1, hash);
+		return dlSingleton(am, url, mcPath, saveAs, -1, hash);
 	}
 
 	/**
 	 * download a file to the path specified file if hash doesn't exist. Requires a HashPrinter
 	 * @return the Pair[HTTP Response --> File] NOTE: File will be null if an http error or IOException has occurred
 	 */
-	public static Pair<Integer, File> dlSingleton(HashPrinter printer, String url, String mcPath, File saveAs, long timestamp, String hash)
+	public static Pair<Integer, File> dlSingleton(ArchiveManager am, String url, String mcPath, File saveAs, long timestamp, String hash)
 	{
 		if(!RippedUtils.isValidSHA1(hash))
 			throw new IllegalArgumentException("invalid sha1 hash:" + hash);
@@ -59,8 +58,8 @@ public class DLUtils {
 		long start = System.currentTimeMillis();
 		
 		//prevent duplicate downloads
-		if(printer.hashes.containsKey(hash))
-			return new Pair<>(304, printer.getFileFromHash(hash));
+		if(am.contains(hash))
+			return new Pair<>(304, am.getFileFromHash(hash));
 		else if(saveAs.exists())
 		{
 			File hfile = new File(saveAs.getParent(), DeDuperUtil.getTrueName(saveAs) + "-" + hash + DeDuperUtil.getExtensionFull(saveAs));
@@ -68,8 +67,8 @@ public class DLUtils {
 			if(hflag || hash.equals(RippedUtils.getSHA1(saveAs)))
 			{
 				saveAs = hflag ? hfile : saveAs;
-				System.err.println("File is out of sync with " + printer.log.getName() + " skipping duplicate download:" + saveAs);
-				printer.append(hash, saveAs);
+				System.err.println("File is out of sync with " + am.printer.log.getName() + " skipping duplicate download:" + saveAs);
+				am.printer.append(hash, saveAs);
 				return new Pair<>(304, saveAs);
 			}
 			saveAs = hfile;
@@ -99,8 +98,8 @@ public class DLUtils {
 			return new Pair<>(403, (File) null);
 		}
 		
-		System.out.println("dl:" + printer.getSimplePath(saveAs).replaceAll("\\\\", "/") + " in:" + (System.currentTimeMillis() - start) + "ms " + " from:" + url);
-		printer.append(hash, saveAs);
+		System.out.println("dl:" + am.getSimplePath(saveAs).replaceAll("\\\\", "/") + " in:" + (System.currentTimeMillis() - start) + "ms " + " from:" + url);
+		am.printer.append(hash, saveAs);
 		return new Pair<>(200, saveAs);
 	}
 	
@@ -112,9 +111,9 @@ public class DLUtils {
 			io.printStackTrace();
 	}
 
-	public static File learnExtractDL(HashPrinter p, String version, Class<?> clazz, String path, File saveAs)
+	public static File learnExtractDL(ArchiveManager am, String version, Class<?> clazz, String path, File saveAs)
 	{
-		return DLUtils.learnDl(p, "extraction", version, clazz.getClassLoader().getResource(path).toString(), saveAs);
+		return DLUtils.learnDl(am, "extraction", version, clazz.getClassLoader().getResource(path).toString(), saveAs);
 	}
 	
 	/**
@@ -207,18 +206,18 @@ public class DLUtils {
 		return OSUtil.toWinFile(new File(saveAs.getPath().replaceAll("%20", " "))).getAbsoluteFile();
 	}
 	
-	public static File dlMove(HashPrinter p, String url, String path, File saveAs)
+	public static File dlMove(ArchiveManager am, String url, String path, File saveAs)
 	{
-		return dlMove(p, url, path, saveAs, -1);
+		return dlMove(am, url, path, saveAs, -1);
 	}
 	
-	public static File dlMove(HashPrinter p, String url, String path, File saveAs, long timestamp)
+	public static File dlMove(ArchiveManager am, String url, String path, File saveAs, long timestamp)
 	{
-		File tmpFile = dlToFile(url, new File(p.tmp, path), timestamp);
+		File tmpFile = dlToFile(url, new File(am.tmp, path), timestamp);
 		if(tmpFile == null)
 			return null;
 		String hash = RippedUtils.getSHA1(tmpFile);
-		File moved = dlSingleton(p, RippedUtils.toURL(tmpFile).toString(), saveAs, tmpFile.lastModified(), hash).getRight();
+		File moved = dlSingleton(am, RippedUtils.toURL(tmpFile).toString(), saveAs, tmpFile.lastModified(), hash).getRight();
 		if(moved == null)
 			System.err.println("moved file is null this should never happen! " + getFixedFile(saveAs) + " report to github issues");
 		tmpFile.delete();
@@ -232,7 +231,7 @@ public class DLUtils {
 	{
 		File saveAs = new File(mcDir, path).getAbsoluteFile();
 		File cached = saveAs;
-		cached = cached.exists() ? cached : McChecker.hash.contains(hash) ? McChecker.hash.getFileFromHash(hash) : cached;
+		cached = cached.exists() ? cached : McChecker.am.contains(hash) ? McChecker.am.getFileFromHash(hash) : cached;
 		return cached.exists() && hash.equals(RippedUtils.getSHA1(cached)) ? cached : DLUtils.dlToFile(url, saveAs, true);
 	}
 	
@@ -242,7 +241,7 @@ public class DLUtils {
 	public static File dlFromMc(File mcDir, String url, File saveAs, String path, String hash)
 	{
 		File cached = new File(mcDir, path).getAbsoluteFile();
-		cached = cached.exists() ? cached : McChecker.hash.contains(hash) ? McChecker.hash.getFileFromHash(hash) : cached;
+		cached = cached.exists() ? cached : McChecker.am.contains(hash) ? McChecker.am.getFileFromHash(hash) : cached;
 		url = cached.exists() && hash.equals(RippedUtils.getSHA1(cached)) ? RippedUtils.toURL(cached).toString() : url;
 		File f = dlToFile(url, saveAs);
 		if(f == null)
@@ -259,34 +258,34 @@ public class DLUtils {
 		return fixedUrl;
 	}
 	
-	public static File learnDl(HashPrinter p, String url, File saveAs)
+	public static File learnDl(ArchiveManager am, String url, File saveAs)
 	{
-		return learnDl(p, url, saveAs, -1);
+		return learnDl(am, url, saveAs, -1);
 	}
 	
-	public static File learnDl(HashPrinter p, String url, File saveAs, long timestamp) 
+	public static File learnDl(ArchiveManager am, String url, File saveAs, long timestamp) 
 	{
-		return learnDl(p, "global", "null", url, saveAs, timestamp);
+		return learnDl(am, "global", "null", url, saveAs, timestamp);
 	}
 	
-	public static File learnDl(HashPrinter p, String index, String indexHash, String url, File saveAs) 
+	public static File learnDl(ArchiveManager am, String index, String indexHash, String url, File saveAs) 
 	{
-		return learnDl(p, index, indexHash, url, saveAs, -1);
+		return learnDl(am, index, indexHash, url, saveAs, -1);
 	}
 
 	private static int[] http404Codes = new int[]{401, 403, 404, 405, 410, 414, 451};
 	/**
 	 * the main method for learnDl. input the index and indexHash to get the specific learner rather then having everything as global. If the hash is mismatched it won't parse the data and will delete the files
 	 */
-	public static File learnDl(HashPrinter p, String index, String indexHash, String url, File saveAs, long timestamp) 
+	public static File learnDl(ArchiveManager am, String index, String indexHash, String url, File saveAs, long timestamp) 
 	{
 		url = getFixedUrl(url);
-		String spath = DeDuperUtil.getRealtivePath(p.archiveDir, saveAs.getAbsoluteFile());
+		String spath = DeDuperUtil.getRealtivePath(am.dir, saveAs.getAbsoluteFile());
 		String urlPath = url;
 		if(urlPath.contains("file:") || urlPath.contains("jar:"))
 			urlPath = spath;
 		
-		Learner learner = p.getLearner(index, indexHash);
+		Learner learner = am.getLearner(index, indexHash);
 		if(learner.bad.contains(urlPath))
 			return null;
 		
@@ -294,19 +293,19 @@ public class DLUtils {
 		if(cachedHash != null)
 		{
 			//recall location of file
-			if(p.contains(cachedHash))
-				return p.getFileFromHash(cachedHash);
+			if(am.contains(cachedHash))
+				return am.getFileFromHash(cachedHash);
 			
 			//re-download if file does not exist
-			return dlSingleton(p, url, saveAs, timestamp, cachedHash).getRight();
+			return dlSingleton(am, url, saveAs, timestamp, cachedHash).getRight();
 		}
 		
 		//learn here
-		File tmpFile = dlToFile(url, new File(p.tmp, spath), timestamp);
+		File tmpFile = dlToFile(url, new File(am.tmp, spath), timestamp);
 		timestamp = tmpFile.lastModified();//use the one on the cached disk first
 		String hash = RippedUtils.getSHA1(tmpFile);
 		System.out.println("learned:" + url + ", " + hash);
-		Pair<Integer, File> responce = dlSingleton(p, RippedUtils.toURL(tmpFile).toString(), saveAs, timestamp, hash);
+		Pair<Integer, File> responce = dlSingleton(am, RippedUtils.toURL(tmpFile).toString(), saveAs, timestamp, hash);
 		int code = responce.getLeft();
 		File moved = responce.getRight();
 		//if an error has occurred do not continue and add it to the bad paths if it can be added
@@ -325,31 +324,31 @@ public class DLUtils {
 	 * dl all files from an amazonAws website
 	 * @return the xmlIndex if it returns null it did not succeed
 	 */
-	public static void dlAmazonAws(HashPrinter p, String url, String path)
+	public static void dlAmazonAws(ArchiveManager am, String url, String path)
 	{
-		dlAmazonAws(p, url, path, null);
+		dlAmazonAws(am, url, path, null);
 	}
 
 	/**
 	 * dl all files from an amazonAws website
 	 * @return the xmlIndex if it returns null it did not succeed
 	 */
-	public static void dlAmazonAws(HashPrinter p, String url, String path, File extracted)
+	public static void dlAmazonAws(ArchiveManager am, String url, String path, File extracted)
 	{
-		File baseDir = new File(p.archiveDir, path);
+		File baseDir = new File(am.dir, path);
 		String xname = DeDuperUtil.getTrueName(baseDir) + ".xml";
-		File xmlFile = dlMove(p, url, path + "/" + xname, new File(baseDir, xname));
+		File xmlFile = dlMove(am, url, path + "/" + xname, new File(baseDir, xname));
 		if(xmlFile == null)
 			xmlFile = extracted;
-		dlAmazonAws(p, url, baseDir, xmlFile);
+		dlAmazonAws(am, url, baseDir, xmlFile);
 	}
 	
-	public static void dlAmazonAws(HashPrinter p, String baseUrl, File xmlFile)
+	public static void dlAmazonAws(ArchiveManager am, String baseUrl, File xmlFile)
 	{
-		dlAmazonAws(p, baseUrl, xmlFile.getParentFile(), xmlFile);
+		dlAmazonAws(am, baseUrl, xmlFile.getParentFile(), xmlFile);
 	}
 	
-	public static void dlAmazonAws(HashPrinter p, String baseUrl, File baseDir, File xmlFile) 
+	public static void dlAmazonAws(ArchiveManager am, String baseUrl, File baseDir, File xmlFile) 
 	{
 		if(xmlFile == null)
 		{
@@ -378,7 +377,7 @@ public class DLUtils {
 				long timestamp = RippedUtils.parseZTime(strTime);
 				String fileUrl = baseUrl + "/" + key;
 				File saveAs = new File(baseDir, key);
-				learnDl(p, index, indexHash, fileUrl, saveAs, timestamp);
+				learnDl(am, index, indexHash, fileUrl, saveAs, timestamp);
 			}
 		}
 	}
@@ -390,10 +389,10 @@ public class DLUtils {
 	 * @throws ParserConfigurationException 
 	 * @throws SAXException 
 	 */
-	public static void dlWebArchive(HashPrinter p, String baseUrl, String dirPath)
+	public static void dlWebArchive(ArchiveManager am, String baseUrl, String dirPath)
 	{
 		String name = RippedUtils.getLastSplit(baseUrl, "/");
-		File webDir = new File(p.archiveDir, dirPath);
+		File webDir = new File(am.dir, dirPath);
 		
 		//dl the index file
 		String xmlUrl = baseUrl + "/" + name + "_files.xml";
@@ -408,7 +407,7 @@ public class DLUtils {
 		internals.add("__ia_thumb.jpg");
 		
 		name = name + "_files.xml";
-		File xmlFile = dlMove(p, xmlUrl, dirPath + "/" + name, new File(webDir, name));
+		File xmlFile = dlMove(am, xmlUrl, dirPath + "/" + name, new File(webDir, name));
 		if(xmlFile == null)
 		{
 			System.err.println("web archive xml index missing for:" + xmlUrl + " skipping");
@@ -445,7 +444,7 @@ public class DLUtils {
 				}
 				long ms = Long.parseLong(nodeStamp.getTextContent()) * 1000L;
 				String sha1 = nodeHash.getTextContent();
-				dlSingleton(p, baseUrl + "/" + nodeName, new File(webDir, nodeName), ms, sha1);
+				dlSingleton(am, baseUrl + "/" + nodeName, new File(webDir, nodeName), ms, sha1);
 			}
 		}
 	}

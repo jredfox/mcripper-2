@@ -3,8 +3,6 @@ package jredfox.mcripper.printer;
 import java.io.Closeable;
 import java.io.File;
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
 
 import jredfox.filededuper.util.DeDuperUtil;
 import jredfox.filededuper.util.IOUtils;
@@ -18,17 +16,7 @@ public class Learner implements Closeable{
 	public File sha1File;//the sha1 file
 	public String sha1;//the last known sha1 of the index
 	
-	/**
-	 * the registry for all the learners
-	 */
-	public static Map<String, Learner> learners = new HashMap<>(3);
-	
 	public Learner(File lRoot, String index, String indexHash) throws IOException
-	{
-		this(lRoot, index, indexHash, true);
-	}
-	
-	public Learner(File lRoot, String index, String indexHash, boolean register) throws IOException
 	{
 		this.dir = new File(lRoot, index);
 		this.index = index;
@@ -36,8 +24,6 @@ public class Learner implements Closeable{
 		this.sha1File = new File(this.dir, "checksum.sha1");
 		this.bad =  new SetPrinter(new File(this.dir, "bad.paths"), 300);
 		this.learner = new MapPrinter(new File(this.dir, "learned.rhash"), 600);
-		if(register)
-			Learner.register(index, this);
 	}
 	
 	public void parse() throws IOException
@@ -70,11 +56,6 @@ public class Learner implements Closeable{
 	public void saveSha1() 
 	{
 		IOUtils.saveFileLines(DeDuperUtil.asList(new String[]{this.sha1}), this.sha1File, false);
-	}
-
-	public static void register(String index, Learner l)
-	{
-		learners.put(index, l);
 	}
 
 	@Override

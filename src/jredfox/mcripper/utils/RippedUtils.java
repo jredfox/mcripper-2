@@ -34,7 +34,6 @@ import com.jml.evilnotch.lib.json.serialize.JSONSerializer;
 import jredfox.filededuper.util.DeDuperUtil;
 import jredfox.filededuper.util.IOUtils;
 import jredfox.filededuper.util.JarUtil;
-import jredfox.mcripper.printer.HashPrinter;
 import jredfox.selfcmd.util.OSUtil;
 
 /**

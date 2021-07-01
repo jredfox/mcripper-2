@@ -26,12 +26,14 @@ public class MapPrinter extends Printer{
 	}
 
 	@Override
-	public void save(BufferedWriter writer)
+	public void save(BufferedWriter writer) 
 	{
 		try
 		{
 			for(Map.Entry<String, String> entry : this.map.entrySet())
+			{
 				writer.write(entry.getKey() + "," + entry.getValue() + System.lineSeparator());
+			}
 		}
 		catch(Exception e)
 		{
