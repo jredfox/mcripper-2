@@ -9,6 +9,8 @@ import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
+import java.net.UnknownHostException;
+import java.net.UnknownServiceException;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -22,6 +24,7 @@ import org.xml.sax.SAXException;
 
 import jredfox.filededuper.util.DeDuperUtil;
 import jredfox.mcripper.printer.Learner;
+import jredfox.mcripper.url.URLResponse;
 import jredfox.mcripper.url.exception.URLException;
 import jredfox.selfcmd.util.OSUtil;
 
@@ -29,17 +32,17 @@ public class DLUtils {
 	
 	public static boolean https = true;
 	
-	public static Pair<Integer, File> dlSingleton(ArchiveManager am, String url, File saveAs, String hash)
+	public static URLResponse dlSingleton(ArchiveManager am, String url, File saveAs, String hash)
 	{
 		return dlSingleton(am, url, saveAs, -1, hash);
 	}
 	
-	public static Pair<Integer, File> dlSingleton(ArchiveManager am, String url, File saveAs, long timestamp, String hash)
+	public static URLResponse dlSingleton(ArchiveManager am, String url, File saveAs, long timestamp, String hash)
 	{
 		return dlSingleton(am, url, null, saveAs, timestamp, hash);
 	}
 	
-	public static Pair<Integer, File> dlSingleton(ArchiveManager am, String url, String mcPath, File saveAs, String hash)
+	public static URLResponse dlSingleton(ArchiveManager am, String url, String mcPath, File saveAs, String hash)
 	{
 		return dlSingleton(am, url, mcPath, saveAs, -1, hash);
 	}
@@ -48,7 +51,7 @@ public class DLUtils {
 	 * download a file to the path specified file if hash doesn't exist. Requires a HashPrinter
 	 * @return the Pair[HTTP Response --> File] NOTE: File will be null if an http error or IOException has occurred
 	 */
-	public static Pair<Integer, File> dlSingleton(ArchiveManager am, String url, String mcPath, File saveAs, long timestamp, String hash)
+	public static URLResponse dlSingleton(ArchiveManager am, String url, String mcPath, File saveAs, long timestamp, String hash)
 	{
 		if(!RippedUtils.isValidSHA1(hash))
 			throw new IllegalArgumentException("invalid sha1 hash:" + hash);
@@ -59,7 +62,7 @@ public class DLUtils {
 		
 		//prevent duplicate downloads
 		if(am.contains(hash))
-			return new Pair<>(304, am.getFileFromHash(hash));
+			return new URLResponse("file", -1, am.getFileFromHash(hash));
 		else if(saveAs.exists())
 		{
 			File hfile = new File(saveAs.getParent(), DeDuperUtil.getTrueName(saveAs) + "-" + hash + DeDuperUtil.getExtensionFull(saveAs));
@@ -69,7 +72,7 @@ public class DLUtils {
 				saveAs = hflag ? hfile : saveAs;
 				System.err.println("File is out of sync with " + am.printer.log.getName() + " skipping duplicate download:" + saveAs);
 				am.printer.append(hash, saveAs);
-				return new Pair<>(304, saveAs);
+				return new URLResponse("file", -1, saveAs);
 			}
 			saveAs = hfile;
 		}
@@ -83,24 +86,24 @@ public class DLUtils {
 				timestamp = getTime(old);//auto fill the real timestamp to prevent the file from dictating it from mc dir as it's always wrong
 		}
 		
+		URLResponse reply = null;
 		try
 		{
-			directDL(url, saveAs, timestamp);
+			reply = directDL(url, saveAs, timestamp);
 		}
 		catch(URLException h)
 		{
 			printWebIO(h);
-			return new Pair<>(h.errCode, null);
+			return new URLResponse(h);
 		}
 		catch(Exception e)
 		{
 			e.printStackTrace();
-			return new Pair<>(403, (File) null);
 		}
 		
 		System.out.println("dl:" + am.getSimplePath(saveAs).replaceAll("\\\\", "/") + " in:" + (System.currentTimeMillis() - start) + "ms " + " from:" + url);
 		am.printer.append(hash, saveAs);
-		return new Pair<>(200, saveAs);
+		return reply;
 	}
 	
 	public static void printWebIO(Exception io) 
@@ -111,15 +114,16 @@ public class DLUtils {
 			io.printStackTrace();
 	}
 
-	public static File learnExtractDL(ArchiveManager am, String version, Class<?> clazz, String path, File saveAs)
+	public static URLResponse learnExtractDL(ArchiveManager am, String version, Class<?> clazz, String path, File saveAs)
 	{
 		return DLUtils.learnDl(am, "extraction", version, clazz.getClassLoader().getResource(path).toString(), saveAs);
 	}
 	
 	/**
 	 * direct dl with safegards in place to delete corrupted download files. setting the timestamp to -1 will be {@link URLConnection#getLastModified()} of the website or current ms
+	 * @throws URLException if an exception occurs and is not standard Exceptions
 	 */
-	public static void directDL(String sURL, File output, long timestamp) throws MalformedURLException, IOException
+	public static URLResponse directDL(String sURL, File output, long timestamp) throws MalformedURLException, IOException
 	{
 		if(https)
 			sURL = sURL.replaceAll("http:", "https:");
@@ -133,6 +137,15 @@ public class DLUtils {
 			con.setConnectTimeout(1000 * 15);
 			InputStream inputStream = con.getInputStream();
 			directDL(inputStream, output, timestamp);
+			return new URLResponse(url.getProtocol(), getCode(con), output);
+		}
+		catch(IOException io)
+		{
+			URLException uException = URLException.create(io, url, getCode(con));
+			if(uException != null)
+				throw uException;
+			else
+				throw io;
 		}
 		catch(Exception e)
 		{
@@ -141,7 +154,7 @@ public class DLUtils {
 		finally
 		{
 			if(con instanceof HttpURLConnection)
-				((HttpURLConnection)con).disconnect(); 
+				((HttpURLConnection)con).disconnect();
 		}
 	}
 
@@ -164,36 +177,41 @@ public class DLUtils {
 		}
 	}
 	
-	public static File dlToFile(String url, File output)
+	public static URLResponse dlToFile(String url, File output)
 	{
 		return dlToFile(url, output, -1);
 	}
 	
-	public static File dlToFile(String url, File output, boolean print)
+	public static URLResponse dlToFile(String url, File output, boolean print)
 	{
 		return dlToFile(url, output, -1, print);
 	}
 	
-	public static File dlToFile(String url, File output, long timestamp)
+	public static URLResponse dlToFile(String url, File output, long timestamp)
 	{
 		return dlToFile(url, output, timestamp, false);
 	}
 	
-	public static File dlToFile(String url, File output, long timestamp, boolean print)
+	public static URLResponse dlToFile(String url, File output, long timestamp, boolean print)
 	{
 		output = getFixedFile(output);
 		try
 		{
-			directDL(getFixedUrl(url), output, timestamp);
+			URLResponse reply = directDL(getFixedUrl(url), output, timestamp);
+			if(print)
+				System.out.println("dl:" + output.getPath().replaceAll("\\\\", "/") + " from:" + url);
+			return reply;
 		}
-		catch(IOException io)
+		catch(URLException ue)
 		{
-			printWebIO(io);
-			return null;
+			printWebIO(ue);
+			return new URLResponse(ue);
 		}
-		if(print)
-			System.out.println("dl:" + output.getPath().replaceAll("\\\\", "/") + " from:" + url);
-		return output;
+		catch(Exception e)
+		{
+			e.printStackTrace();
+		}
+		return null;
 	}
 	
 	public static String getFixedUrl(String url) 
@@ -206,28 +224,30 @@ public class DLUtils {
 		return OSUtil.toWinFile(new File(saveAs.getPath().replaceAll("%20", " "))).getAbsoluteFile();
 	}
 	
-	public static File dlMove(ArchiveManager am, String url, String path, File saveAs)
+	public static URLResponse dlMove(ArchiveManager am, String url, String path, File saveAs)
 	{
 		return dlMove(am, url, path, saveAs, -1);
 	}
 	
-	public static File dlMove(ArchiveManager am, String url, String path, File saveAs, long timestamp)
+	public static URLResponse dlMove(ArchiveManager am, String url, String path, File saveAs, long timestamp)
 	{
-		File tmpFile = dlToFile(url, new File(am.tmp, path), timestamp);
+		URLResponse r1 = dlToFile(url, new File(am.tmp, path), timestamp);
+		File tmpFile = r1.file;
 		if(tmpFile == null)
-			return null;
+			return r1;
 		String hash = RippedUtils.getSHA1(tmpFile);
-		File moved = dlSingleton(am, RippedUtils.toURL(tmpFile).toString(), saveAs, tmpFile.lastModified(), hash).getRight();
+		URLResponse reply = dlSingleton(am, RippedUtils.toURL(tmpFile).toString(), saveAs, tmpFile.lastModified(), hash);
+		File moved = reply.file;
 		if(moved == null)
 			System.err.println("moved file is null this should never happen! " + getFixedFile(saveAs) + " report to github issues");
 		tmpFile.delete();
-		return moved;
+		return reply;
 	}
 	
 	/**
 	 * get a mc file from the specified path or dl it to the mcDir if not applicable
 	 */
-	public static File getOrDlFromMc(File mcDir, String url, String path, String hash)
+	public static URLResponse getOrDlFromMc(File mcDir, String url, String path, String hash)
 	{
 		File saveAs = new File(mcDir, path).getAbsoluteFile();
 		File cached = saveAs;
@@ -238,7 +258,7 @@ public class DLUtils {
 	/**
 	 * dl it from the cached mcDir if applicable otherwise download it from the url
 	 */
-	public static File dlFromMc(File mcDir, String url, File saveAs, String path, String hash)
+	public static URLResponse dlFromMc(File mcDir, String url, File saveAs, String path, String hash)
 	{
 		File cached = new File(mcDir, path).getAbsoluteFile();
 		cached = cached.exists() ? cached : McChecker.am.contains(hash) ? McChecker.am.getFileFromHash(hash) : cached;
@@ -258,17 +278,17 @@ public class DLUtils {
 		return fixedUrl;
 	}
 	
-	public static File learnDl(ArchiveManager am, String url, File saveAs)
+	public static URLResponse learnDl(ArchiveManager am, String url, File saveAs)
 	{
 		return learnDl(am, url, saveAs, -1);
 	}
 	
-	public static File learnDl(ArchiveManager am, String url, File saveAs, long timestamp) 
+	public static URLResponse learnDl(ArchiveManager am, String url, File saveAs, long timestamp) 
 	{
 		return learnDl(am, "global", "null", url, saveAs, timestamp);
 	}
 	
-	public static File learnDl(ArchiveManager am, String index, String indexHash, String url, File saveAs) 
+	public static URLResponse learnDl(ArchiveManager am, String index, String indexHash, String url, File saveAs) 
 	{
 		return learnDl(am, index, indexHash, url, saveAs, -1);
 	}
@@ -277,7 +297,7 @@ public class DLUtils {
 	/**
 	 * the main method for learnDl. input the index and indexHash to get the specific learner rather then having everything as global. If the hash is mismatched it won't parse the data and will delete the files
 	 */
-	public static File learnDl(ArchiveManager am, String index, String indexHash, String url, File saveAs, long timestamp) 
+	public static URLResponse learnDl(ArchiveManager am, String index, String indexHash, String url, File saveAs, long timestamp) 
 	{
 		url = getFixedUrl(url);
 		String spath = DeDuperUtil.getRealtivePath(am.dir, saveAs.getAbsoluteFile());
@@ -475,5 +495,36 @@ public class DLUtils {
 	{
 		long ms = con.getLastModified();
 		return ms != 0 ? ms : System.currentTimeMillis();
+	}
+	
+	/**
+	 * sun.net.www.protocol.file.FileURLConnection doesn't contain error codes yet
+	 * java doesn't support FTP error codes by default impl on sun.net.www.protocol.ftp.FtpURLConnection
+	 */
+	public static int getCode(URLConnection con)
+	{
+		if(con instanceof HttpURLConnection)
+		{
+			try 
+			{
+				return ((HttpURLConnection)con).getResponseCode();
+			}
+			catch(UnknownServiceException um)
+			{
+				return 415;//unsupported media
+			}
+			catch(UnknownHostException uh)
+			{
+				return URLException.UNKNOWNHOST;
+			}
+			catch (IOException e)
+			{
+				System.err.println("critical error while retrieving url error code. Report issue to github!");
+				e.printStackTrace();
+			}
+		}
+		else if(con.getClass().getName().equals("sun.net.www.protocol.ftp.FtpURLConnection"))
+			System.err.println("JRE 8 doesn't support FTP codes report to java!");
+		return -1;
 	}
 }

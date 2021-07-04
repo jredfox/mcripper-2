@@ -18,7 +18,6 @@ import jredfox.filededuper.command.ParamList;
 import jredfox.filededuper.util.DeDuperUtil;
 import jredfox.filededuper.util.IOUtils;
 import jredfox.filededuper.util.JarUtil;
-import jredfox.mcripper.printer.Learner;
 import jredfox.mcripper.utils.DLUtils;
 import jredfox.mcripper.utils.McChecker;
 import jredfox.mcripper.utils.RippedUtils;
@@ -267,9 +266,9 @@ public class McRipperCommands {
 			try 
 			{
 				McChecker.closePrinters();//close the streams
-				McChecker.hash.log.delete();//delete the index.hash
-				McChecker.hash.clearLearners();
-				McChecker.hash.load();
+				McChecker.am.printer.log.delete();//delete the index.hash
+				McChecker.am.clearLearners();
+				McChecker.am.printer.load();
 			}
 			catch (Exception e)
 			{
@@ -302,13 +301,13 @@ public class McRipperCommands {
 				boolean delete = !params.hasFlag("info");
 				boolean shouldSave = false;
 				boolean hasErr = false;
-				Iterator<Map.Entry<String, String>> it = McChecker.hash.hashes.entrySet().iterator();
+				Iterator<Map.Entry<String, String>> it = McChecker.am.printer.map.entrySet().iterator();
 				while(it.hasNext())
 				{
 					Map.Entry<String, String> p = it.next();
 					String h = p.getKey();
 					String path = p.getValue();
-					File f = McChecker.hash.getSimpleFile(path);
+					File f = McChecker.am.getSimpleFile(path);
 					if(!h.equals(RippedUtils.getSHA1(f)))
 					{
 						System.err.println("file has been modified removing:" + path);
@@ -323,9 +322,9 @@ public class McRipperCommands {
 				}
 				if(shouldSave)
 				{
-					IOUtils.close(McChecker.hash);
-					McChecker.hash.save();
-					McChecker.hash.setPrintWriter();
+					IOUtils.close(McChecker.am.printer);
+					McChecker.am.printer.save();
+					McChecker.am.printer.setPrintWriter();
 				}
 				else if(hasErr)
 					System.err.println("Files have been verified WITH ERRORS");

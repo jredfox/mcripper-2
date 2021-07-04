@@ -2,6 +2,8 @@ package jredfox.mcripper.url;
 
 import java.io.File;
 
+import jredfox.mcripper.url.exception.URLException;
+
 public class URLResponse {
 	
 	public int code;
@@ -13,6 +15,11 @@ public class URLResponse {
 		this.protocol = p;
 		this.code = c;
 		this.file = f;
+	}
+	
+	public URLResponse(URLException e)
+	{
+		this(e.protocol, e.errCode, null);
 	}
 
 }

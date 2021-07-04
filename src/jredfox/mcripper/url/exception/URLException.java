@@ -10,6 +10,8 @@ public abstract class URLException extends IOException{
 	public final String url;
 	public final int errCode;
 	
+	public static final int UNKNOWNHOST = 472;
+	
 	public URLException(URL url, int err, String msg)
 	{
 		super(msg);
@@ -28,6 +30,27 @@ public abstract class URLException extends IOException{
 	public boolean isWeb() 
 	{
 		return !this.protocol.equals("file") && !this.protocol.equals("jar");
+	}
+	
+	public static URLException create(IOException io, URL url, int code) 
+	{
+		return create(io, url, code, null);
+	}
+
+	public static URLException create(IOException org, URL url, int code, String msg)
+	{
+		String p = url.getProtocol();
+		if(msg == null)
+			msg = p.toUpperCase() + " response code:" + code + " for URL:" + url;
+		if(p.equals("https") && code >= 400 && code < 600)
+			return new HTTPSException(url, code, msg);
+		else if(p.equals("http") && code >= 400 && code < 600)
+			return new HTTPException(url, code, msg);
+		else if(p.equals("file") && org != null)
+			return new FileURLException(org, url, msg);
+		else if(p.equals("jar") && org != null)
+			return new JarURLException(org, url, msg);
+		return null;
 	}
 
 }

@@ -5,7 +5,6 @@ import java.io.File;
 import jredfox.filededuper.command.Command;
 import jredfox.filededuper.command.ParamList;
 import jredfox.filededuper.util.IOUtils;
-import jredfox.mcripper.printer.Learner;
 import jredfox.mcripper.utils.McChecker;
 
 public abstract class RipperCommand extends Command<Object>{
@@ -61,7 +60,7 @@ public abstract class RipperCommand extends Command<Object>{
 			return;
 		if(params.hasFlag(McRipperCommands.clear))
 		{
-			McChecker.hash.clearLearners();
+			McChecker.am.clearLearners();
 			System.out.println("forgot all learning data");
 		}
 	}
@@ -70,7 +69,7 @@ public abstract class RipperCommand extends Command<Object>{
 	{
 		this.setMcDefault();
 		McChecker.checkJsons.clear();
-		IOUtils.deleteDirectory(McChecker.hash.tmp);
+		IOUtils.deleteDirectory(McChecker.am.tmp);
 	}
 
 	public void setMcDefault()
