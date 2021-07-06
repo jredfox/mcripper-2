@@ -83,7 +83,7 @@ public class DLUtils {
 			String old = url;
 			url = DLUtils.getCachedURL(am.cachedDir, cachedPath, url, hash);
 			if(timestamp == -1 && !url.equals(old))
-				timestamp = getTime(old);//auto fill the real timestamp to prevent HttpURLConnection#getLastModified() from returning the wrong value
+				timestamp = getTime(old);//auto fill the real timestamp to prevent FileURLConnection#getLastModified() from returning the wrong value due to mc launcher not preserving timestamp integrity 
 		}
 		
 		URLResponse reply = null;
@@ -239,28 +239,6 @@ public class DLUtils {
 		if(moved == null)
 			System.err.println("moved file is null this should never happen! " + getFixedFile(saveAs) + " report to github issues");
 		tmpFile.delete();
-		return reply;
-	}
-	
-	/**
-	 * get a file from mcDir or dl it to the specified path if non existent
-	 */
-	public static URLResponse getOrDlFromMc(File mcDir, String url, String path, String hash)
-	{
-		return dlFromMc(mcDir, url, new File(mcDir, path), path, hash);
-	}
-	
-	/**
-	 * dl it from the cached mcDir if applicable otherwise download it from the url
-	 */
-	public static URLResponse dlFromMc(File mcDir, String url, File saveAs, String path, String hash)
-	{
-		File cached = new File(mcDir, path).getAbsoluteFile();
-		cached = cached.exists() ? cached : McChecker.am.contains(hash) ? McChecker.am.getFileFromHash(hash) : cached;
-		url = cached.exists() && hash.equals(RippedUtils.getSHA1(cached)) ? RippedUtils.toURL(cached).toString() : url;
-		URLResponse reply = dlToFile(url, saveAs);
-		if(reply.file != null && !url.startsWith("file:"))
-			System.out.println("dl:" + reply.file.getPath().replaceAll("\\\\", "/") + " from:" + url);
 		return reply;
 	}
 	
