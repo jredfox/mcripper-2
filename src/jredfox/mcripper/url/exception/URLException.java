@@ -6,9 +6,9 @@ import java.net.URL;
 public abstract class URLException extends IOException{
 	
 	private static final long serialVersionUID = 4489831757280655388L;
-	public final String protocol;
-	public final String url;
-	public final int errCode;
+	public String protocol;
+	public String url;
+	public int errCode;
 	
 	public static final int UNKNOWNHOST = 472;
 	
@@ -20,6 +20,13 @@ public abstract class URLException extends IOException{
 			throw new IllegalArgumentException("unsupported http protocal:" + this.protocol);
 		this.url = url.toString();
 		this.errCode = err;
+	}
+	
+	protected URLException(String msg)
+	{
+		this.errCode = -1;
+		this.protocol = "";
+		this.url = "";
 	}
 
 	public abstract boolean isSupported(String p);

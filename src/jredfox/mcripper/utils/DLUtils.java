@@ -99,19 +99,12 @@ public class DLUtils {
 		catch(Exception e)
 		{
 			e.printStackTrace();
+			return new URLResponse(getProtocol(url), -1, null);
 		}
 		
 		System.out.println("dl:" + am.getSimplePath(saveAs).replaceAll("\\\\", "/") + " in:" + (System.currentTimeMillis() - start) + "ms " + " from:" + url);
 		am.printer.append(hash, saveAs);
 		return reply;
-	}
-	
-	public static void printWebIO(Exception io) 
-	{
-		if(io instanceof URLException && ((URLException)io).isWeb())
-			System.err.println(io.getMessage());
-		else
-			io.printStackTrace();
 	}
 
 	public static URLResponse learnExtractDL(ArchiveManager am, String version, Class<?> clazz, String path, File saveAs)
@@ -127,10 +120,12 @@ public class DLUtils {
 	{
 		if(https)
 			sURL = sURL.replaceAll("http:", "https:");
-		URL url = new URL(sURL);
+
+		URL url = null;
 		URLConnection con = null;
 		try
 		{
+			url = new URL(sURL);
 			con = url.openConnection();
 			if(timestamp == -1)
 				timestamp = getTime(con);
@@ -138,6 +133,10 @@ public class DLUtils {
 			InputStream inputStream = con.getInputStream();
 			directDL(inputStream, output, timestamp);
 			return new URLResponse(url.getProtocol(), getCode(con), output);
+		}
+		catch(MalformedURLException m)
+		{
+			throw new MalformedURLException(sURL);
 		}
 		catch(IOException io)
 		{
@@ -210,8 +209,8 @@ public class DLUtils {
 		catch(Exception e)
 		{
 			e.printStackTrace();
+			return new URLResponse(getProtocol(url), -1, null);
 		}
-		return null;
 	}
 	
 	public static String getFixedUrl(String url) 
@@ -252,7 +251,7 @@ public class DLUtils {
 		File saveAs = new File(mcDir, path).getAbsoluteFile();
 		File cached = saveAs;
 		cached = cached.exists() ? cached : McChecker.am.contains(hash) ? McChecker.am.getFileFromHash(hash) : cached;
-		return cached.exists() && hash.equals(RippedUtils.getSHA1(cached)) ? cached : DLUtils.dlToFile(url, saveAs, true);
+		return cached.exists() && hash.equals(RippedUtils.getSHA1(cached)) ? new URLResponse(cached) : DLUtils.dlToFile(url, saveAs, true);
 	}
 	
 	/**
@@ -263,12 +262,10 @@ public class DLUtils {
 		File cached = new File(mcDir, path).getAbsoluteFile();
 		cached = cached.exists() ? cached : McChecker.am.contains(hash) ? McChecker.am.getFileFromHash(hash) : cached;
 		url = cached.exists() && hash.equals(RippedUtils.getSHA1(cached)) ? RippedUtils.toURL(cached).toString() : url;
-		File f = dlToFile(url, saveAs);
-		if(f == null)
-			return null;
-		if(!url.startsWith("file:"))
-			System.out.println("dl:" + f.getPath().replaceAll("\\\\", "/") + " from:" + url);
-		return f;
+		URLResponse reply = dlToFile(url, saveAs);
+		if(reply.file != null && !url.startsWith("file:"))
+			System.out.println("dl:" + reply.file.getPath().replaceAll("\\\\", "/") + " from:" + url);
+		return reply;
 	}
 	
 	public static String getMcURL(File mcDir, String url, String path, String hash)
@@ -277,6 +274,8 @@ public class DLUtils {
 		String fixedUrl = cached.exists() && RippedUtils.getSHA1(cached).equals(hash) ? RippedUtils.toURL(cached).toString() : url;
 		return fixedUrl;
 	}
+	
+	private static int[] http404Codes = new int[]{401, 403, 404, 405, 410, 414, 451};
 	
 	public static URLResponse learnDl(ArchiveManager am, String url, File saveAs)
 	{
@@ -292,8 +291,7 @@ public class DLUtils {
 	{
 		return learnDl(am, index, indexHash, url, saveAs, -1);
 	}
-
-	private static int[] http404Codes = new int[]{401, 403, 404, 405, 410, 414, 451};
+	
 	/**
 	 * the main method for learnDl. input the index and indexHash to get the specific learner rather then having everything as global. If the hash is mismatched it won't parse the data and will delete the files
 	 */
@@ -314,30 +312,31 @@ public class DLUtils {
 		{
 			//recall location of file
 			if(am.contains(cachedHash))
-				return am.getFileFromHash(cachedHash);
+				return new URLResponse(am.getFileFromHash(cachedHash));
 			
 			//re-download if file does not exist
-			return dlSingleton(am, url, saveAs, timestamp, cachedHash).getRight();
+			return dlSingleton(am, url, saveAs, timestamp, cachedHash);
 		}
 		
 		//learn here
-		File tmpFile = dlToFile(url, new File(am.tmp, spath), timestamp);
+		URLResponse replyTmp = dlToFile(url, new File(am.tmp, spath), timestamp);
+		File tmpFile = replyTmp.file;
+		if(tmpFile == null)
+		{
+			if(RippedUtils.containsNum(replyTmp.code, http404Codes))
+				learner.bad.append(urlPath);
+			return replyTmp;
+		}
 		timestamp = tmpFile.lastModified();//use the one on the cached disk first
 		String hash = RippedUtils.getSHA1(tmpFile);
 		System.out.println("learned:" + url + ", " + hash);
-		Pair<Integer, File> responce = dlSingleton(am, RippedUtils.toURL(tmpFile).toString(), saveAs, timestamp, hash);
-		int code = responce.getLeft();
-		File moved = responce.getRight();
-		//if an error has occurred do not continue and add it to the bad paths if it can be added
-		if(moved == null)
-		{
-			if(RippedUtils.containsNum(code, http404Codes))
-				learner.bad.append(urlPath);
-			return null;
-		}
+		URLResponse response = dlSingleton(am, RippedUtils.toURL(tmpFile).toString(), saveAs, timestamp, hash);
+		
+		if(response.file != null)
+			learner.learner.append(urlPath, hash);
+			
 		tmpFile.delete();
-		learner.learner.append(urlPath, hash);
-		return moved;
+		return response;
 	}
 	
 	/**
@@ -357,7 +356,7 @@ public class DLUtils {
 	{
 		File baseDir = new File(am.dir, path);
 		String xname = DeDuperUtil.getTrueName(baseDir) + ".xml";
-		File xmlFile = dlMove(am, url, path + "/" + xname, new File(baseDir, xname));
+		File xmlFile = dlMove(am, url, path + "/" + xname, new File(baseDir, xname)).file;
 		if(xmlFile == null)
 			xmlFile = extracted;
 		dlAmazonAws(am, url, baseDir, xmlFile);
@@ -365,7 +364,7 @@ public class DLUtils {
 	
 	public static void dlAmazonAws(ArchiveManager am, String baseUrl, File xmlFile)
 	{
-		dlAmazonAws(am, baseUrl, xmlFile.getParentFile(), xmlFile);
+		dlAmazonAws(am, baseUrl, xmlFile != null ? xmlFile.getParentFile() : null, xmlFile);
 	}
 	
 	public static void dlAmazonAws(ArchiveManager am, String baseUrl, File baseDir, File xmlFile) 
@@ -427,7 +426,7 @@ public class DLUtils {
 		internals.add("__ia_thumb.jpg");
 		
 		name = name + "_files.xml";
-		File xmlFile = dlMove(am, xmlUrl, dirPath + "/" + name, new File(webDir, name));
+		File xmlFile = dlMove(am, xmlUrl, dirPath + "/" + name, new File(webDir, name)).file;
 		if(xmlFile == null)
 		{
 			System.err.println("web archive xml index missing for:" + xmlUrl + " skipping");
@@ -499,7 +498,6 @@ public class DLUtils {
 	
 	/**
 	 * sun.net.www.protocol.file.FileURLConnection doesn't contain error codes yet
-	 * java doesn't support FTP error codes by default impl on sun.net.www.protocol.ftp.FtpURLConnection
 	 */
 	public static int getCode(URLConnection con)
 	{
@@ -526,5 +524,25 @@ public class DLUtils {
 		else if(con.getClass().getName().equals("sun.net.www.protocol.ftp.FtpURLConnection"))
 			System.err.println("JRE 8 doesn't support FTP codes report to java!");
 		return -1;
+	}
+	
+	public static String getProtocol(String url) 
+	{
+		try
+		{
+			return new URL(url).getProtocol();
+		}
+		catch(Exception e)
+		{
+			return "";
+		}
+	}
+
+	public static void printWebIO(Exception io) 
+	{
+		if(io instanceof URLException && ((URLException)io).isWeb())
+			System.err.println(io.getMessage());
+		else
+			io.printStackTrace();
 	}
 }

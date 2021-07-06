@@ -14,7 +14,7 @@ public class DebugCode {
 	
 	public static void main(String[] args) throws MalformedURLException, IOException
 	{
-		URLConnection con = new URL("http://abc.go.com/%").openConnection();
+		URLConnection con = new URL("https://gooble.com").openConnection();
 		try
 		{
 			con.getInputStream();

@@ -17,6 +17,13 @@ public class URLResponse {
 		this.file = f;
 	}
 	
+	public URLResponse(File f)
+	{
+		this.protocol = "file";
+		this.code =  f == null ? 404 : 200;
+		this.file = f;
+	}
+	
 	public URLResponse(URLException e)
 	{
 		this(e.protocol, e.errCode, null);
