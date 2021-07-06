@@ -42,16 +42,16 @@ public class DLUtils {
 		return dlSingleton(am, url, null, saveAs, timestamp, hash);
 	}
 	
-	public static URLResponse dlSingleton(ArchiveManager am, String url, String mcPath, File saveAs, String hash)
+	public static URLResponse dlSingleton(ArchiveManager am, String url, String cachedPath, File saveAs, String hash)
 	{
-		return dlSingleton(am, url, mcPath, saveAs, -1, hash);
+		return dlSingleton(am, url, cachedPath, saveAs, -1, hash);
 	}
 
 	/**
 	 * download a file to the path specified file if hash doesn't exist. Requires a HashPrinter
 	 * @return the Pair[HTTP Response --> File] NOTE: File will be null if an http error or IOException has occurred
 	 */
-	public static URLResponse dlSingleton(ArchiveManager am, String url, String mcPath, File saveAs, long timestamp, String hash)
+	public static URLResponse dlSingleton(ArchiveManager am, String url, String cachedPath, File saveAs, long timestamp, String hash)
 	{
 		if(!RippedUtils.isValidSHA1(hash))
 			throw new IllegalArgumentException("invalid sha1 hash:" + hash);
@@ -62,7 +62,7 @@ public class DLUtils {
 		
 		//prevent duplicate downloads
 		if(am.contains(hash))
-			return new URLResponse("file", -1, am.getFileFromHash(hash));
+			return new URLResponse(am.getFileFromHash(hash));
 		else if(saveAs.exists())
 		{
 			File hfile = new File(saveAs.getParent(), DeDuperUtil.getTrueName(saveAs) + "-" + hash + DeDuperUtil.getExtensionFull(saveAs));
@@ -72,18 +72,18 @@ public class DLUtils {
 				saveAs = hflag ? hfile : saveAs;
 				System.err.println("File is out of sync with " + am.printer.log.getName() + " skipping duplicate download:" + saveAs);
 				am.printer.append(hash, saveAs);
-				return new URLResponse("file", -1, saveAs);
+				return new URLResponse(saveAs);
 			}
 			saveAs = hfile;
 		}
 		
-		//TODO: separate from dlSingleton method
-		if(mcPath != null)
+		//pull from cached path whenever possible
+		if(cachedPath != null)
 		{
 			String old = url;
-			url = DLUtils.getMcURL(McChecker.mcDir, url, mcPath, hash);
+			url = DLUtils.getCachedURL(am.cachedDir, cachedPath, url, hash);
 			if(timestamp == -1 && !url.equals(old))
-				timestamp = getTime(old);//auto fill the real timestamp to prevent the file from dictating it from mc dir as it's always wrong
+				timestamp = getTime(old);//auto fill the real timestamp to prevent HttpURLConnection#getLastModified() from returning the wrong value
 		}
 		
 		URLResponse reply = null;
@@ -118,9 +118,6 @@ public class DLUtils {
 	 */
 	public static URLResponse directDL(String sURL, File output, long timestamp) throws MalformedURLException, IOException
 	{
-		if(https)
-			sURL = sURL.replaceAll("http:", "https:");
-
 		URL url = null;
 		URLConnection con = null;
 		try
@@ -215,6 +212,8 @@ public class DLUtils {
 	
 	public static String getFixedUrl(String url) 
 	{
+		if(https)
+			url = url.replaceAll("http:", "https:");
 		return url.replaceAll(" ", "%20");
 	}
 	
@@ -244,14 +243,11 @@ public class DLUtils {
 	}
 	
 	/**
-	 * get a mc file from the specified path or dl it to the mcDir if not applicable
+	 * get a file from mcDir or dl it to the specified path if non existent
 	 */
 	public static URLResponse getOrDlFromMc(File mcDir, String url, String path, String hash)
 	{
-		File saveAs = new File(mcDir, path).getAbsoluteFile();
-		File cached = saveAs;
-		cached = cached.exists() ? cached : McChecker.am.contains(hash) ? McChecker.am.getFileFromHash(hash) : cached;
-		return cached.exists() && hash.equals(RippedUtils.getSHA1(cached)) ? new URLResponse(cached) : DLUtils.dlToFile(url, saveAs, true);
+		return dlFromMc(mcDir, url, new File(mcDir, path), path, hash);
 	}
 	
 	/**
@@ -268,11 +264,10 @@ public class DLUtils {
 		return reply;
 	}
 	
-	public static String getMcURL(File mcDir, String url, String path, String hash)
+	public static String getCachedURL(File baseDir, String path, String url, String hash)
 	{
-		File cached = new File(mcDir, path);
-		String fixedUrl = cached.exists() && RippedUtils.getSHA1(cached).equals(hash) ? RippedUtils.toURL(cached).toString() : url;
-		return fixedUrl;
+		File cached = new File(baseDir, path);
+		return cached.exists() && RippedUtils.getSHA1(cached).equals(hash) ? RippedUtils.toURL(cached).toString() : url;
 	}
 	
 	private static int[] http404Codes = new int[]{401, 403, 404, 405, 410, 414, 451};
@@ -305,7 +300,7 @@ public class DLUtils {
 		
 		Learner learner = am.getLearner(index, indexHash);
 		if(learner.bad.contains(urlPath))
-			return null;
+			return new URLResponse(getProtocol(url), 404, null);
 		
 		String cachedHash = learner.learner.get(urlPath);
 		if(cachedHash != null)

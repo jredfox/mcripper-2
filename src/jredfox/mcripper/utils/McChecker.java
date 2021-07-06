@@ -48,7 +48,6 @@ public class McChecker {
 
 	//mc dirs
 	public static final File mcDefaultDir = RippedUtils.getMinecraftDir();
-	public static volatile File mcDir = mcDefaultDir;
 	
 	public static void checkMojang(boolean skipSnaps) throws FileNotFoundException, IOException, URISyntaxException 
 	{
@@ -133,12 +132,12 @@ public class McChecker {
 	
 	public static File extractAssetsXml() 
 	{
-		return DLUtils.learnExtractDL(am, McRipper.version, McChecker.class, "resources/mcripper/aws/assets_minecraft_net-2016-11-06.xml", new File(McChecker.mcripped, "old/assets_minecraft_net/assets_minecraft_net.xml"));
+		return DLUtils.learnExtractDL(am, McRipper.version, McChecker.class, "resources/mcripper/aws/assets_minecraft_net-2016-11-06.xml", new File(McChecker.mcripped, "old/assets_minecraft_net/assets_minecraft_net.xml")).file;
 	}
 
 	public static void checkOldVersions(boolean skipSnaps)
 	{
-		File oldJson = DLUtils.dlMove(am, "https://s3.amazonaws.com/Minecraft.Download/versions/versions.json", "old/Minecraft.Download/versions.json", new File(jsonOldMajor, "versions.json"));
+		File oldJson = DLUtils.dlMove(am, "https://s3.amazonaws.com/Minecraft.Download/versions/versions.json", "old/Minecraft.Download/versions.json", new File(jsonOldMajor, "versions.json")).file;
 		if(oldJson == null)
 		{
 			System.err.println("Old Major is missing index skipping");
@@ -186,7 +185,7 @@ public class McChecker {
 			if(skipSnaps && type.startsWith("snapshot"))
 				continue;
 			long time = RippedUtils.parseOffsetTime(jsonVersion.getString("time"));
-			File minor = DLUtils.dlSingleton(am, url, "versions/" + version + "/" + version + ".json", new File(jsonMinor, type + "/" + version + ".json"), time, minorHash).getRight();
+			File minor = DLUtils.dlSingleton(am, url, "versions/" + version + "/" + version + ".json", new File(jsonMinor, type + "/" + version + ".json"), time, minorHash).file;
 			minors.add(minor);
 		}
 		majorCount++;
@@ -211,7 +210,7 @@ public class McChecker {
 			long time = RippedUtils.parseOffsetTime(versionEntry.getString("time"));
 			String clientPath = type + "/" + version + ".json";
 			File minorFile = new File(jsonOldMinor, clientPath);
-			File dlMinor = DLUtils.learnDl(am, urlBase + "versions/" + version + "/" + version + ".json", minorFile, time);
+			File dlMinor = DLUtils.learnDl(am, urlBase + "versions/" + version + "/" + version + ".json", minorFile, time).file;
 			oldMinors.add(dlMinor);
 		}
 		oldMajorCount++;
@@ -243,7 +242,7 @@ public class McChecker {
 			String id = aIndex.getString("id");
 			String sha1 = aIndex.getString("sha1").toLowerCase();
 			String url = aIndex.getString("url");
-			assets.add(DLUtils.dlSingleton(am, url, "assets/indexes/" + id + ".json", new File(jsonAssets, id + ".json"), sha1).getRight());
+			assets.add(DLUtils.dlSingleton(am, url, "assets/indexes/" + id + ".json", new File(jsonAssets, id + ".json"), sha1).file);
 		}
 		
 		//download the logging
@@ -404,7 +403,7 @@ public class McChecker {
 		File serverExeFile = new File(oldMcDir, serverExePath);
 		
 		//dl the files
-		File dlClient = DLUtils.learnDl(am, urlBase + "versions/" + version + "/" + version + ".jar", jarFile, clientTime);
+		File dlClient = DLUtils.learnDl(am, urlBase + "versions/" + version + "/" + version + ".jar", jarFile, clientTime).file;
 		if(dlClient == null)
 			return assets;//no need to continue here the rest should return 404
 		
@@ -412,8 +411,8 @@ public class McChecker {
 		DLUtils.learnDl(am, urlBase + "versions/" + version + "/" + "minecraft_server." + version + ".exe", serverExeFile);
 		
 		//dl the assetIndexes
-		assets.add(DLUtils.learnDl(am, urlBase + "indexes/" + checkPath, checkFile));
-		assets.add(DLUtils.learnDl(am, urlBase + "indexes/" + assetsPath, assetsFile));
+		assets.add(DLUtils.learnDl(am, urlBase + "indexes/" + checkPath, checkFile).file);
+		assets.add(DLUtils.learnDl(am, urlBase + "indexes/" + assetsPath, assetsFile).file);
 		
 		//dl the json in case it's being invoked directly instead of calling checkOldMajor
 		DLUtils.learnDl(am, urlBase + "versions/" + version + "/" + version + ".json", new File(jsonOldMinor, type + "/" + version + ".json"));
@@ -484,7 +483,7 @@ public class McChecker {
 	private static File dlMajor(String vname)
 	{ 
 		File saveAs = new File(jsonMajor, vname);
-		return DLUtils.dlMove(am, "https://launchermeta.mojang.com/mc/game/" + vname, vname, saveAs);
+		return DLUtils.dlMove(am, "https://launchermeta.mojang.com/mc/game/" + vname, vname, saveAs).file;
 	}
 	
 	public static void setRoot(File appDir) throws IOException
@@ -502,7 +501,7 @@ public class McChecker {
 		jsonOldMinor = new File(jsonDir, "oldminor");
 		IOUtils.close(logger);
 		closePrinters();
-		am = new ArchiveManager(new File(OSUtil.getAppData(), McRipper.appId + "/tmp"), root, "mcripped", 23000);
+		am = new ArchiveManager(new File(OSUtil.getAppData(), McRipper.appId + "/tmp"), root, mcDefaultDir, "mcripped", 23000);
 		logger = new LogPrinter(new File(root, "logs/log-" + Instant.now().toString().replaceAll(":", ".") + ".txt"), System.out, System.err, false, true);
 		logger.load();
 	}

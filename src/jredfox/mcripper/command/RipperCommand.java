@@ -34,7 +34,7 @@ public abstract class RipperCommand extends Command<Object>{
 	public void start(ParamList<?> params)
 	{
 		this.ms = System.currentTimeMillis();
-		McChecker.mcDir = params.hasFlag("mcDir") ? new File(params.getValue("mcDir")).getAbsoluteFile() : McChecker.mcDir;
+		McChecker.am.cachedDir = params.hasFlag("mcDir") ? new File(params.getValue("mcDir")).getAbsoluteFile() : McChecker.am.cachedDir;
 		if(params.hasFlag("internal"))
 			return;
 		if(params.hasFlag('c'))
@@ -74,6 +74,6 @@ public abstract class RipperCommand extends Command<Object>{
 
 	public void setMcDefault()
 	{
-		McChecker.mcDir = McChecker.mcDefaultDir;
+		McChecker.am.cachedDir = McChecker.mcDefaultDir;
 	}
 }

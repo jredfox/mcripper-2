@@ -15,15 +15,17 @@ public class ArchiveManager {
 	public File root;//the root folder of the archive
 	public File dir;//the archive directory
 	public File lroot;
+	public File cachedDir;
 	public ArchivePrinter printer;
 	public Map<String, Learner> learners = new HashMap<>(6);
 	
-	public ArchiveManager(File tmp, File root, String archivePath, int hInitCapacity) throws IOException
+	public ArchiveManager(File tmp, File root, File cached, String archivePath, int hInitCapacity) throws IOException
 	{
 		this.tmp = tmp != null ? tmp.getAbsoluteFile() : this.getSimpleFile("tmp");
 		this.root = root.getAbsoluteFile();
 		this.dir = this.getSimpleFile(archivePath);
 		this.lroot = this.getSimpleFile("learned");
+		this.cachedDir = cached;
 		this.printer = new ArchivePrinter(this.root, this.dir, new File("index.hash"), hInitCapacity);
 	}
 	

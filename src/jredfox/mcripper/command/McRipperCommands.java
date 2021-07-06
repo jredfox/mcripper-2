@@ -151,7 +151,7 @@ public class McRipperCommands {
 		public void run(ParamList<File> params) 
 		{
 			long ms = System.currentTimeMillis();
-			File mcDir = params.hasFlag("mcDir") ? new File(params.getValue("mcDir")).getAbsoluteFile() : McChecker.mcDir;
+			File mcDir = params.hasFlag("mcDir") ? new File(params.getValue("mcDir")).getAbsoluteFile() : McChecker.am.cachedDir;
 			File dir = params.get(0);
 			File jarFile = params.get(1);
 			File rootOut = ((File) params.get(2)).getAbsoluteFile();
@@ -196,7 +196,7 @@ public class McRipperCommands {
 			String sha1Assets = assetsLoc.getString("sha1");
 			String urlAssets = assetsLoc.getString("url");
 			String assetsPath = "assets/indexes/" + idAssets + ".json";
-			File assetsIndexFile = DLUtils.getOrDlFromMc(mcDir, urlAssets, assetsPath, sha1Assets);
+			File assetsIndexFile = DLUtils.getOrDlFromMc(mcDir, urlAssets, assetsPath, sha1Assets).file;
 			JSONObject assetsIndex = RippedUtils.getJSON(assetsIndexFile);
 			
 			//fetch the jar
@@ -206,7 +206,7 @@ public class McRipperCommands {
 			String sha1Client = client.getString("sha1");
 			String urlClient = client.getString("url");
 			String jarPath = "versions/" + idClient + "/" + idClient + ".jar";
-			File jar = DLUtils.getOrDlFromMc(mcDir, urlClient, jarPath, sha1Client);
+			File jar = DLUtils.getOrDlFromMc(mcDir, urlClient, jarPath, sha1Client).file;
 			this.ripAssetsIndex(jar, assetsIndex, mcDir, outDir, all);
 		}
 
@@ -222,14 +222,7 @@ public class McRipperCommands {
 				String twoChar = assetSha1.substring(0, 2);
 				String hpath = twoChar + "/" + assetSha1;
 				String assetUrl = "https://resources.download.minecraft.net/" + hpath;
-				try
-				{
-					DLUtils.dlFromMc(mcDir, assetUrl, new File(outDir, (isAssetRoot(key) ? "" : "assets/") + key).getAbsoluteFile(), pathBase + hpath, assetSha1);
-				}
-				catch (Exception e)
-				{
-					e.printStackTrace();
-				}
+				DLUtils.dlFromMc(mcDir, assetUrl, new File(outDir, (isAssetRoot(key) ? "" : "assets/") + key).getAbsoluteFile(), pathBase + hpath, assetSha1);
 			}
 			
 			if(jar != null)
