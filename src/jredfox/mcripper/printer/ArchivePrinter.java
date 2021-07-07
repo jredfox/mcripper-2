@@ -138,10 +138,10 @@ public class ArchivePrinter extends MapPrinter{
 					if(delete)
 						f.delete();
 				}
-				else
+				else if(!this.map.containsValue(path))
 				{
 					System.err.println("File missing from index adding:" + path + " with hash:" + hash);
-					this.append(hash, f);
+					this.append(hash, f);//don't modify the index until the hashes which lost their integrity have been dealt with first
 				}
 				hasErr = true;
 			}
