@@ -70,11 +70,16 @@ public class ArchivePrinter extends MapPrinter{
 	{
 		this.setPrintWriter();
 		long ms = System.currentTimeMillis();
-		System.out.println("computing hashes this will take a while. Unless it's your first launch");
+		System.out.println("computing archive hashes this will take a while. Unless it's your first launch");
 		List<File> files = DeDuperUtil.getDirFiles(this.am.dir);
 		for(File f : files)
 		{
 			String hash = RippedUtils.getSHA1(f);
+			if(this.contains(hash))
+			{
+				System.err.println("skipping duplicate file entry:" + hash + " " + this.getSimplePath(f));
+				continue;
+			}
 			this.append(hash, f);
 		}
 		System.out.println("finished computing & saving hashes in:" + ((System.currentTimeMillis() - ms) / 1000D) + " seconds");
@@ -98,11 +103,11 @@ public class ArchivePrinter extends MapPrinter{
 			String actualHash = RippedUtils.getSHA1(f);
 			String unsafeHash = RippedUtils.getUnsafeHash(f);
 			boolean modified = !h.equals(actualHash);
-			boolean hmodified = unsafeHash != null && !h.equals(unsafeHash);
+			boolean hmodified = unsafeHash != null && !actualHash.equals(unsafeHash);
 
 			if(modified || hmodified)
 			{
-				System.err.println( (modified ? "File has been modified" : "File hashed form doesn't match actual hash") + (delete ? " removing" : "") + ":" + path);
+				System.err.println( (hmodified ? "File hashed form doesn't match actual hash" : "File has been modified") + (delete ? " removing" : "") + ":" + path);
 				hasErr = true;
 				if(delete)
 				{
@@ -110,6 +115,29 @@ public class ArchivePrinter extends MapPrinter{
 					f.delete();
 					shouldSave = true;
 				}
+			}
+		}
+		
+		//update files out of sync with the ArchivePrinter
+		List<File> dirFiles = DeDuperUtil.getDirFiles(this.am.dir);
+		for(File f : dirFiles)
+		{
+			String path = this.getSimplePath(f);
+			if(!this.map.containsValue(path))
+			{
+				String hash = RippedUtils.getSHA1(f);
+				if(this.contains(hash))
+				{
+					System.err.println("duplicate file found" + (delete ? " removing" : "") + ":" + path);
+					if(delete)
+						f.delete();
+				}
+				else
+				{
+					System.err.println("File missing from index adding:" + path + " with hash:" + hash);
+					this.append(hash, f);
+				}
+				hasErr = true;
 			}
 		}
 		
