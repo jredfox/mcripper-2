@@ -3,9 +3,7 @@ package jredfox.mcripper.command;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipException;
 import java.util.zip.ZipFile;
@@ -16,7 +14,6 @@ import jredfox.filededuper.command.Command;
 import jredfox.filededuper.command.CommandOption;
 import jredfox.filededuper.command.ParamList;
 import jredfox.filededuper.util.DeDuperUtil;
-import jredfox.filededuper.util.IOUtils;
 import jredfox.filededuper.util.JarUtil;
 import jredfox.mcripper.utils.McChecker;
 import jredfox.mcripper.utils.RippedUtils;
@@ -257,12 +254,9 @@ public class McRipperCommands {
 			this.start(params);
 			try 
 			{
-				McChecker.closePrinters();//close the streams
-				McChecker.am.printer.log.delete();//delete the index.hash
-				McChecker.am.clearLearners();
-				McChecker.am.printer.load();
+				McChecker.am.computeHashes();
 			}
-			catch (Exception e)
+			catch (Exception e) 
 			{
 				e.printStackTrace();
 			}
@@ -290,38 +284,7 @@ public class McRipperCommands {
 			this.start(params);
 			try 
 			{
-				boolean delete = !params.hasFlag("info");
-				boolean shouldSave = false;
-				boolean hasErr = false;
-				Iterator<Map.Entry<String, String>> it = McChecker.am.printer.map.entrySet().iterator();
-				while(it.hasNext())
-				{
-					Map.Entry<String, String> p = it.next();
-					String h = p.getKey();
-					String path = p.getValue();
-					File f = McChecker.am.getSimpleFile(path);
-					if(!h.equals(RippedUtils.getSHA1(f)))
-					{
-						System.err.println("file has been modified removing:" + path);
-						hasErr = true;
-						if(delete)
-						{
-							it.remove();
-							f.delete();
-							shouldSave = true;
-						}
-					}
-				}
-				if(shouldSave)
-				{
-					IOUtils.close(McChecker.am.printer);
-					McChecker.am.printer.save();
-					McChecker.am.printer.setPrintWriter();
-				}
-				else if(hasErr)
-					System.err.println("Files have been verified WITH ERRORS");
-				else
-					System.out.println("Files have been verified with NO Errors");
+				McChecker.am.printer.verify(!params.hasFlag("info"));
 			}
 			catch (Exception e)
 			{

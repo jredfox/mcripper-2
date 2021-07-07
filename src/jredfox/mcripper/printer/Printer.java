@@ -90,6 +90,8 @@ public abstract class Printer implements Closeable{
 	public void setPrintWriter() throws IOException 
 	{
 		this.sanityCheck();
+		if(this.out != null)
+			IOUtils.close(this.out);
 		this.out = new PrintWriter(new BufferedWriter(new FileWriter(this.log, true)), true);
 	}
 
@@ -132,7 +134,7 @@ public abstract class Printer implements Closeable{
 	}
 
 	@Override
-	public void close() throws IOException 
+	public void close()
 	{
 		IOUtils.close(this.out);
 	}

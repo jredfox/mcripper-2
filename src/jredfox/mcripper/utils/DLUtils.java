@@ -102,14 +102,9 @@ public class DLUtils {
 			return new URLResponse(getProtocol(url), -1, null);
 		}
 		
-		System.out.println("dl:" + am.getSimplePath(saveAs).replaceAll("\\\\", "/") + " in:" + (System.currentTimeMillis() - start) + "ms " + " from:" + url);
+		System.out.println("dl:" + am.getSimplePath(saveAs).replaceAll("\\\\", "/") + " in:" + (System.currentTimeMillis() - start) + "ms " + " from:" + getUnfixedURL(url));
 		am.printer.append(hash, saveAs);
 		return reply;
-	}
-
-	public static URLResponse learnExtractDL(ArchiveManager am, String version, Class<?> clazz, String path, File saveAs)
-	{
-		return DLUtils.learnDl(am, "extraction", version, clazz.getClassLoader().getResource(path).toString(), saveAs);
 	}
 	
 	/**
@@ -219,7 +214,12 @@ public class DLUtils {
 	
 	public static File getFixedFile(File saveAs) 
 	{
-		return OSUtil.toWinFile(new File(saveAs.getPath().replaceAll("%20", " "))).getAbsoluteFile();
+		return OSUtil.toWinFile(new File(getUnfixedURL(saveAs.getPath()))).getAbsoluteFile();
+	}
+	
+	public static String getUnfixedURL(String url)
+	{
+		return url.replaceAll("%20", " ");
 	}
 	
 	public static URLResponse dlMove(ArchiveManager am, String url, String path, File saveAs)
@@ -249,6 +249,11 @@ public class DLUtils {
 	}
 	
 	private static int[] http404Codes = new int[]{401, 403, 404, 405, 410, 414, 451};
+	
+	public static URLResponse learnExtractDL(ArchiveManager am, String version, Class<?> clazz, String path, File saveAs)
+	{
+		return DLUtils.learnDl(am, "extraction", version, clazz.getClassLoader().getResource(path).toString(), saveAs);
+	}
 	
 	public static URLResponse learnDl(ArchiveManager am, String url, File saveAs)
 	{
@@ -302,12 +307,12 @@ public class DLUtils {
 		}
 		timestamp = tmpFile.lastModified();//use the one on the cached disk first
 		String hash = RippedUtils.getSHA1(tmpFile);
-		System.out.println("learned:" + url + ", " + hash);
+		System.out.println("learned:" + getUnfixedURL(url) + ", " + hash);
 		URLResponse response = dlSingleton(am, RippedUtils.toURL(tmpFile).toString(), saveAs, timestamp, hash);
 		
 		if(response.file != null)
 			learner.learner.append(urlPath, hash);
-			
+		
 		tmpFile.delete();
 		return response;
 	}

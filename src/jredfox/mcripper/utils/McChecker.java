@@ -16,7 +16,6 @@ import jredfox.filededuper.util.DeDuperUtil;
 import jredfox.filededuper.util.IOUtils;
 import jredfox.mcripper.McRipper;
 import jredfox.mcripper.data.FileSet;
-import jredfox.mcripper.printer.Learner;
 import jredfox.mcripper.printer.LogPrinter;
 import jredfox.selfcmd.util.OSUtil;
 
@@ -516,9 +515,7 @@ public class McChecker {
 
 	public static void closePrinters()
 	{
-		IOUtils.close(am.printer);
-		for(Learner learner : am.learners.values())
-			IOUtils.close(learner);
+		IOUtils.close(am);
 	}
 
 }

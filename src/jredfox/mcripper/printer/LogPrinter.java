@@ -70,6 +70,12 @@ public class LogPrinter extends Printer {
 		public boolean hasLogHeader(){ return this.logHeader; }
 		public void setChildHeader(boolean b) { this.childHeader = b;}
 		public void setLogHeader(boolean b) { this.logHeader = b; }
+		
+		@Override
+		public void close()
+		{
+			IOUtils.close(this.child);
+		}
 
 		@Override
 		public void print(boolean b)
