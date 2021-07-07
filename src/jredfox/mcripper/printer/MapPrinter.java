@@ -51,9 +51,9 @@ public class MapPrinter extends Printer{
 		return this.map.containsKey(key);
 	}
 	
-	public void append(Object key, Object value)
+	public void append(String key, String value)
 	{
-		this.map.put(key.toString(), value.toString());
+		this.map.put(key, value);
 		this.println(key + "," + value);
 	}
 

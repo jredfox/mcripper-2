@@ -49,12 +49,6 @@ public class ArchivePrinter extends MapPrinter{
 	public void append(String hash, File out)
 	{
 		String path = this.getSimplePath(out);
-//		//TODO: finish patching this
-//		if(this.map.containsValue(path))
-//		{
-//			System.err.println("cannot add duplicate file path:" + path + " with hash:" + hash + " This usually happens when a hash is not correct, either in the archive index or in the web index(json, xml, webarchive)");
-//			return;
-//		}
 		this.append(hash, path);
 	}
 	
@@ -83,7 +77,8 @@ public class ArchivePrinter extends MapPrinter{
 		List<File> files = DeDuperUtil.getDirFiles(this.am.dir);
 		for(File f : files)
 		{
-			String hash = RippedUtils.getSHA1(f);
+			String unsafe = RippedUtils.getUnsafeHash(f);
+			String hash =  unsafe != null ? unsafe : RippedUtils.getSHA1(f);//speed up verify hashes dramatically and use verify to determine if it's modified
 			if(this.contains(hash))
 			{
 				System.err.println("skipping duplicate file entry:" + hash + " " + this.getSimplePath(f));
@@ -110,7 +105,10 @@ public class ArchivePrinter extends MapPrinter{
 			String h = p.getKey();
 			String path = p.getValue();
 			if(!se.add(path))
+			{
+				System.err.println("duplicate index file entry dedected:" + path + " try recomputing your hashes");
 				continue;//skip duplicate file entries
+			}
 			File f = this.getSimpleFile(path);
 			String actualHash = RippedUtils.getSHA1(f);
 			String unsafeHash = RippedUtils.getUnsafeHash(f);
@@ -153,7 +151,7 @@ public class ArchivePrinter extends MapPrinter{
 				else
 				{
 					System.err.println("File missing from index adding:" + path + " with hash:" + hash);
-					this.append(hash, f);//don't modify the index until the hashes which lost their integrity have been dealt with first
+					this.append(hash, f);
 				}
 				hasErr = true;
 			}

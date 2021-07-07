@@ -116,6 +116,8 @@ public class RippedUtils {
 			String possibleHash = splited[splited.length - 1];
 			return isValidSHA1(possibleHash) ? possibleHash.toLowerCase() : null;
 		}
+		else if(isValidSHA1(name))
+			return name;
 		return null;
 	}
 	
