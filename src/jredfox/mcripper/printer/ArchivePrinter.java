@@ -2,9 +2,11 @@ package jredfox.mcripper.printer;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import jredfox.filededuper.util.DeDuperUtil;
 import jredfox.mcripper.utils.ArchiveManager;
@@ -47,6 +49,12 @@ public class ArchivePrinter extends MapPrinter{
 	public void append(String hash, File out)
 	{
 		String path = this.getSimplePath(out);
+//		//TODO: finish patching this
+//		if(this.map.containsValue(path))
+//		{
+//			System.err.println("cannot add duplicate file path:" + path + " with hash:" + hash + " This usually happens when a hash is not correct, either in the archive index or in the web index(json, xml, webarchive)");
+//			return;
+//		}
 		this.append(hash, path);
 	}
 	
@@ -68,6 +76,7 @@ public class ArchivePrinter extends MapPrinter{
 	
 	public void computeHashes() throws IOException 
 	{
+		this.map.clear();
 		this.setPrintWriter();
 		long ms = System.currentTimeMillis();
 		System.out.println("computing archive hashes this will take a while. Unless it's your first launch");
@@ -94,11 +103,14 @@ public class ArchivePrinter extends MapPrinter{
 		boolean shouldSave = false;
 		
 		Iterator<Map.Entry<String, String>> it = this.map.entrySet().iterator();
+		Set<String> se = new HashSet<>(this.map.size());
 		while(it.hasNext())
 		{
 			Map.Entry<String, String> p = it.next();
 			String h = p.getKey();
 			String path = p.getValue();
+			if(!se.add(path))
+				continue;//skip duplicate file entries
 			File f = this.getSimpleFile(path);
 			String actualHash = RippedUtils.getSHA1(f);
 			String unsafeHash = RippedUtils.getUnsafeHash(f);
@@ -134,11 +146,11 @@ public class ArchivePrinter extends MapPrinter{
 				String hash = RippedUtils.getSHA1(f);
 				if(this.contains(hash))
 				{
-					System.err.println("duplicate file found" + (delete ? " removing" : "") + ":" + path);
+					System.err.println("duplicate file found" + (delete ? " removing" : "") + ":" + path + " with hash:" + hash);
 					if(delete)
 						f.delete();
 				}
-				else if(!this.map.containsValue(path))
+				else
 				{
 					System.err.println("File missing from index adding:" + path + " with hash:" + hash);
 					this.append(hash, f);//don't modify the index until the hashes which lost their integrity have been dealt with first

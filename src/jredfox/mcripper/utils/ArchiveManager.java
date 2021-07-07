@@ -80,7 +80,6 @@ public class ArchiveManager implements Closeable{
 	public void computeHashes() throws IOException 
 	{
 		this.printer.computeHashes();
-		this.clearLearners();
 	}
 
 	@Override

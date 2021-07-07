@@ -246,7 +246,7 @@ public class McRipperCommands {
 		return key.equals("pack.mcmeta") || key.equals("pack.png");
 	}
 	
-	public static Command<Object> recomputeHashes = new RipperCommand("recomputeHashes")
+	public static Command<Object> recomputeHashes = new RipperCommand(new String[]{"-" + clear}, "recomputeHashes")
 	{
 		@Override
 		public void run(ParamList<Object> params)
@@ -267,12 +267,6 @@ public class McRipperCommands {
 		public void print()
 		{
 			McRipperCommands.printDefault(this.ms);
-		}
-		
-		@Override
-		public void start(ParamList<?> params)
-		{
-			this.ms = System.currentTimeMillis();
 		}
 	};
 	
