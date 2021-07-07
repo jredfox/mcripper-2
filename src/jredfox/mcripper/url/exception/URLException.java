@@ -48,7 +48,7 @@ public abstract class URLException extends IOException{
 	{
 		String p = url.getProtocol();
 		if(msg == null)
-			msg = p.toUpperCase() + " response code:" + code + " for URL:" + url;
+			msg = p.toUpperCase() + " error code:" + code + " for URL:" + url;
 		if(p.equals("https") && code >= 400 && code < 600)
 			return new HTTPSException(url, code, msg);
 		else if(p.equals("http") && code >= 400 && code < 600)

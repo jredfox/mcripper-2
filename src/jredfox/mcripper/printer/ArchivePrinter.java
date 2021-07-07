@@ -118,6 +118,12 @@ public class ArchivePrinter extends MapPrinter{
 			}
 		}
 		
+		if(shouldSave)
+		{
+			this.save();
+			this.setPrintWriter();
+		}
+		
 		//update files out of sync with the ArchivePrinter
 		List<File> dirFiles = DeDuperUtil.getDirFiles(this.am.dir);
 		for(File f : dirFiles)
@@ -139,12 +145,6 @@ public class ArchivePrinter extends MapPrinter{
 				}
 				hasErr = true;
 			}
-		}
-		
-		if(shouldSave)
-		{
-			this.save();
-			this.setPrintWriter();
 		}
 		
 		if(hasErr)
