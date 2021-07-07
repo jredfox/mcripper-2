@@ -117,7 +117,7 @@ public class RippedUtils {
 			return isValidSHA1(possibleHash) ? possibleHash.toLowerCase() : null;
 		}
 		else if(isValidSHA1(name))
-			return name;
+			return name;//if it's a flat archive or it's literally the hash it's suppose to be
 		return null;
 	}
 	

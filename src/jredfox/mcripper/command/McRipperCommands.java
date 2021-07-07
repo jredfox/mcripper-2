@@ -246,7 +246,7 @@ public class McRipperCommands {
 		return key.equals("pack.mcmeta") || key.equals("pack.png");
 	}
 	
-	public static Command<Object> recomputeHashes = new RipperCommand(new String[]{"-" + clear}, "recomputeHashes")
+	public static Command<Object> recomputeHashes = new RipperCommand(new String[]{"-" + clear}, "recomputeHashes", "computeHashes")
 	{
 		@Override
 		public void run(ParamList<Object> params)
