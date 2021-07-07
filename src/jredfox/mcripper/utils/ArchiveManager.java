@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
+import jredfox.filededuper.util.DeDuperUtil;
 import jredfox.filededuper.util.IOUtils;
 import jredfox.mcripper.printer.ArchivePrinter;
 import jredfox.mcripper.printer.Learner;
@@ -27,7 +28,7 @@ public class ArchiveManager implements Closeable{
 		this.dir = this.getSimpleFile(archivePath);
 		this.lroot = this.getSimpleFile("learned");
 		this.cachedDir = cached;
-		this.printer = new ArchivePrinter(this.root, this.dir, new File("index.hash"), hInitCapacity);
+		this.printer = new ArchivePrinter(this, this.getSimpleFile("index.hash"), hInitCapacity);
 	}
 	
 	public boolean contains(String hash)
@@ -37,17 +38,17 @@ public class ArchiveManager implements Closeable{
 	
 	public String getSimplePath(File output)
 	{
-		return printer.getSimplePath(output);
+		return DeDuperUtil.getRealtivePath(this.root, output.getAbsoluteFile());
+	}
+	
+	public File getSimpleFile(String path)
+	{
+		return new File(this.root, path);
 	}
 	
 	public File getFileFromHash(String hash)
 	{
 		return this.printer.getFileFromHash(hash);
-	}
-	
-	public File getSimpleFile(String path)
-	{
-		return this.printer.getSimpleFile(path);
 	}
 	
 	public Learner getLearner(String index, String indexHash) 

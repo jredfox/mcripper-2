@@ -7,20 +7,17 @@ import java.util.List;
 import java.util.Map;
 
 import jredfox.filededuper.util.DeDuperUtil;
-import jredfox.filededuper.util.IOUtils;
-import jredfox.mcripper.utils.McChecker;
+import jredfox.mcripper.utils.ArchiveManager;
 import jredfox.mcripper.utils.RippedUtils;
 
 public class ArchivePrinter extends MapPrinter{
 
-	public File root;
-	public File dir;
+	public ArchiveManager am;
 	
-	public ArchivePrinter(File root, File dir, File log, int capacity) throws IOException
+	public ArchivePrinter(ArchiveManager am, File log, int capacity) throws IOException
 	{
 		super(log, capacity);
-		this.root = root;
-		this.dir = dir;
+		this.am = am;
 	}
 	
 	@Override
@@ -36,7 +33,7 @@ public class ArchivePrinter extends MapPrinter{
 	public void parse(String line) 
 	{
 		String[] arr = line.split(",");
-		String hash = arr[0].trim();
+		String hash = arr[0].trim().toLowerCase();
 		String fname = arr[1].trim();
 		if(this.isLoading && !this.getSimpleFile(fname).exists())
 		{
@@ -55,7 +52,12 @@ public class ArchivePrinter extends MapPrinter{
 	
 	public String getSimplePath(File output)
 	{
-		return DeDuperUtil.getRealtivePath(this.root, output.getAbsoluteFile());
+		return this.am.getSimplePath(output);
+	}
+	
+	public File getSimpleFile(String path)
+	{
+		return this.am.getSimpleFile(path);
 	}
 	
 	public File getFileFromHash(String hash)
@@ -64,17 +66,12 @@ public class ArchivePrinter extends MapPrinter{
 		return path == null ? null : this.getSimpleFile(path);
 	}
 	
-	public File getSimpleFile(String path)
-	{
-		return new File(this.root, path);
-	}
-	
 	public void computeHashes() throws IOException 
 	{
 		this.setPrintWriter();
 		long ms = System.currentTimeMillis();
 		System.out.println("computing hashes this will take a while. Unless it's your first launch");
-		List<File> files = DeDuperUtil.getDirFiles(this.dir);
+		List<File> files = DeDuperUtil.getDirFiles(this.am.dir);
 		for(File f : files)
 		{
 			String hash = RippedUtils.getSHA1(f);
@@ -98,9 +95,14 @@ public class ArchivePrinter extends MapPrinter{
 			String h = p.getKey();
 			String path = p.getValue();
 			File f = this.getSimpleFile(path);
-			if(!h.equals(RippedUtils.getSHA1(f)))
+			String actualHash = RippedUtils.getSHA1(f);
+			String unsafeHash = RippedUtils.getUnsafeHash(f);
+			boolean modified = !h.equals(actualHash);
+			boolean hmodified = unsafeHash != null && !h.equals(unsafeHash);
+
+			if(modified || hmodified)
 			{
-				System.err.println("file has been modified" + (delete ? " removing" : "") + ":" + path);
+				System.err.println( (modified ? "File has been modified" : "File hashed form doesn't match actual hash") + (delete ? " removing" : "") + ":" + path);
 				hasErr = true;
 				if(delete)
 				{
@@ -110,13 +112,14 @@ public class ArchivePrinter extends MapPrinter{
 				}
 			}
 		}
+		
 		if(shouldSave)
 		{
-			IOUtils.close(McChecker.am.printer);
 			this.save();
 			this.setPrintWriter();
 		}
-		else if(hasErr)
+		
+		if(hasErr)
 			System.err.println("Files have been verified WITH ERRORS");
 		else
 			System.out.println("Files have been verified with NO Errors");

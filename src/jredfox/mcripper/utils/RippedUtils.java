@@ -104,6 +104,21 @@ public class RippedUtils {
 		return null;
 	}
 	
+	/**
+	 * returns null if the unsafeHash is maulformed or non existent
+	 */
+	public static String getUnsafeHash(File f) 
+	{
+		String name = DeDuperUtil.getTrueName(f);
+		if(name.contains("-"))
+		{
+			String[] splited = DeDuperUtil.split(name, '-', '?', '?');
+			String possibleHash = splited[splited.length - 1];
+			return isValidSHA1(possibleHash) ? possibleHash.toLowerCase() : null;
+		}
+		return null;
+	}
+	
 	public static BufferedWriter getWriter(File file)
 	{
 		try
