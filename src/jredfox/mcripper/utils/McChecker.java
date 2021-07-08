@@ -131,7 +131,7 @@ public class McChecker {
 	
 	public static File extractAssetsXml() 
 	{
-		return DLUtils.learnExtractDL(am, McRipper.version, McChecker.class, "resources/mcripper/aws/assets_minecraft_net-2016-11-06.xml", new File(McChecker.mcripped, "old/assets_minecraft_net/assets_minecraft_net.xml")).file;
+		return DLUtils.learnExtractDL(am, McRipper.version, McChecker.class, "resources/mcripper/aws/assets_minecraft_net-2016-11-06.xml", new File(McChecker.mcripped, "old/assets_minecraft_net/indexes/assets_minecraft_net.xml")).file;
 	}
 
 	public static void checkOldVersions(boolean skipSnaps)

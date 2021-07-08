@@ -336,12 +336,15 @@ public class DLUtils {
 	 */
 	public static void dlAmazonAws(ArchiveManager am, String url, String path, File extracted)
 	{
-		File baseDir = new File(am.dir, path);
-		String xname = DeDuperUtil.getTrueName(baseDir) + ".xml";
-		File xmlFile = dlMove(am, url, path + "/" + xname, new File(baseDir, xname)).file;
+		File root = new File(am.dir, path);
+		File indexDir = new File(root, "indexes");
+		File fileDir = new File(root, "files");
+		
+		String xname = DeDuperUtil.getTrueName(root) + ".xml";
+		File xmlFile = dlMove(am, url, path + "/indexes/" + xname, new File(indexDir, xname)).file;
 		if(xmlFile == null)
 			xmlFile = extracted;
-		dlAmazonAws(am, url, baseDir, xmlFile);
+		dlAmazonAws(am, url, fileDir, xmlFile);
 	}
 	
 	public static void dlAmazonAws(ArchiveManager am, String baseUrl, File xmlFile)
@@ -349,11 +352,11 @@ public class DLUtils {
 		dlAmazonAws(am, baseUrl, xmlFile != null ? xmlFile.getParentFile() : null, xmlFile);
 	}
 	
-	public static void dlAmazonAws(ArchiveManager am, String baseUrl, File baseDir, File xmlFile) 
+	public static void dlAmazonAws(ArchiveManager am, String baseUrl, File fileDir, File xmlFile) 
 	{
 		if(xmlFile == null)
 		{
-			System.err.println("Unable to dl index from:" + baseUrl + " to path:" + baseDir);
+			System.err.println("Unable to dl index from:" + baseUrl + " to path:" + fileDir);
 			return;
 		}
 		Document doc = RippedUtils.parseXML(xmlFile);
@@ -377,7 +380,7 @@ public class DLUtils {
 				String strTime = RippedUtils.getText(element, "LastModified");
 				long timestamp = RippedUtils.parseZTime(strTime);
 				String fileUrl = baseUrl + "/" + key;
-				File saveAs = new File(baseDir, key);
+				File saveAs = new File(fileDir, key);
 				learnDl(am, index, indexHash, fileUrl, saveAs, timestamp);
 			}
 		}
@@ -393,7 +396,9 @@ public class DLUtils {
 	public static void dlWebArchive(ArchiveManager am, String baseUrl, String dirPath)
 	{
 		String name = RippedUtils.getLastSplit(baseUrl, "/");
-		File webDir = new File(am.dir, dirPath);
+		File root = new File(am.dir, dirPath);
+		File indexDir = new File(root, "indexes");
+		File webDir = new File(root, "files");
 		
 		//dl the index file
 		String xmlUrl = baseUrl + "/" + name + "_files.xml";
@@ -408,7 +413,7 @@ public class DLUtils {
 		internals.add("__ia_thumb.jpg");
 		
 		name = name + "_files.xml";
-		File xmlFile = dlMove(am, xmlUrl, dirPath + "/" + name, new File(webDir, name)).file;
+		File xmlFile = dlMove(am, xmlUrl, dirPath + "/indexes/" + name, new File(indexDir, name)).file;
 		if(xmlFile == null)
 		{
 			System.err.println("web archive xml index missing for:" + xmlUrl + " skipping");
