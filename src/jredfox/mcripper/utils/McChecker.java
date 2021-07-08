@@ -157,6 +157,7 @@ public class McChecker {
 			File oldMcDir = new File(mcripped, "old/Minecraft.Download");
 			for(String snapId : list)
 			{
+				snapId = snapId.trim();
 				McChecker.dlOldMinor(oldMcDir, "snapshot", snapId, snapId, -1);
 			}
 		}

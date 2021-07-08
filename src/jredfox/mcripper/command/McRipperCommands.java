@@ -32,7 +32,6 @@ public class McRipperCommands {
 		@Override
 		public void run(ParamList<Object> params) 
 		{
-			long start = System.currentTimeMillis();
 			this.start(params);
 			params.options.add(new CommandOption("--internal"));
 			System.out.println("CHECKING MOJANG:");
@@ -44,12 +43,12 @@ public class McRipperCommands {
 			System.out.println("CHECKING OMNI-ARCHIVE:");
 			McRipperCommands.checkOmni.run(params);
 			this.finish(params);
-			System.out.println(lboarder + "Finished checkAll in:" + (System.currentTimeMillis() - start) / 1000D + " seconds" + (McChecker.oldMajorCount > 0 ? " oldMajor:" + McChecker.oldMajorCount : "") + " major:" + McChecker.majorCount + (McChecker.oldMinor > 0 ? " oldMinor:" + McChecker.oldMinor : "") + " minor:" + McChecker.minorCount + " assets:" + McChecker.assetsCount + rboarder);
 		}
 		
 		@Override
 		public void start(ParamList<?> params)
 		{
+			this.ms = System.currentTimeMillis();
 			this.clearLearners(params);
 		}
 		
@@ -57,6 +56,7 @@ public class McRipperCommands {
 		public void finish(ParamList<?> params)
 		{
 			this.clear(params);
+			this.print();
 		}
 	};
 	
@@ -104,6 +104,12 @@ public class McRipperCommands {
 			this.start(params);
 			McChecker.checkOmni();
 			this.finish(params);
+		}
+		
+		@Override
+		public void print()
+		{
+			printDefault(this.ms);
 		}
 	};
 	
