@@ -56,7 +56,7 @@ public class McRipperCommands {
 		public void finish(ParamList<?> params)
 		{
 			this.clear(params);
-			this.print();
+			this.print(params);
 		}
 	};
 	
@@ -107,9 +107,9 @@ public class McRipperCommands {
 		}
 		
 		@Override
-		public void print()
+		public void print(ParamList<?> params)
 		{
-			printDefault(this.ms);
+			printDefault(this, params, this.ms);
 		}
 	};
 	
@@ -286,9 +286,9 @@ public class McRipperCommands {
 		}
 		
 		@Override
-		public void print()
+		public void print(ParamList<?> params)
 		{
-			McRipperCommands.printDefault(this.ms);
+			McRipperCommands.printDefault(this, params, this.ms);
 		}
 	};
 	
@@ -316,9 +316,9 @@ public class McRipperCommands {
 		}
 		
 		@Override
-		public void print()
+		public void print(ParamList<?> params)
 		{
-			McRipperCommands.printDefault(this.ms);
+			McRipperCommands.printDefault(this, params, this.ms);
 		}
 	};
 	
@@ -364,9 +364,9 @@ public class McRipperCommands {
 		}
 	};
 	
-	public static void printDefault(long ms)
+	public static void printDefault(RipperCommand cmd, ParamList<?> params, long ms)
 	{
-		System.out.println(McRipperCommands.lboarder + "Done in:" + (System.currentTimeMillis() - ms) / 1000D + " seconds" + McRipperCommands.rboarder);
+		System.out.println(McRipperCommands.lboarder + "Finished " + cmd.name + (params.options.isEmpty() ? "" : " " + params.options) + " in:" + (System.currentTimeMillis() - cmd.ms) / 1000D + " seconds" + McRipperCommands.rboarder);
 	}
 
 	/**
