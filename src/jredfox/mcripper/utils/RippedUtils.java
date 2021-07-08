@@ -382,4 +382,9 @@ public class RippedUtils {
 	{
 		 return protocol != null && !protocol.isEmpty() && !protocol.equals("file") && !protocol.equals("jar") && !protocol.equals("ap");
 	}
+
+	public static boolean isHTTP(String protocol)
+	{
+		return protocol.equals("http") || protocol.equals("https"); 
+	}
 }

@@ -37,7 +37,7 @@ public class URLResponse {
 
 	public boolean isHTTP() 
 	{
-		return this.protocol.equals("http") || this.protocol.equals("https");
+		return RippedUtils.isHTTP(this.protocol);
 	}
 
 }

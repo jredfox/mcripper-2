@@ -111,7 +111,7 @@ public class DLUtils {
 	 * direct dl with safegards in place to delete corrupted download files. setting the timestamp to -1 will be {@link URLConnection#getLastModified()} of the website or current ms
 	 * @throws URLException if an exception occurs and is not standard Exceptions
 	 */
-	public static URLResponse directDL(String sURL, File output, long timestamp) throws MalformedURLException, IOException
+	public static URLResponse directDL(String sURL, File output, long timestamp) throws URLException, IOException, Exception
 	{
 		URL url = null;
 		URLConnection con = null;
@@ -119,9 +119,9 @@ public class DLUtils {
 		{
 			url = new URL(sURL);
 			con = url.openConnection();
+			con.setConnectTimeout(1000 * 15);
 			if(timestamp == -1)
 				timestamp = getTime(con);
-			con.setConnectTimeout(1000 * 15);
 			InputStream inputStream = con.getInputStream();
 			directDL(inputStream, output, timestamp);
 			return new URLResponse(url.getProtocol(), getCode(con), output);
@@ -279,12 +279,15 @@ public class DLUtils {
 		url = getFixedUrl(url);
 		String spath = DeDuperUtil.getRealtivePath(am.dir, saveAs.getAbsoluteFile());
 		String urlPath = url;
-		if(urlPath.contains("file:") || urlPath.contains("jar:"))
+		if(!RippedUtils.isWeb(urlPath))
 			urlPath = spath;
 		
 		Learner learner = am.getLearner(index, indexHash);
 		if(learner.bad.contains(urlPath))
-			return new URLResponse(getProtocol(url), 404, null);
+		{
+			String p = getProtocol(url);
+			return new URLResponse(p, RippedUtils.isHTTP(p) ? 404 : -1, null);
+		}
 		
 		String cachedHash = learner.learner.get(urlPath);
 		if(cachedHash != null)

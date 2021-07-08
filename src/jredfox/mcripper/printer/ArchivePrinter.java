@@ -15,6 +15,7 @@ import jredfox.mcripper.utils.RippedUtils;
 public class ArchivePrinter extends MapPrinter{
 
 	public ArchiveManager am;
+	public boolean checkParsing = true;
 	
 	public ArchivePrinter(ArchiveManager am, File log, int capacity) throws IOException
 	{
@@ -37,7 +38,7 @@ public class ArchivePrinter extends MapPrinter{
 		String[] arr = line.split(",");
 		String hash = arr[0].trim().toLowerCase();
 		String fname = arr[1].trim();
-		if(this.isLoading && !this.getSimpleFile(fname).exists())
+		if(this.isLoading && this.checkParsing && !this.getSimpleFile(fname).exists())
 		{
 			System.out.println("deleting hash:" + hash + "," + fname);
 			this.dirty = true;
@@ -161,6 +162,16 @@ public class ArchivePrinter extends MapPrinter{
 			System.err.println("Files have been verified WITH ERRORS");
 		else
 			System.out.println("Files have been verified with NO Errors");
+	}
+
+	public boolean shouldCheckParsing() 
+	{
+		return this.checkParsing;
+	}
+	
+	public void setCheckParsing(boolean pc)
+	{
+		this.checkParsing = pc;
 	}
 
 }

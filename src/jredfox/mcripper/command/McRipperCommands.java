@@ -147,6 +147,21 @@ public class McRipperCommands {
 		@Override
 		public void run(ParamList<File> params) 
 		{
+			//parse hashes fast to try and pull cached files
+			try
+			{
+				if(!McChecker.loaded)
+				{
+					boolean pc = McChecker.am.printer.shouldCheckParsing();
+					McChecker.am.printer.setCheckParsing(false);
+					McChecker.parseHashes();
+					McChecker.am.printer.setCheckParsing(pc);
+				}
+			} 
+			catch (Exception e1) {
+				e1.printStackTrace();
+			}
+			
 			long ms = System.currentTimeMillis();
 			File mcDir = params.hasFlag("mcDir") ? new File(params.getValue("mcDir")).getAbsoluteFile() : McChecker.am.cachedDir;
 			File dir = params.get(0);
