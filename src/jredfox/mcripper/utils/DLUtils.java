@@ -102,7 +102,7 @@ public class DLUtils {
 			return new URLResponse(getProtocol(url), -1, null);
 		}
 		
-		System.out.println("dl:" + am.getSimplePath(saveAs).replaceAll("\\\\", "/") + " in:" + (System.currentTimeMillis() - start) + "ms " + " from:" + getUnfixedURL(url));
+		System.out.println("dl:" + am.getSimplePath(saveAs).replaceAll("\\\\", "/") + " in:" + (System.currentTimeMillis() - start) + "ms " + " from:" + url);
 		am.printer.append(hash, saveAs);
 		return reply;
 	}
@@ -185,10 +185,11 @@ public class DLUtils {
 	
 	public static URLResponse dlToFile(String url, File output, long timestamp, boolean print)
 	{
+		url = getFixedUrl(url);
 		output = getFixedFile(output);
 		try
 		{
-			URLResponse reply = directDL(getFixedUrl(url), output, timestamp);
+			URLResponse reply = directDL(url, output, timestamp);
 			if(print)
 				System.out.println("dl:" + output.getPath().replaceAll("\\\\", "/") + " from:" + url);
 			return reply;
@@ -307,7 +308,7 @@ public class DLUtils {
 		}
 		timestamp = tmpFile.lastModified();//use the one on the cached disk first
 		String hash = RippedUtils.getSHA1(tmpFile);
-		System.out.println("learned:" + getUnfixedURL(url) + ", " + hash);
+		System.out.println("learned:" + url + ", " + hash);
 		URLResponse response = dlSingleton(am, RippedUtils.toURL(tmpFile).toString(), saveAs, timestamp, hash);
 		
 		if(response.file != null)
