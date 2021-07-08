@@ -279,7 +279,7 @@ public class DLUtils {
 		url = getFixedUrl(url);
 		String spath = DeDuperUtil.getRealtivePath(am.dir, saveAs.getAbsoluteFile());
 		String urlPath = url;
-		if(!RippedUtils.isWeb(urlPath))
+		if(!RippedUtils.isWeb(getProtocol(urlPath)))
 			urlPath = spath;
 		
 		Learner learner = am.getLearner(index, indexHash);
@@ -311,7 +311,7 @@ public class DLUtils {
 		}
 		timestamp = tmpFile.lastModified();//use the one on the cached disk first
 		String hash = RippedUtils.getSHA1(tmpFile);
-		System.out.println("learned:" + url + ", " + hash);
+		System.out.println("learned:" + urlPath + ", " + hash);
 		URLResponse response = dlSingleton(am, RippedUtils.toURL(tmpFile).toString(), saveAs, timestamp, hash);
 		
 		if(response.file != null)
