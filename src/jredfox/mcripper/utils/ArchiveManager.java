@@ -31,7 +31,7 @@ public class ArchiveManager implements Closeable{
 		this.lroot = this.getSimpleFile("learned");
 		this.cachedDir = cached;
 		this.printer = new ArchivePrinter(this, this.getSimpleFile("index.hash"), hInitCapacity);
-		this.badHashes = new MapPrinter(this.getSimpleFile("badHashes.paths"), bInitCapacity);
+		this.badHashes = new MapPrinter(this.getSimpleFile("badhashes.hash"), bInitCapacity);
 	}
 	
 	public boolean contains(String hash)
@@ -78,6 +78,11 @@ public class ArchiveManager implements Closeable{
 		this.closeLearners();
 		this.learners.clear();
 		IOUtils.deleteDirectory(this.lroot);//delete any machine learned data
+		
+		//clear the bad hashes to as it's technically a learned event
+		IOUtils.close(this.badHashes);
+		this.badHashes.map.clear();
+		this.badHashes.log.delete();
 	}
 	
 	public void computeHashes() throws IOException 

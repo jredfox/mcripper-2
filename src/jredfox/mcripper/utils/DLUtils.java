@@ -63,7 +63,6 @@ public class DLUtils {
 		url = getFixedUrl(url);
 		saveAs = getFixedFile(saveAs);
 		File oldSaveAs = saveAs;
-		boolean hflag = false;
 		long start = System.currentTimeMillis();
 		
 		//prevent duplicate downloads
@@ -72,7 +71,7 @@ public class DLUtils {
 		else if(saveAs.exists())
 		{
 			File hfile = RippedUtils.hashFile(saveAs, hash);
-			hflag = hfile.exists();
+			boolean hflag = hfile.exists();
 			if(hflag || hash.equals(RippedUtils.getSHA1(saveAs)))
 			{
 				saveAs = hflag ? hfile : saveAs;
@@ -101,11 +100,20 @@ public class DLUtils {
 			String actualHash = RippedUtils.getSHA1(saveAs);
 			if(!actualHash.equals(hash))
 			{
-				System.err.println("hash mismatch expected hash:" + hash + " actual:" + actualHash);
-				if(hflag)
-					RippedUtils.move(saveAs, RippedUtils.hashFile(oldSaveAs, actualHash));
+				//exit recursive loop
+				String protocol = getProtocol(url);
+				if(!RippedUtils.isWeb(protocol) && DeDuperUtil.getExtension(saveAs).equals("tmp"))
+				{
+					System.err.println("hash has been corrupted expected hash:" + hash + " actual:" + actualHash + " from file:" + am.getSimplePath(saveAs).replaceAll("\\\\", "/"));
+					return new URLResponse(protocol, -1, null);
+				}
+				
+				System.err.println("hash mismatch expected hash:" + hash + " actual:" + actualHash + " from:" + am.getSimplePath(saveAs).replaceAll("\\\\", "/"));
+				File moved = new File(am.tmp, actualHash + ".tmp");
 				am.badHashes.append(hash, actualHash);
 				hash = actualHash;
+				RippedUtils.move(saveAs, moved);
+				return dlSingleton(am, RippedUtils.toURL(moved).toString(), (String)null, oldSaveAs, moved.lastModified(), actualHash);
 			}
 		}
 		catch(URLException h)

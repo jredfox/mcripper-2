@@ -72,10 +72,13 @@ public class RippedUtils {
 		try
 		{
 			JSONSerializer parser = new JSONSerializer();
-			return parser.readJSONObject(JavaUtil.getReader(file));
+			JSONObject json = parser.readJSONObject(JavaUtil.getReader(file));
+			json.size();
+			return json;
 		}
-		catch(Exception e)
+		catch(Throwable e)
 		{
+			System.err.println("error while reading json file:" + (file != null ? file.getAbsolutePath() : "" + null));
 			e.printStackTrace();
 		}
 		return null;
@@ -380,6 +383,14 @@ public class RippedUtils {
 		RippedUtils.copy(new FileInputStream(input), new FileOutputStream(output));
 		output.setLastModified(input.lastModified());
 	}
+	
+	public static void move(File in, File out) throws IOException
+	{
+		long ms = in.lastModified();
+		out.getParentFile().mkdirs();
+		Files.move(Paths.get(in.getPath()), Paths.get(out.getPath()), StandardCopyOption.ATOMIC_MOVE);
+		out.setLastModified(ms);
+	}
 
 	public static boolean isWeb(String protocol)
 	{
@@ -399,12 +410,5 @@ public class RippedUtils {
 	public static File hashFile(File saveAs, String hash, boolean flat) 
 	{
 		return flat ? new File(saveAs.getParent(), hash + DeDuperUtil.getExtensionFull(saveAs)) : new File(saveAs.getParent(), DeDuperUtil.getTrueName(saveAs) + "-" + hash + DeDuperUtil.getExtensionFull(saveAs));
-	}
-
-	public static void move(File in, File out) throws IOException
-	{
-		if(out.exists())
-			out.delete();
-		Files.move(Paths.get(in.getPath()), Paths.get(out.getPath()), StandardCopyOption.ATOMIC_MOVE);
 	}
 }
