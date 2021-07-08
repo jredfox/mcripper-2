@@ -377,4 +377,9 @@ public class RippedUtils {
 		RippedUtils.copy(new FileInputStream(input), new FileOutputStream(output));
 		output.setLastModified(input.lastModified());
 	}
+
+	public static boolean isWeb(String protocol)
+	{
+		 return protocol != null && !protocol.isEmpty() && !protocol.equals("file") && !protocol.equals("jar") && !protocol.equals("ap");
+	}
 }

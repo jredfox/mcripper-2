@@ -349,7 +349,7 @@ public class McRipperCommands {
 	}
 
 	/**
-	 * enforces that the static anomous command classes are instantiated
+	 * enforces that the static anonymous command classes are instantiated
 	 */
 	public static void load() {}
 

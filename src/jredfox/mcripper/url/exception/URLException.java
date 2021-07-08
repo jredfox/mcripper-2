@@ -3,6 +3,8 @@ package jredfox.mcripper.url.exception;
 import java.io.IOException;
 import java.net.URL;
 
+import jredfox.mcripper.utils.RippedUtils;
+
 public abstract class URLException extends IOException{
 	
 	private static final long serialVersionUID = 4489831757280655388L;
@@ -36,7 +38,7 @@ public abstract class URLException extends IOException{
 	 */
 	public boolean isWeb() 
 	{
-		return !this.protocol.equals("file") && !this.protocol.equals("jar");
+		return RippedUtils.isWeb(this.protocol);
 	}
 	
 	public static URLException create(IOException io, URL url, int code) 

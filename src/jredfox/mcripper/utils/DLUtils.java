@@ -301,7 +301,7 @@ public class DLUtils {
 		File tmpFile = replyTmp.file;
 		if(tmpFile == null)
 		{
-			if(RippedUtils.containsNum(replyTmp.code, http404Codes))
+			if(replyTmp.isHTTP() && RippedUtils.containsNum(replyTmp.code, http404Codes))
 				learner.bad.append(urlPath);
 			return replyTmp;
 		}
