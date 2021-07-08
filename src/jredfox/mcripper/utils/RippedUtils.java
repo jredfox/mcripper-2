@@ -9,6 +9,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.time.Instant;
 import java.time.OffsetDateTime;
 import java.time.format.DateTimeParseException;
@@ -386,5 +389,22 @@ public class RippedUtils {
 	public static boolean isHTTP(String protocol)
 	{
 		return protocol.equals("http") || protocol.equals("https"); 
+	}
+	
+	public static File hashFile(File saveAs, String hash)
+	{
+		return hashFile(saveAs, hash, false);
+	}
+	
+	public static File hashFile(File saveAs, String hash, boolean flat) 
+	{
+		return flat ? new File(saveAs.getParent(), hash + DeDuperUtil.getExtensionFull(saveAs)) : new File(saveAs.getParent(), DeDuperUtil.getTrueName(saveAs) + "-" + hash + DeDuperUtil.getExtensionFull(saveAs));
+	}
+
+	public static void move(File in, File out) throws IOException
+	{
+		if(out.exists())
+			out.delete();
+		Files.move(Paths.get(in.getPath()), Paths.get(out.getPath()), StandardCopyOption.ATOMIC_MOVE);
 	}
 }

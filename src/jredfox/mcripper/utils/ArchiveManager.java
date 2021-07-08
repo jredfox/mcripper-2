@@ -10,6 +10,7 @@ import jredfox.filededuper.util.DeDuperUtil;
 import jredfox.filededuper.util.IOUtils;
 import jredfox.mcripper.printer.ArchivePrinter;
 import jredfox.mcripper.printer.Learner;
+import jredfox.mcripper.printer.MapPrinter;
 
 public class ArchiveManager implements Closeable{
 	
@@ -19,9 +20,10 @@ public class ArchiveManager implements Closeable{
 	public File lroot;
 	public File cachedDir;
 	public ArchivePrinter printer;
+	public MapPrinter badHashes;
 	public Map<String, Learner> learners = new HashMap<>(6);
 	
-	public ArchiveManager(File tmp, File root, File cached, String archivePath, int hInitCapacity) throws IOException
+	public ArchiveManager(File tmp, File root, File cached, String archivePath, int hInitCapacity, int bInitCapacity) throws IOException
 	{
 		this.tmp = tmp != null ? tmp.getAbsoluteFile() : this.getSimpleFile("tmp");
 		this.root = root.getAbsoluteFile();
@@ -29,6 +31,7 @@ public class ArchiveManager implements Closeable{
 		this.lroot = this.getSimpleFile("learned");
 		this.cachedDir = cached;
 		this.printer = new ArchivePrinter(this, this.getSimpleFile("index.hash"), hInitCapacity);
+		this.badHashes = new MapPrinter(this.getSimpleFile("badHashes.paths"), bInitCapacity);
 	}
 	
 	public boolean contains(String hash)
@@ -93,6 +96,12 @@ public class ArchiveManager implements Closeable{
 	{
 		for(Learner l : this.learners.values())
 			IOUtils.close(l);
+	}
+
+	public void load() throws IOException
+	{
+		this.badHashes.load();
+		this.printer.load();
 	}
 
 }

@@ -56,8 +56,14 @@ public class DLUtils {
 		if(!RippedUtils.isValidSHA1(hash))
 			throw new IllegalArgumentException("invalid sha1 hash:" + hash);
 		
+		//correct the bad hash to the correct hash to prevent duplicate downloads
+		if(am.badHashes.contains(hash))
+			hash = am.badHashes.get(hash);
+		
 		url = getFixedUrl(url);
 		saveAs = getFixedFile(saveAs);
+		File oldSaveAs = saveAs;
+		boolean hflag = false;
 		long start = System.currentTimeMillis();
 		
 		//prevent duplicate downloads
@@ -65,8 +71,8 @@ public class DLUtils {
 			return new URLResponse(am.getFileFromHash(hash));
 		else if(saveAs.exists())
 		{
-			File hfile = new File(saveAs.getParent(), DeDuperUtil.getTrueName(saveAs) + "-" + hash + DeDuperUtil.getExtensionFull(saveAs));
-			boolean hflag = hfile.exists();
+			File hfile = RippedUtils.hashFile(saveAs, hash);
+			hflag = hfile.exists();
 			if(hflag || hash.equals(RippedUtils.getSHA1(saveAs)))
 			{
 				saveAs = hflag ? hfile : saveAs;
@@ -90,6 +96,17 @@ public class DLUtils {
 		try
 		{
 			reply = directDL(url, saveAs, timestamp);
+			
+			//start download integrity checker
+			String actualHash = RippedUtils.getSHA1(saveAs);
+			if(!actualHash.equals(hash))
+			{
+				System.err.println("hash mismatch expected hash:" + hash + " actual:" + actualHash);
+				if(hflag)
+					RippedUtils.move(saveAs, RippedUtils.hashFile(oldSaveAs, actualHash));
+				am.badHashes.append(hash, actualHash);
+				hash = actualHash;
+			}
 		}
 		catch(URLException h)
 		{
@@ -106,7 +123,7 @@ public class DLUtils {
 		am.printer.append(hash, saveAs);
 		return reply;
 	}
-	
+
 	/**
 	 * direct dl with safegards in place to delete corrupted download files. setting the timestamp to -1 will be {@link URLConnection#getLastModified()} of the website or current ms
 	 * @throws URLException if an exception occurs and is not standard Exceptions

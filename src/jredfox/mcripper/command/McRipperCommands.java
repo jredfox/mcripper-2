@@ -165,7 +165,8 @@ public class McRipperCommands {
 					McChecker.am.printer.setCheckParsing(pc);
 				}
 			} 
-			catch (Exception e1) {
+			catch (Exception e1)
+			{
 				e1.printStackTrace();
 			}
 			

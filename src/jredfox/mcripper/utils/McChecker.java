@@ -501,7 +501,7 @@ public class McChecker {
 		jsonOldMinor = new File(jsonDir, "oldminor");
 		IOUtils.close(logger);
 		closePrinters();
-		am = new ArchiveManager(new File(OSUtil.getAppData(), McRipper.appId + "/tmp"), root, mcDefaultDir, "mcripped", 23000);
+		am = new ArchiveManager(new File(OSUtil.getAppData(), McRipper.appId + "/tmp"), root, mcDefaultDir, "mcripped", 23000, 100);
 		logger = new LogPrinter(new File(root, "logs/log-" + Instant.now().toString().replaceAll(":", ".") + ".txt"), System.out, System.err, false, true);
 		logger.load();
 	}
@@ -509,7 +509,7 @@ public class McChecker {
 	public static void parseHashes() throws IOException, URISyntaxException
 	{
 		long ms = System.currentTimeMillis();
-		am.printer.load();
+		am.load();
 		System.out.println("parsed hashes in:" + (System.currentTimeMillis() - ms) + "ms");
 		loaded = true;
 	}
