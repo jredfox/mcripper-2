@@ -90,7 +90,7 @@ public class ArchivePrinter extends MapPrinter{
 	}
 	
 	/**
-	 * verify the integrity of the ArchivePrinter
+	 * verify the integrity of the Archive
 	 */
 	public void verify(boolean delete) throws IOException
 	{

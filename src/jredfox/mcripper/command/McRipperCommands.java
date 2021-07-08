@@ -17,6 +17,7 @@ import jredfox.filededuper.util.DeDuperUtil;
 import jredfox.filededuper.util.JarUtil;
 import jredfox.mcripper.utils.McChecker;
 import jredfox.mcripper.utils.RippedUtils;
+import jredfox.selfcmd.SelfCommandPrompt;
 
 public class McRipperCommands {
 	
@@ -297,6 +298,48 @@ public class McRipperCommands {
 		public void print()
 		{
 			McRipperCommands.printDefault(this.ms);
+		}
+	};
+	
+	public static Command<File> hasher = new Command<File>("hasher")
+	{
+		@Override
+		protected void register() 
+		{
+			if(!SelfCommandPrompt.isCompiled())
+				super.register();//do not allow users to use this command unless they are in a dev enviorment
+		}
+
+		@Override
+		public String[] displayArgs() 
+		{
+			return new String[]{"Dir/File"};
+		}
+
+		@Override
+		public File[] parse(ParamList<File> params, String... inputs) 
+		{
+			return new File[]{this.hasScanner(inputs) ? this.nextFile("Input the Directory to Hash:") : DeDuperUtil.newFile(inputs[0])};
+		}
+
+		@Override
+		public void run(ParamList<File> params)
+		{
+			File dir = params.get(0);
+			File hdir = new File(dir.getParent(), "hashed-" + DeDuperUtil.getTrueName(dir));
+			hdir.mkdirs();
+			List<File> files = DeDuperUtil.getDirFiles(dir);
+			for(File f : files)
+			{
+				try
+				{
+					RippedUtils.copy(f, new File(hdir, RippedUtils.getSHA1(f) + DeDuperUtil.getExtensionFull(f)));
+				}
+				catch (IOException e)
+				{
+					e.printStackTrace();
+				}
+			}
 		}
 	};
 	

@@ -3,6 +3,8 @@ package jredfox.mcripper.utils;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -363,5 +365,16 @@ public class RippedUtils {
 		if(reply.file != null && !url.startsWith("file:"))
 			System.out.println("dl:" + reply.file.getPath().replaceAll("\\\\", "/") + " from:" + url);
 		return reply;
+	}
+
+	/**
+	 * copy a file. preserve date modified, and create dirs if non existent
+	 */
+	public static void copy(File input, File output) throws FileNotFoundException, IOException
+	{
+		//TODO: copy os file attributes
+		output.getParentFile().mkdirs();
+		RippedUtils.copy(new FileInputStream(input), new FileOutputStream(output));
+		output.setLastModified(input.lastModified());
 	}
 }
