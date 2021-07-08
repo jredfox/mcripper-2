@@ -3,6 +3,7 @@ package jredfox.mcripper.command;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.util.Collection;
 import java.util.List;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipException;
@@ -109,7 +110,7 @@ public class McRipperCommands {
 		@Override
 		public void print(ParamList<?> params)
 		{
-			printDefault(this, params, this.ms);
+			printDefault(this.name, params.options, this.ms);
 		}
 	};
 	
@@ -288,7 +289,7 @@ public class McRipperCommands {
 		@Override
 		public void print(ParamList<?> params)
 		{
-			McRipperCommands.printDefault(this, params, this.ms);
+			McRipperCommands.printDefault(this.name, params.options, this.ms);
 		}
 	};
 	
@@ -318,7 +319,7 @@ public class McRipperCommands {
 		@Override
 		public void print(ParamList<?> params)
 		{
-			McRipperCommands.printDefault(this, params, this.ms);
+			McRipperCommands.printDefault(this.name, params.options, this.ms);
 		}
 	};
 	
@@ -364,9 +365,9 @@ public class McRipperCommands {
 		}
 	};
 	
-	public static void printDefault(RipperCommand cmd, ParamList<?> params, long ms)
+	public static void printDefault(String name, Collection<CommandOption> options, long ms)
 	{
-		System.out.println(McRipperCommands.lboarder + "Finished " + cmd.name + (params.options.isEmpty() ? "" : " " + params.options) + " in:" + (System.currentTimeMillis() - cmd.ms) / 1000D + " seconds" + McRipperCommands.rboarder);
+		System.out.println(McRipperCommands.lboarder + "Finished " + name + (options.isEmpty() ? "" : " " + options) + " in:" + (System.currentTimeMillis() - ms) / 1000D + " seconds" + McRipperCommands.rboarder);
 	}
 
 	/**
