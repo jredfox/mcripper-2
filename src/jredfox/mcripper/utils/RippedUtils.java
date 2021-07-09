@@ -115,7 +115,7 @@ public class RippedUtils {
 	/**
 	 * returns null if the unsafeHash is maulformed or non existent
 	 */
-	public static String getUnsafeHash(File f) 
+	public static String getUnsafeHash(File f, boolean all) 
 	{
 		String name = DeDuperUtil.getTrueName(f);
 		if(name.contains("-"))
@@ -124,7 +124,7 @@ public class RippedUtils {
 			String possibleHash = splited[splited.length - 1];
 			return isValidSHA1(possibleHash) ? possibleHash.toLowerCase() : null;
 		}
-		else if(isValidSHA1(name))
+		else if(all && isValidSHA1(name))
 			return name;//if it's a flat archive or it's literally the hash it's suppose to be
 		return null;
 	}
@@ -378,7 +378,6 @@ public class RippedUtils {
 	 */
 	public static void copy(File input, File output) throws FileNotFoundException, IOException
 	{
-		//TODO: copy os file attributes
 		output.getParentFile().mkdirs();
 		RippedUtils.copy(new FileInputStream(input), new FileOutputStream(output));
 		output.setLastModified(input.lastModified());
@@ -388,7 +387,7 @@ public class RippedUtils {
 	{
 		long ms = in.lastModified();
 		out.getParentFile().mkdirs();
-		Files.move(Paths.get(in.getPath()), Paths.get(out.getPath()), StandardCopyOption.ATOMIC_MOVE);
+		Files.move(Paths.get(in.getPath()), Paths.get(out.getPath()), StandardCopyOption.REPLACE_EXISTING);
 		out.setLastModified(ms);
 	}
 

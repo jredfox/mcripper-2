@@ -63,6 +63,7 @@ public class DLUtils {
 		url = getFixedUrl(url);
 		saveAs = getFixedFile(saveAs);
 		File oldSaveAs = saveAs;
+		boolean hashed = false;
 		long start = System.currentTimeMillis();
 		
 		//prevent duplicate downloads
@@ -71,15 +72,16 @@ public class DLUtils {
 		else if(saveAs.exists())
 		{
 			File hfile = RippedUtils.hashFile(saveAs, hash);
-			boolean hflag = hfile.exists();
-			if(hflag || hash.equals(RippedUtils.getSHA1(saveAs)))
+			boolean hExists = hfile.exists();
+			if(hExists || hash.equals(RippedUtils.getSHA1(saveAs)))
 			{
-				saveAs = hflag ? hfile : saveAs;
-				System.err.println("File is out of sync with " + am.printer.log.getName() + " skipping duplicate download:" + saveAs);
+				saveAs = hExists ? hfile : saveAs;
+				System.err.println("File is out of sync with " + am.printer.log.getName() + " skipping duplicate download:" + am.getSimplePath(saveAs).replaceAll("\\\\", "/"));
 				am.printer.append(hash, saveAs);
 				return new URLResponse(saveAs);
 			}
 			saveAs = hfile;
+			hashed = true;
 		}
 		
 		//pull from cached path whenever possible
@@ -98,22 +100,35 @@ public class DLUtils {
 			
 			//start download integrity checker
 			String actualHash = RippedUtils.getSHA1(saveAs);
-			if(!actualHash.equals(hash))
+			if(!hash.equals(actualHash))
 			{
-				//exit recursive loop
-				String protocol = getProtocol(url);
-				if(!RippedUtils.isWeb(protocol) && DeDuperUtil.getExtension(saveAs).equals("tmp"))
-				{
-					System.err.println("hash has been corrupted expected hash:" + hash + " actual:" + actualHash + " from file:" + am.getSimplePath(saveAs).replaceAll("\\\\", "/"));
-					return new URLResponse(protocol, -1, null);
-				}
-				
 				System.err.println("hash mismatch expected hash:" + hash + " actual:" + actualHash + " from:" + am.getSimplePath(saveAs).replaceAll("\\\\", "/"));
-				File moved = new File(am.tmp, actualHash + ".tmp");
 				am.badHashes.append(hash, actualHash);
 				hash = actualHash;
-				RippedUtils.move(saveAs, moved);
-				return dlSingleton(am, RippedUtils.toURL(moved).toString(), (String)null, oldSaveAs, moved.lastModified(), actualHash);
+				
+				//check if the new download with the corrected hash is a duplicate file
+				if(am.contains(actualHash))
+				{
+					System.err.println("File is out of sync with " + am.printer.log.getName() + " deleting hash mismatch download:" + am.getSimplePath(saveAs).replaceAll("\\\\", "/"));
+					saveAs.delete();
+					return new URLResponse(am.getFileFromHash(actualHash));
+				}
+				
+				//move the file to proper path. do nothing if the name remains the same
+				if(hashed)
+				{
+					File hfile = RippedUtils.hashFile(oldSaveAs, actualHash);
+					try
+					{
+						RippedUtils.move(saveAs, hfile);
+					}
+					catch(Exception e)
+					{
+						saveAs.delete();//delete the file if it fails to move. treat it like a failed download
+						throw e;
+					}
+					saveAs = hfile;
+				}
 			}
 		}
 		catch(URLException h)
@@ -185,11 +200,11 @@ public class DLUtils {
 			RippedUtils.copy(inputStream, new FileOutputStream(output));
 			output.setLastModified(timestamp);
 		}
-		catch(IOException io)
+		catch(Exception e)
 		{
 			if(output.exists())
 				output.delete();
-			throw io;
+			throw e;
 		}
 	}
 	

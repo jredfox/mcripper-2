@@ -78,7 +78,7 @@ public class ArchivePrinter extends MapPrinter{
 		List<File> files = DeDuperUtil.getDirFiles(this.am.dir);
 		for(File f : files)
 		{
-			String unsafe = RippedUtils.getUnsafeHash(f);
+			String unsafe = RippedUtils.getUnsafeHash(f, true);
 			String hash =  unsafe != null ? unsafe : RippedUtils.getSHA1(f);//speed up verify hashes dramatically and use verify to determine if it's modified
 			if(this.contains(hash))
 			{
@@ -112,7 +112,7 @@ public class ArchivePrinter extends MapPrinter{
 			}
 			File f = this.getSimpleFile(path);
 			String actualHash = RippedUtils.getSHA1(f);
-			String unsafeHash = RippedUtils.getUnsafeHash(f);
+			String unsafeHash = RippedUtils.getUnsafeHash(f, true);
 			boolean modified = !h.equals(actualHash);
 			boolean hmodified = unsafeHash != null && !actualHash.equals(unsafeHash);
 
