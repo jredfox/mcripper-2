@@ -98,7 +98,7 @@ public class DLUtils {
 		{
 			reply = directDL(url, saveAs, timestamp);
 			
-			//start download integrity checker
+			//start the dl integrity check
 			String actualHash = RippedUtils.getSHA1(saveAs);
 			if(!hash.equals(actualHash))
 			{
@@ -106,12 +106,19 @@ public class DLUtils {
 				am.badHashes.append(hash, actualHash);
 				hash = actualHash;
 				
-				//check if the new download with the corrected hash is a duplicate file
+				//check for dupes in index.hash, out of sync non hashed file. the hashed form of the proper file if it exists will just get overriden so no need to worry about dupes
 				if(am.contains(actualHash))
+				{
+					System.err.println("deleting duplicate file due to hash mismatch:" + am.getSimplePath(saveAs).replaceAll("\\\\", "/"));
+					saveAs.delete();
+					return new URLResponse(am.getFileFromHash(actualHash));
+				}
+				else if(hashed && actualHash.equals(RippedUtils.getSHA1(oldSaveAs)))
 				{
 					System.err.println("File is out of sync with " + am.printer.log.getName() + " deleting hash mismatch download:" + am.getSimplePath(saveAs).replaceAll("\\\\", "/"));
 					saveAs.delete();
-					return new URLResponse(am.getFileFromHash(actualHash));
+					am.printer.append(actualHash, oldSaveAs);
+					return new URLResponse(oldSaveAs);
 				}
 				
 				//move the file to proper path. do nothing if the name remains the same
