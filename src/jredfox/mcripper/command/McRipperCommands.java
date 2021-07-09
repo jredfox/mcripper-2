@@ -56,6 +56,7 @@ public class McRipperCommands {
 		@Override
 		public void finish(ParamList<?> params)
 		{
+			params.options.remove(new CommandOption("--internal"));
 			this.clear(params);
 			this.print(params);
 		}

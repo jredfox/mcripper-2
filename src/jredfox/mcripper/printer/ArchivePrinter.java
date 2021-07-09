@@ -112,7 +112,7 @@ public class ArchivePrinter extends MapPrinter{
 			}
 			File f = this.getSimpleFile(path);
 			String actualHash = RippedUtils.getSHA1(f);
-			String unsafeHash = RippedUtils.getUnsafeHash(f, true);
+			String unsafeHash = RippedUtils.getUnsafeHash(f, false);
 			boolean modified = !h.equals(actualHash);
 			boolean hmodified = unsafeHash != null && !actualHash.equals(unsafeHash);
 
