@@ -16,6 +16,7 @@ import jredfox.filededuper.command.CommandOption;
 import jredfox.filededuper.command.ParamList;
 import jredfox.filededuper.util.DeDuperUtil;
 import jredfox.filededuper.util.JarUtil;
+import jredfox.mcripper.utils.DLUtils;
 import jredfox.mcripper.utils.McChecker;
 import jredfox.mcripper.utils.RippedUtils;
 import jredfox.selfcmd.SelfCommandPrompt;
@@ -364,6 +365,38 @@ public class McRipperCommands {
 					e.printStackTrace();
 				}
 			}
+		}
+	};
+	
+	public static Command<File> test = new Command<File>("test")
+	{
+
+		@Override
+		public String[] displayArgs() 
+		{
+			return null;
+		}
+
+		@Override
+		public File[] parse(ParamList<File> paramOptions, String... inputs) 
+		{
+			return new File[]{this.nextFile("input file:")};
+		}
+
+		@Override
+		public void run(ParamList<File> params) 
+		{
+			try 
+			{
+				McChecker.parseHashes();
+			} 
+			catch (Exception e) 
+			{
+				e.printStackTrace();
+			}
+			
+			System.out.println("here");
+			DLUtils.dlSingleton(McChecker.am, RippedUtils.toURL((File)params.get(0)).toString(), null, new File("C:/Users/jredfox/AppData/Roaming/Mcripper/mcripped/mojang/versions/release/1.0/1.0-client.jar"), -1, "5d3c577c06255bec1a3577d00d441368e2cd5c1d");
 		}
 	};
 	
