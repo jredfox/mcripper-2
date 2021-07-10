@@ -110,9 +110,9 @@ public class McRipperCommands {
 		}
 		
 		@Override
-		public void print(ParamList<?> params)
+		public String getDoneMsg(ParamList<?> params)
 		{
-			printDefault(this.name, params.options, this.ms);
+			return McRipperCommands.getDefaultMsg(this.name, params.options, this.ms);
 		}
 	};
 	
@@ -290,9 +290,9 @@ public class McRipperCommands {
 		}
 		
 		@Override
-		public void print(ParamList<?> params)
+		public String getDoneMsg(ParamList<?> params)
 		{
-			McRipperCommands.printDefault(this.name, params.options, this.ms);
+			return McRipperCommands.getDefaultMsg(this.name, params.options, this.ms);
 		}
 	};
 	
@@ -320,9 +320,9 @@ public class McRipperCommands {
 		}
 		
 		@Override
-		public void print(ParamList<?> params)
+		public String getDoneMsg(ParamList<?> params)
 		{
-			McRipperCommands.printDefault(this.name, params.options, this.ms);
+			return McRipperCommands.getDefaultMsg(this.name, params.options, this.ms);
 		}
 	};
 	
@@ -370,6 +370,13 @@ public class McRipperCommands {
 	
 	public static Command<File> test = new Command<File>("test")
 	{
+		
+		@Override
+		protected void register() 
+		{
+			if(!SelfCommandPrompt.isCompiled())
+				super.register();//do not allow users to use this command unless they are in a dev enviorment
+		}
 
 		@Override
 		public String[] displayArgs() 
@@ -394,15 +401,13 @@ public class McRipperCommands {
 			{
 				e.printStackTrace();
 			}
-			
-			System.out.println("here");
 			DLUtils.dlSingleton(McChecker.am, RippedUtils.toURL((File)params.get(0)).toString(), null, new File("C:/Users/jredfox/AppData/Roaming/Mcripper/mcripped/mojang/versions/release/1.0/1.0-client.jar"), -1, "5d3c577c06255bec1a3577d00d441368e2cd5c1d");
 		}
 	};
 	
-	public static void printDefault(String name, Collection<CommandOption> options, long ms)
+	public static String getDefaultMsg(String name, Collection<CommandOption> options, long ms)
 	{
-		System.out.println(McRipperCommands.lboarder + "Finished " + name + (options.isEmpty() ? "" : " " + options) + " in:" + (System.currentTimeMillis() - ms) / 1000D + " seconds" + McRipperCommands.rboarder);
+		return "Finished " + name + (options.isEmpty() ? "" : " " + options) + " in:" + (System.currentTimeMillis() - ms) / 1000D + " seconds";
 	}
 
 	/**

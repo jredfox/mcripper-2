@@ -410,4 +410,17 @@ public class RippedUtils {
 	{
 		return flat ? new File(saveAs.getParent(), hash + DeDuperUtil.getExtensionFull(saveAs)) : new File(saveAs.getParent(), DeDuperUtil.getTrueName(saveAs) + "-" + hash + DeDuperUtil.getExtensionFull(saveAs));
 	}
+
+	/**
+	 * files a string with the amount of chars from size
+	 */
+	public static String fillString(String what, int size)
+	{
+		StringBuffer outputBuffer = new StringBuffer(size);
+		for (int i = 0; i < size; i++)
+		{
+		   outputBuffer.append(what);
+		}
+		return outputBuffer.toString();
+	}
 }
