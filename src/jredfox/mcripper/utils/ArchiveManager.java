@@ -22,6 +22,7 @@ public class ArchiveManager implements Closeable{
 	public ArchivePrinter printer;
 	public MapPrinter badHashes;
 	public Map<String, Learner> learners = new HashMap<>(6);
+	public Map<String, String> localCache = new HashMap<>(500);//map of file > sha1 for checking out of sync files from the index
 	
 	public ArchiveManager(File tmp, File root, File cached, String archivePath, int hInitCapacity, int bInitCapacity) throws IOException
 	{
@@ -107,6 +108,17 @@ public class ArchiveManager implements Closeable{
 	{
 		this.badHashes.load();
 		this.printer.load();
+	}
+
+	/**
+	 * speed up dlSingleton integrity checker for searching out of sync files from the hash index
+	 */
+	public String getLocalCacheHash(File saveAs) 
+	{
+		String path = saveAs.getPath();
+		if(!this.localCache.containsKey(path))
+			this.localCache.put(path, RippedUtils.getSHA1(saveAs));
+		return this.localCache.get(path);
 	}
 
 }

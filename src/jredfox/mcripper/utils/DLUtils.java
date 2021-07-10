@@ -73,7 +73,7 @@ public class DLUtils {
 		{
 			File hfile = RippedUtils.hashFile(saveAs, hash);
 			boolean hExists = hfile.exists();
-			if(hExists || hash.equals(RippedUtils.getSHA1(saveAs)))
+			if(hExists || hash.equals(am.getLocalCacheHash(saveAs)))
 			{
 				saveAs = hExists ? hfile : saveAs;
 				System.err.println("File is out of sync with " + am.printer.log.getName() + " skipping duplicate download:" + am.getSimplePath(saveAs).replaceAll("\\\\", "/"));
@@ -113,7 +113,7 @@ public class DLUtils {
 					saveAs.delete();
 					return new URLResponse(am.getFileFromHash(actualHash));
 				}
-				else if(hashed && actualHash.equals(RippedUtils.getSHA1(oldSaveAs)))
+				else if(hashed && actualHash.equals(am.getLocalCacheHash(oldSaveAs)))
 				{
 					System.err.println("File is out of sync with " + am.printer.log.getName() + " deleting hash mismatch download:" + am.getSimplePath(saveAs).replaceAll("\\\\", "/"));
 					saveAs.delete();
