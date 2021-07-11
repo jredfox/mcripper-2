@@ -102,7 +102,7 @@ public class DLUtils {
 			String actualHash = RippedUtils.getSHA1(saveAs);
 			if(!hash.equals(actualHash))
 			{
-				System.err.println("hash mismatch expected hash:" + hash + " actual:" + actualHash + " from:" + am.getSimplePath(saveAs).replaceAll("\\\\", "/"));
+				System.err.println("hash mismatch expected hash:" + hash + " actual:" + actualHash + " from:" + am.getSimplePath(saveAs).replaceAll("\\\\", "/") + " url:" + url);
 				am.badHashes.append(hash, actualHash);
 				hash = actualHash;
 				
@@ -160,6 +160,10 @@ public class DLUtils {
 	 */
 	public static URLResponse directDL(String sURL, File output, long timestamp) throws URLException, IOException, Exception
 	{
+		//sanity checker
+		if(RippedUtils.toURL(output).toString().equals(sURL))
+			return new URLResponse(output);
+		
 		URL url = null;
 		URLConnection con = null;
 		try

@@ -12,7 +12,7 @@ import jredfox.mcripper.printer.ArchivePrinter;
 import jredfox.mcripper.printer.Learner;
 import jredfox.mcripper.printer.MapPrinter;
 
-public class ArchiveManager implements Closeable{
+public class ArchiveManager implements Closeable {
 	
 	public File tmp;
 	public File root;//the root folder of the archive

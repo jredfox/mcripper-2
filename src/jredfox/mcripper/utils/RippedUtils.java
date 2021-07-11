@@ -356,7 +356,7 @@ public class RippedUtils {
 	 */
 	public static URLResponse getOrDlFromMc(File mcDir, String url, String path, String hash)
 	{
-		return dlFromMc(mcDir, url, new File(mcDir, path), path, hash);
+		return dlFromMc(mcDir, url, new File(mcDir, path).getAbsoluteFile(), path, hash);
 	}
 	
 	/**
@@ -368,7 +368,7 @@ public class RippedUtils {
 		cached = cached.exists() ? cached : McChecker.am.contains(hash) ? McChecker.am.getFileFromHash(hash) : cached;
 		url = cached.exists() && hash.equals(RippedUtils.getSHA1(cached)) ? RippedUtils.toURL(cached).toString() : url;
 		URLResponse reply = DLUtils.dlToFile(url, saveAs);
-		if(reply.file != null && !url.startsWith("file:"))
+		if(reply.file != null && reply.isWeb())
 			System.out.println("dl:" + reply.file.getPath().replaceAll("\\\\", "/") + " from:" + url);
 		return reply;
 	}

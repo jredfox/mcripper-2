@@ -26,8 +26,6 @@ public class McRipperCommands {
 	private static final String skipSnaps = "skipSnaps";
 	private static final String mcDir = "mcDir=value";
 	protected static final char clear = 'c';
-	protected static final String lboarder = "\n#############################################################################\n#############################################################################\n";
-	protected static final String rboarder = "\n#############################################################################\n#############################################################################";
 	
 	public static RipperCommand checkAll = new RipperCommand(new String[]{"--" + mcDir, "--" + skipSnaps, "-" + clear}, "checkAll")
 	{

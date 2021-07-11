@@ -38,8 +38,7 @@ public abstract class RipperCommand extends Command<Object>{
 		McChecker.am.cachedDir = params.hasFlag("mcDir") ? new File(params.getValue("mcDir")).getAbsoluteFile() : McChecker.am.cachedDir;
 		if(params.hasFlag("internal"))
 			return;
-		if(params.hasFlag('c'))
-			this.clearLearners(params);
+		this.clearLearners(params);
 	}
 	
 	public void finish(ParamList<?> params)
