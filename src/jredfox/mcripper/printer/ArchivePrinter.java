@@ -78,7 +78,7 @@ public class ArchivePrinter extends MapPrinter{
 		List<File> files = DeDuperUtil.getDirFiles(this.am.dir);
 		for(File f : files)
 		{
-			String unsafe = RippedUtils.getUnsafeHash(f, true);
+			String unsafe = RippedUtils.getUnsafeHash(f);
 			String hash =  unsafe != null ? unsafe : RippedUtils.getSHA1(f);//speed up verify hashes dramatically and use verify to determine if it's modified
 			if(this.contains(hash))
 			{
@@ -97,43 +97,6 @@ public class ArchivePrinter extends MapPrinter{
 	{
 		boolean hasErr = false;
 		boolean shouldSave = false;
-		
-		Iterator<Map.Entry<String, String>> it = this.map.entrySet().iterator();
-		Set<String> se = new HashSet<>(this.map.size());
-		while(it.hasNext())
-		{
-			Map.Entry<String, String> p = it.next();
-			String h = p.getKey();
-			String path = p.getValue();
-			if(!se.add(path))
-			{
-				System.err.println("duplicate index file entry dedected:" + path + " try recomputing your hashes");
-				continue;//skip duplicate file entries
-			}
-			File f = this.getSimpleFile(path);
-			String actualHash = RippedUtils.getSHA1(f);
-			String unsafeHash = RippedUtils.getUnsafeHash(f, false);
-			boolean modified = !h.equals(actualHash);
-			boolean hmodified = unsafeHash != null && !actualHash.equals(unsafeHash);
-
-			if(modified || hmodified)
-			{
-				System.err.println( (hmodified ? "File hashed form doesn't match actual hash" : "File has been modified") + (delete ? " removing" : "") + ":" + path);
-				hasErr = true;
-				if(delete)
-				{
-					it.remove();
-					f.delete();
-					shouldSave = true;
-				}
-			}
-		}
-		
-		if(shouldSave)
-		{
-			this.save();
-			this.setPrintWriter();
-		}
 		
 		//update files out of sync with the ArchivePrinter
 		List<File> dirFiles = DeDuperUtil.getDirFiles(this.am.dir);
@@ -156,6 +119,43 @@ public class ArchivePrinter extends MapPrinter{
 				}
 				hasErr = true;
 			}
+		}
+		
+		Iterator<Map.Entry<String, String>> it = this.map.entrySet().iterator();
+		Set<String> se = new HashSet<>(this.map.size());
+		while(it.hasNext())
+		{
+			Map.Entry<String, String> p = it.next();
+			String h = p.getKey();
+			String path = p.getValue();
+			if(!se.add(path))
+			{
+				System.err.println("duplicate index file entry dedected:" + path + " try recomputing your hashes");
+				continue;//skip duplicate file entries
+			}
+			File f = this.getSimpleFile(path);
+			String actualHash = RippedUtils.getSHA1(f);
+			String unsafeHash = RippedUtils.getUnsafeHash(f);
+			boolean modified = !h.equals(actualHash);
+			boolean hmodified = unsafeHash != null && !actualHash.equals(unsafeHash);
+
+			if(modified || hmodified)
+			{
+				System.err.println( (hmodified ? "File hashed form doesn't match actual hash" : "File has been modified") + (delete ? " removing" : "") + ":" + path);
+				hasErr = true;
+				if(delete)
+				{
+					it.remove();
+					f.delete();
+					shouldSave = true;
+				}
+			}
+		}
+		
+		if(shouldSave)
+		{
+			this.save();
+			this.setPrintWriter();
 		}
 		
 		if(hasErr)

@@ -115,7 +115,7 @@ public class RippedUtils {
 	/**
 	 * returns null if the unsafeHash is maulformed or non existent
 	 */
-	public static String getUnsafeHash(File f, boolean all) 
+	public static String getUnsafeHash(File f) 
 	{
 		String name = DeDuperUtil.getTrueName(f);
 		if(name.contains("-"))
@@ -124,7 +124,7 @@ public class RippedUtils {
 			String possibleHash = splited[splited.length - 1];
 			return isValidSHA1(possibleHash) ? possibleHash.toLowerCase() : null;
 		}
-		else if(all && isValidSHA1(name))
+		else if(isValidSHA1(name))
 			return name;//if it's a flat archive or it's literally the hash it's suppose to be
 		return null;
 	}
