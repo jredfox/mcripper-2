@@ -14,7 +14,7 @@ Commands
 
 Details:
 - `rip -a` flag specifies to rip all assets from the `minecraft.jar` that are not in the assets index including unessary files like `.png, .nbt` files
-- `rip -s` skips the `minecraft.jar` ripping part which will lead to broken resource packs as it's missing the `.mcmeta` files
+- `rip -s` skips the `minecraft.jar` extraction part when your using a `assetsIndex.json` instead of a `client.json` file for ripping. this will lead to broken resource packs in vanilla minecraft due to it missing the `.mcmeta` files
 - `checkMojang` rips all assets obtainable from checking mojang's master json files from https://launchermeta.mojang.com/mc/game/version_manifest.json and https://launchermeta.mojang.com/mc/game/version_manifest_v2.json
 - `checkDisk` checks all jsons files stored at `mcripped/jsons/*` the purpose of this command is to recheck all jsons stored on the disk even custom ones no longer obtainable
 - `checkOmni` checks omni archive that has mc versions that the current launcher does not
