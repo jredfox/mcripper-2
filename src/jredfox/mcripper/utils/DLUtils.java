@@ -307,6 +307,16 @@ public class DLUtils {
 		return DLUtils.learnDl(am, "extraction", version, clazz.getClassLoader().getResource(path).toString(), saveAs);
 	}
 	
+	public static URLResponse learnDlMc(ArchiveManager am, String url, File saveAs)
+	{
+		return learnDlMc(am, url, saveAs, -1);
+	}
+	
+	public static URLResponse learnDlMc(ArchiveManager am, String url, File saveAs, long timestamp) 
+	{
+		return learnDl(am, "Minecraft.Download", "null", url, saveAs, timestamp);
+	}
+	
 	public static URLResponse learnDl(ArchiveManager am, String url, File saveAs)
 	{
 		return learnDl(am, url, saveAs, -1);

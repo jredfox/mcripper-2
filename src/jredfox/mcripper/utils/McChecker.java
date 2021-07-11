@@ -210,7 +210,7 @@ public class McChecker {
 			long time = RippedUtils.parseOffsetTime(versionEntry.getString("time"));
 			String clientPath = type + "/" + version + ".json";
 			File minorFile = new File(jsonOldMinor, clientPath);
-			File dlMinor = DLUtils.learnDl(am, urlBase + "versions/" + version + "/" + version + ".json", minorFile, time).file;
+			File dlMinor = DLUtils.learnDlMc(am, urlBase + "versions/" + version + "/" + version + ".json", minorFile, time).file;
 			oldMinors.add(dlMinor);
 		}
 		oldMajorCount++;
@@ -221,13 +221,14 @@ public class McChecker {
 	{
 		if(!checkJsons.add(version))
 			return Collections.emptySet();
+		
 		Set<File> assets = new FileSet(2);
 		JSONObject json = RippedUtils.getJSON(version);
 		String versionName = json.getString("id");
 		String type = json.getString("type");
 		if(skipSnaps && type.startsWith("snapshot"))
 		{
-			return null;
+			return Collections.emptySet();
 		}
 		
 		boolean isOld = false;
@@ -403,19 +404,19 @@ public class McChecker {
 		File serverExeFile = new File(oldMcDir, serverExePath);
 		
 		//dl the files
-		File dlClient = DLUtils.learnDl(am, urlBase + "versions/" + version + "/" + version + ".jar", jarFile, clientTime).file;
+		File dlClient = DLUtils.learnDlMc(am, urlBase + "versions/" + version + "/" + version + ".jar", jarFile, clientTime).file;
 		if(dlClient == null)
 			return assets;//no need to continue here the rest should return 404
 		
-		DLUtils.learnDl(am, urlBase + "versions/" + version + "/" + "minecraft_server." + version + ".jar", serverJarFile);
-		DLUtils.learnDl(am, urlBase + "versions/" + version + "/" + "minecraft_server." + version + ".exe", serverExeFile);
+		DLUtils.learnDlMc(am, urlBase + "versions/" + version + "/" + "minecraft_server." + version + ".jar", serverJarFile);
+		DLUtils.learnDlMc(am, urlBase + "versions/" + version + "/" + "minecraft_server." + version + ".exe", serverExeFile);
 		
 		//dl the assetIndexes
-		assets.add(DLUtils.learnDl(am, urlBase + "indexes/" + checkPath, checkFile).file);
-		assets.add(DLUtils.learnDl(am, urlBase + "indexes/" + assetsPath, assetsFile).file);
+		assets.add(DLUtils.learnDlMc(am, urlBase + "indexes/" + checkPath, checkFile).file);
+		assets.add(DLUtils.learnDlMc(am, urlBase + "indexes/" + assetsPath, assetsFile).file);
 		
 		//dl the json in case it's being invoked directly instead of calling checkOldMajor
-		DLUtils.learnDl(am, urlBase + "versions/" + version + "/" + version + ".json", new File(jsonOldMinor, type + "/" + version + ".json"));
+		DLUtils.learnDlMc(am, urlBase + "versions/" + version + "/" + version + ".json", new File(jsonOldMinor, type + "/" + version + ".json"));
 		return assets;
 	}
 	
