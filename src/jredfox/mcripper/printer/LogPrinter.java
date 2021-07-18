@@ -42,6 +42,8 @@ public class LogPrinter extends Printer {
 	}
 
 	@Override
+	public void load() throws IOException { this.setPrintWriter(); }
+	@Override
 	public void parse(String line) {}
 	@Override
 	public void save(BufferedWriter writer) {IOUtils.close(writer);}
