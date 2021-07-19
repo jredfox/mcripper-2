@@ -22,11 +22,11 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
+import jredfox.common.os.OSUtil;
 import jredfox.filededuper.util.DeDuperUtil;
 import jredfox.mcripper.printer.Learner;
 import jredfox.mcripper.url.URLResponse;
 import jredfox.mcripper.url.exception.URLException;
-import jredfox.selfcmd.util.OSUtil;
 
 public class DLUtils {
 	

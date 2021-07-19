@@ -12,12 +12,12 @@ import java.util.Set;
 import com.jml.evilnotch.lib.json.JSONArray;
 import com.jml.evilnotch.lib.json.JSONObject;
 
+import jredfox.common.os.OSUtil;
 import jredfox.filededuper.util.DeDuperUtil;
 import jredfox.filededuper.util.IOUtils;
 import jredfox.mcripper.McRipper;
 import jredfox.mcripper.data.FileSet;
 import jredfox.mcripper.printer.LogPrinter;
-import jredfox.selfcmd.util.OSUtil;
 
 public class McChecker {
 	

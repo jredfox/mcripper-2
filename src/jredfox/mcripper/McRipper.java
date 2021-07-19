@@ -4,6 +4,7 @@ import java.io.File;
 
 import com.jml.evilnotch.lib.JavaUtil;
 
+import jredfox.common.os.OSUtil;
 import jredfox.filededuper.command.Command;
 import jredfox.filededuper.command.Commands;
 import jredfox.filededuper.config.simple.MapConfig;
@@ -12,7 +13,6 @@ import jredfox.mcripper.command.RipperCommand;
 import jredfox.mcripper.utils.DLUtils;
 import jredfox.mcripper.utils.McChecker;
 import jredfox.selfcmd.SelfCommandPrompt;
-import jredfox.selfcmd.util.OSUtil;
 
 public class McRipper {
 
@@ -25,14 +25,14 @@ public class McRipper {
 	}
 	
 	public static final String appId = "Mcripper";
-	public static final String version = "rc.3.1.0";
+	public static final String version = "rc.3.2.0";
 	public static final String appName = "MC Ripper 2 Build: " + version;
 	
 	public static void main(String[] args) throws Exception
 	{
-		args = SelfCommandPrompt.wrapWithCMD("input a command: ", appId, appName, args, true, true);
+		args = SelfCommandPrompt.wrapWithCMD("input a command: ", appId, appName, args, false, true);
 		loadCfg(args);
-		args = args.length == 0 ? new String[]{"rip"} : args;
+		args = args.length == 0 ? new String[]{"help"} : args;
 		Command<?> cmd = Command.fromArgs(args);
 		if(shouldParseHashes(cmd))
 			McChecker.parseHashes();

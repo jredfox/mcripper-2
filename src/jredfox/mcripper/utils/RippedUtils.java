@@ -36,11 +36,11 @@ import com.jml.evilnotch.lib.JavaUtil;
 import com.jml.evilnotch.lib.json.JSONObject;
 import com.jml.evilnotch.lib.json.serialize.JSONSerializer;
 
+import jredfox.common.os.OSUtil;
 import jredfox.filededuper.util.DeDuperUtil;
 import jredfox.filededuper.util.IOUtils;
 import jredfox.filededuper.util.JarUtil;
 import jredfox.mcripper.url.URLResponse;
-import jredfox.selfcmd.util.OSUtil;
 
 /**
  * a ripp off of my own utils because I am a noob and don't have a commons jar yet
