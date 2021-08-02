@@ -31,7 +31,7 @@ Json Apis:
 - New Major V2: https://launchermeta.mojang.com/mc/game/version_manifest_v2.json
 - New Major V1: https://launchermeta.mojang.com/mc/game/version_manifest.json
 
-https://s3.amazonaws.com/Minecraft.Download
+https://s3.amazonaws.com/Minecraft.Download #1.6-? got replaced by json api
 - Old Major: http://s3.amazonaws.com/Minecraft.Download/versions/versions.json
 - Old Assets Index: https://s3.amazonaws.com/Minecraft.Download/indexes/<assetsIndexId>.json
 - Old Minor Json: https://s3.amazonaws.com/Minecraft.Download/versions/<versions>/<version>.json
@@ -51,6 +51,6 @@ https://minecraft.net/resources #classic-a1.1.2
 Amazon Aws indexes:
 - http://assets.minecraft.net uses the same index as regular amazonaws however it's currently down so it's embedded into this project now
 - http://s3.amazonaws.com/MinecraftResources #a1.1.2_01-1.5.2
-- Old 2012 and below Resources: http://s3.amazonaws.com/Minecraft.Resources
-- Old: http://s3.amazonaws.com/MinecraftDownload
+- Old: http://s3.amazonaws.com/MinecraftDownload #old launcher alpha-1.5.2 used this
+- http://s3.amazonaws.com/Minecraft.Resources #1.6-? got replaced with current json api
 ```
