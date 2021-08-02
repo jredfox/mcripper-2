@@ -36,13 +36,17 @@ JSON/Web APIS:
 - Old Version: http://s3.amazonaws.com/Minecraft.Download/versions/<version>/<version>.jar
 - Old Server: http://s3.amazonaws.com/Minecraft.Download/versions/<version>/minecraft_server.<version>.jar
 - Old Server Exe: http://s3.amazonaws.com/Minecraft.Download/versions/<version>/minecraft_server.<version>.exe
-- Old < 1.6: http://assets.minecraft.net/<version>.replaceAll("\\.","_").replaceAll("~", "_")/minecraft.jar
-- Old < 1.6: http://assets.minecraft.net/<version>.replaceAll("\\.","_").replaceAll("~", "_")/minecraft_server.jar
-- Old < 1.6: http://assets.minecraft.net/<version>.replaceAll("\\.","_").replaceAll("~", "_")/Minecraft_Server.exe
+-  #client a1.1.2_01-1.5.2: http://assets.minecraft.net/<version>.replaceAll("\\.","_").replaceAll("~", "_")/minecraft.jar
+-  #client a1.1.2_01-1.5.2: http://assets.minecraft.net/<version>.replaceAll("\\.","_").replaceAll("~", "_")/minecraft_server.jar
+-  #client a1.1.2_01-1.5.2: http://assets.minecraft.net/<version>.replaceAll("\\.","_").replaceAll("~", "_")/Minecraft_Server.exe
+
+https://minecraft.net/resources #classic-a1.1.2
+- gives a comma seperated value file with path,filesize,timestamp
+- vanilla client would re-download if the filesize has changed
 
 Amazon Aws indexes:
 - http://assets.minecraft.net uses the same index as regular amazonaws however it's currently down so it's embedded into this project now
-- http://s3.amazonaws.com/MinecraftResources
+- http://s3.amazonaws.com/MinecraftResources #a1.1.2_01-1.5.2
 - Old 2012 and below Resources: http://s3.amazonaws.com/Minecraft.Resources
 - Old: http://s3.amazonaws.com/MinecraftDownload
 ```
