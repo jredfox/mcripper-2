@@ -49,7 +49,7 @@ https://minecraft.net/resources #classic-a1.1.2
 - vanilla client would re-download if the filesize has changed
 
 Amazon Aws indexes:
-- http://assets.minecraft.net uses the same index as regular amazonaws however it's currently down so it's embedded into this project now
+- http://assets.minecraft.net #seems users would have to manually download snapshots/servers from here got replaced with Minecraft.Download
 - http://s3.amazonaws.com/MinecraftResources #a1.1.2_01-1.5.2
 - Old: http://s3.amazonaws.com/MinecraftDownload #old launcher alpha-1.5.2 used this
 - http://s3.amazonaws.com/Minecraft.Resources #1.6-? got replaced with current json api
