@@ -27,18 +27,22 @@ Details:
 
 Links / API notes:
 ```
-JSON/Web APIS:
+Json Apis:
 - New Major V2: https://launchermeta.mojang.com/mc/game/version_manifest_v2.json
 - New Major V1: https://launchermeta.mojang.com/mc/game/version_manifest.json
+
+https://s3.amazonaws.com/Minecraft.Download
 - Old Major: http://s3.amazonaws.com/Minecraft.Download/versions/versions.json
 - Old Assets Index: https://s3.amazonaws.com/Minecraft.Download/indexes/<assetsIndexId>.json
 - Old Minor Json: https://s3.amazonaws.com/Minecraft.Download/versions/<versions>/<version>.json
 - Old Version: http://s3.amazonaws.com/Minecraft.Download/versions/<version>/<version>.jar
 - Old Server: http://s3.amazonaws.com/Minecraft.Download/versions/<version>/minecraft_server.<version>.jar
 - Old Server Exe: http://s3.amazonaws.com/Minecraft.Download/versions/<version>/minecraft_server.<version>.exe
--  #client a1.1.2_01-1.5.2: http://assets.minecraft.net/<version>.replaceAll("\\.","_").replaceAll("~", "_")/minecraft.jar
--  #client a1.1.2_01-1.5.2: http://assets.minecraft.net/<version>.replaceAll("\\.","_").replaceAll("~", "_")/minecraft_server.jar
--  #client a1.1.2_01-1.5.2: http://assets.minecraft.net/<version>.replaceAll("\\.","_").replaceAll("~", "_")/Minecraft_Server.exe
+
+https://assets.minecraft.net
+- http://assets.minecraft.net/<version>.replaceAll("\\.","_").replaceAll("~", "_")/minecraft.jar
+- http://assets.minecraft.net/<version>.replaceAll("\\.","_").replaceAll("~", "_")/minecraft_server.jar
+- http://assets.minecraft.net/<version>.replaceAll("\\.","_").replaceAll("~", "_")/Minecraft_Server.exe
 
 https://minecraft.net/resources #classic-a1.1.2
 - gives a comma seperated value file with path,filesize,timestamp
