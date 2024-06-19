@@ -124,18 +124,19 @@ public class McChecker {
 	
 	public static void checknewOmni()
 	{
+		System.out.println("checking vault.omniarchive.uk");
 		DLUtils.dlOmniIndex(am, "https://vault.omniarchive.uk/archive/java/index.html", true, "Omniarchive/vault");
+		System.out.println("checking files.betacraft.uk");
 		DLUtils.dlOmniIndex(am, "https://files.betacraft.uk/launcher/assets/versions", true,  "Omniarchive/betacraft/clients");
 		DLUtils.dlOmniIndex(am, "https://files.betacraft.uk/server-archive", true, 			  "Omniarchive/betacraft/servers");
 		
 		//Check betacraft assets from v1
-		/*System.out.println("checking betacraft v1 assets");
+		System.out.println("checking betacraft v1 assets");
 		
 		//handle port 80, and 11701-11703
 		for(int p=80; p < 11704; p++)
 		{
-			String url = "http://www.betacraft.uk:" + p + "/resources";
-			DLUtils.dlAlphaSounds(am, url, "Omniarchive/betacraft/resources", p);
+			DLUtils.dlAlphaSounds(am, "http://www.betacraft.uk:" + p + "/resources", "Omniarchive/betacraft/resources/" + p);
 			if(p == 80)
 				p = 11700;//p++ causes this to be 11701
 		}
@@ -145,7 +146,7 @@ public class McChecker {
 		{
 			String url = "http://www.betacraft.uk:" + p + "/MinecraftResources";
 			DLUtils.dlAmazonAws(am, url, "Omniarchive/betacraft/resources/MinecraftResources" + p);
-		}*/
+		}
 		
 		//Check betacraft assets from v2
 		System.out.println("checking betacraft v2 assets");

@@ -411,20 +411,21 @@ public class DLUtils {
 		File root = new File(am.dir, path);
 		File indexDir = new File(root, "indexes");
 		File fileDir = new File(root, "files");
+		String rname = DeDuperUtil.getTrueName(root);
 		
-		String xname = DeDuperUtil.getTrueName(root) + ".xml";
+		String xname = rname + ".xml";
 		File xmlFile = dlMove(am, url, path + "/indexes/" + xname, new File(indexDir, xname)).file;
 		if(xmlFile == null)
 			xmlFile = extracted;
-		dlAmazonAws(am, url, fileDir, xmlFile);
+		dlAmazonAws(am, url, fileDir, xmlFile, rname);
 	}
 	
 	public static void dlAmazonAws(ArchiveManager am, String baseUrl, File xmlFile)
 	{
-		dlAmazonAws(am, baseUrl, xmlFile != null ? xmlFile.getParentFile() : null, xmlFile);
+		dlAmazonAws(am, baseUrl, xmlFile != null ? xmlFile.getParentFile() : null, xmlFile, null);
 	}
 	
-	public static void dlAmazonAws(ArchiveManager am, String baseUrl, File fileDir, File xmlFile) 
+	public static void dlAmazonAws(ArchiveManager am, String baseUrl, File fileDir, File xmlFile, String index) 
 	{
 		if(xmlFile == null)
 		{
@@ -438,7 +439,7 @@ public class DLUtils {
 			System.err.println("XML file appears to be missing Contents:" + xmlFile.getAbsolutePath() + " from:" + baseUrl);
 			return;
 		}
-		String index = DeDuperUtil.getTrueName(xmlFile);
+		index = index == null ? DeDuperUtil.getTrueName(xmlFile) : index;
 		String indexHash = RippedUtils.getSHA1(xmlFile);
 		for(int i=0; i < nlist.getLength(); i++)
 		{
@@ -669,17 +670,18 @@ public class DLUtils {
 	}
 
 	/**
-	 * Downloads sounds (music to) from classic-a1.1.2 API
+	 * Downloads sounds and music from classic-a1.1.2
 	 */
-	public static void dlAlphaSounds(ArchiveManager am, String url, String dirPath, int port)
+	public static void dlAlphaSounds(ArchiveManager am, String url, String dirPath)
 	{
-		String index = dirPath + "/indexes/index_" + port + ".txt";
+		String index = dirPath + "/indexes/index.txt";
 		File indexFile = DLUtils.dlMove(am, url, index, new File(am.dir, index)).file;
 		if(indexFile == null)
 		{
 			System.err.println("Alpha Sound Index is null Skipping:" + url);
 			return;
 		}
+		String indexHash = RippedUtils.getSHA1(indexFile);
 		List<String> lines = JavaUtil.getFileLines(indexFile);
 		for(String s : lines)
 		{
@@ -689,7 +691,7 @@ public class DLUtils {
 			
 			String file = s.split(",")[0];
 			String audioUrl = url + "/" + file;
-			learnDl(am, audioUrl, new File(am.dir, dirPath + "/" + file));
+			learnDl(am, dirPath, indexHash, audioUrl, new File(am.dir, dirPath + "/" + file));
 		}
 	}
 }
