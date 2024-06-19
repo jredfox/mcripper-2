@@ -11,7 +11,9 @@ import java.net.URL;
 import java.net.URLConnection;
 import java.net.UnknownHostException;
 import java.net.UnknownServiceException;
+import java.util.Collection;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import javax.xml.parsers.ParserConfigurationException;
@@ -22,6 +24,9 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
+import com.jml.evilnotch.lib.JavaUtil;
+
+import jredfox.common.io.IOUtils;
 import jredfox.common.os.OSUtil;
 import jredfox.filededuper.util.DeDuperUtil;
 import jredfox.mcripper.printer.Learner;
@@ -170,6 +175,7 @@ public class DLUtils {
 		{
 			url = new URL(sURL);
 			con = url.openConnection();
+			con.setRequestProperty("User-Agent", "Mozilla");
 			con.setConnectTimeout(1000 * 15);
 			if(timestamp == -1)
 				timestamp = getTime(con);
@@ -259,11 +265,16 @@ public class DLUtils {
 	
 	public static String getFixedUrl(String url) 
 	{
-		if(https)
+		if(https && !isFunky(url))
 			url = url.replaceAll("http:", "https:");
-		return url.replaceAll(" ", "%20");
+		return url.replaceAll(" ", "%20").replace("(", "%28").replace(")", "%29");
 	}
 	
+	public static boolean isFunky(String url)
+	{
+		return url.startsWith("http://resources.betacraft.uk") || url.startsWith("http://www.betacraft.uk");
+	}
+
 	public static File getFixedFile(File saveAs) 
 	{
 		return OSUtil.toWinFile(new File(getUnfixedURL(saveAs.getPath()))).getAbsoluteFile();
@@ -271,7 +282,7 @@ public class DLUtils {
 	
 	public static String getUnfixedURL(String url)
 	{
-		return url.replaceAll("%20", " ");
+		return url.replaceAll("%20", " ").replace("%28", "(").replace("%29", ")");
 	}
 	
 	public static URLResponse dlMove(ArchiveManager am, String url, String path, File saveAs)
@@ -446,6 +457,67 @@ public class DLUtils {
 			}
 		}
 	}
+	
+	public static void dlOmniIndex(ArchiveManager am, String url, boolean subIndexes, String dirPath)
+	{
+		dlOmniIndex(am, url, subIndexes, dirPath, true, null);
+	}
+	
+	/**
+	 * Downloads entire betacraft.uk & vault.omniarchive.uk stile indexes of files by reading an HTML file
+	 */
+	public static void dlOmniIndex(ArchiveManager am, String url, boolean subIndexes, String dirPath, boolean learn, Collection<File> col) 
+	{
+		String path = dirPath + "/indexes/index.html";
+		File index = dlMove(am, url, path, new File(am.dir, path)).file;
+		if(index == null)
+		{
+			System.err.println("omni archive index missing for:" + url + " skipping");
+			return;
+		}
+		List<String> lines = IOUtils.getFileLines(index);
+		for(String s : lines)
+		{
+			s = s.trim();
+			int i = s.indexOf("<a href=");
+			//check for if the tag we are looking for is here
+			if(i == -1)
+				continue;
+			
+			//end search as the code block is done
+			if(s.indexOf("</code>") >= 0)
+				break;
+			
+			//do not navigate back to the homepage
+			if(s.substring(s.indexOf(">") + 1).startsWith(".."))
+				continue;
+			
+			String u = JavaUtil.parseQuotes(s, i, "\"");
+			
+			//do not go back to the homepage
+			if(u.startsWith(".."))
+				continue;
+			
+			if(!u.startsWith("http:") && !u.startsWith("https:"))
+				u = url + "/" + u;
+
+			if(u.endsWith("/") || u.endsWith("/index.html"))
+			{
+				if(!subIndexes)
+					continue;//skip sub indexes if disabled
+				String subName = u.substring(0, u.lastIndexOf('/'));
+				subName = subName.substring(subName.lastIndexOf('/') + 1);
+				dlOmniIndex(am, u.endsWith("/") ? u.substring(0, u.length() - 1) : u, subIndexes, dirPath + "/" + subName, learn, col);
+				continue;
+			}
+			
+			//download the jar (client server or library)
+			String relPath = dirPath + "/" + RippedUtils.getLastSplit(u, "/");
+			URLResponse rep = learn ? learnDl(am, u, new File(am.dir, relPath)) : dlMove(am, u, relPath, new File(am.dir, relPath));
+			if(col != null && rep.file != null)
+				col.add(rep.file);
+		}
+	}
 
 	/**
 	 * dl an entire webArchive to the archive directory
@@ -592,5 +664,30 @@ public class DLUtils {
 			System.err.println(io.getMessage());
 		else
 			io.printStackTrace();
+	}
+
+	/**
+	 * Downloads sounds (music to) from classic-a1.1.2 API
+	 */
+	public static void dlAlphaSounds(ArchiveManager am, String url, String dirPath, int port)
+	{
+		String index = dirPath + "/indexes/index_" + port + ".txt";
+		File indexFile = DLUtils.dlMove(am, url, index, new File(am.dir, index)).file;
+		if(indexFile == null)
+		{
+			System.err.println("Alpha Sound Index is null Skipping:" + url);
+			return;
+		}
+		List<String> lines = JavaUtil.getFileLines(indexFile);
+		for(String s : lines)
+		{
+			s = s.trim();
+			if(s.isEmpty() || !s.contains(","))
+				continue;
+			
+			String file = s.split(",")[0];
+			String audioUrl = url + "/" + file;
+			learnDl(am, audioUrl, new File(am.dir, dirPath + "/" + file));
+		}
 	}
 }

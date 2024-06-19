@@ -5,14 +5,16 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import com.jml.evilnotch.lib.JavaUtil;
 import com.jml.evilnotch.lib.json.JSONArray;
 import com.jml.evilnotch.lib.json.JSONObject;
 
-import jredfox.common.os.OSUtil;
 import jredfox.filededuper.util.DeDuperUtil;
 import jredfox.filededuper.util.IOUtils;
 import jredfox.mcripper.McRipper;
@@ -118,6 +120,42 @@ public class McChecker {
 		DLUtils.dlWebArchive(am, "https://archive.org/download/Minecraft-JE-Alpha", "Omniarchive/JE-Alpha");
 		DLUtils.dlWebArchive(am, "https://archive.org/download/Minecraft-JE-Beta", "Omniarchive/JE-Beta");
 		DLUtils.dlWebArchive(am, "https://archive.org/download/Minecraft-JE-Sounds", "Omniarchive/JE-Sounds");
+	}
+	
+	public static void checknewOmni()
+	{
+		DLUtils.dlOmniIndex(am, "https://vault.omniarchive.uk/archive/java/index.html", true, "Omniarchive/vault");
+		DLUtils.dlOmniIndex(am, "https://files.betacraft.uk/launcher/assets/versions", true,  "Omniarchive/betacraft/clients");
+		DLUtils.dlOmniIndex(am, "https://files.betacraft.uk/server-archive", true, 			  "Omniarchive/betacraft/servers");
+		
+		//Check betacraft assets from v1
+		System.out.println("checking betacraft v1 assets");
+		
+		//handle port 80, and 11701-11703
+		for(int p=80; p < 11704; p++)
+		{
+			String url = "http://www.betacraft.uk:" + p + "/resources";
+			DLUtils.dlAlphaSounds(am, url, "Omniarchive/betacraft/resources", p);
+			if(p == 80)
+				p = 11700;//p++ causes this to be 11701
+		}
+		
+		//handle port 11704-11707
+		for(int p=11704; p < 11708; p++)
+		{
+			String url = "http://www.betacraft.uk:" + p + "/MinecraftResources";
+			DLUtils.dlAmazonAws(am, url, "Omniarchive/betacraft/resources/MinecraftResources" + p);
+		}
+		
+		//Check betacraft assets from v2
+		System.out.println("checking betacraft v2 assets");
+		List<File> assets = new ArrayList<>(25);
+		DLUtils.dlOmniIndex(am, "https://files.betacraft.uk/launcher/v2/assets/indexes", true, "jsons/assets/betacraft", false, assets);
+		for(File assetIndex : assets)
+		{
+			checkAssets(assetIndex);
+		}
+		
 	}
 
 	public static void checkOldMc(boolean skipSnaps)
@@ -432,10 +470,13 @@ public class McChecker {
 		JSONObject objects = json.getJSONObject("objects");
 		for(String key : objects.keySet())
 		{
+			//skip index.xml && index.txt as they are betacraft's archive of metadata
+			if(key.startsWith("index.") && (key.equals("index.xml") || key.equals("index.txt")))
+				continue;
 			JSONObject assetJson = objects.getJSONObject(key);
 			String assetSha1 = assetJson.getString("hash");
 			String twoChar = assetSha1.substring(0, 2);
-			String assetUrl = "https://resources.download.minecraft.net/" + twoChar + "/" + assetSha1;
+			String assetUrl = assetJson.containsKey("custom_url") ? assetJson.getString("custom_url") : "https://resources.download.minecraft.net/" + twoChar + "/" + assetSha1;
 			DLUtils.dlSingleton(am, assetUrl, new File(mojang, "assets/objects/" + twoChar + "/" + assetSha1), assetSha1);//runs actually faster just dling it from online because the server is really fast
 		}
 		assetsCount++;
@@ -502,7 +543,7 @@ public class McChecker {
 		jsonOldMinor = new File(jsonDir, "oldminor");
 		IOUtils.close(logger);
 		closePrinters();
-		am = new ArchiveManager(new File(OSUtil.getAppData(), McRipper.appId + "/tmp"), root, mcDefaultDir, "mcripped", 23000, 100);
+		am = new ArchiveManager(new File(root, "tmp"), root, mcDefaultDir, "mcripped", 23000, 100);
 		logger = new LogPrinter(new File(root, "logs/log-" + Instant.now().toString().replaceAll(":", ".") + ".txt"), System.out, System.err, false, true);
 		logger.load();
 	}
@@ -518,6 +559,48 @@ public class McChecker {
 	public static void closePrinters()
 	{
 		IOUtils.close(am);
+	}
+	
+	/**
+	 * internal do not use unless your updating the betacraft port list
+	 */
+	public static void printBetacraftPorts()
+	{
+		Set<Integer> ports = new HashSet<>();
+		List<File> fake_jsons = new ArrayList<>(125);
+		DLUtils.dlOmniIndex(am, "https://files.betacraft.uk/launcher/assets/jsons", true, "Omniarchive/betacraft/v1/jsons", false, fake_jsons);
+		for(File j : fake_jsons)
+		{
+			try
+			{
+				List<String> lines = JavaUtil.getFileLines(j);
+				for(String l : lines)
+				{
+					int i = l.indexOf("-Dhttp.proxyPort=");
+					if(i != -1)
+					{
+						StringBuilder b = new StringBuilder();
+						for(int m=i + "-Dhttp.proxyPort=".length(); m < l.length(); m++)
+						{
+							char c = l.charAt(m);
+							if(Character.isDigit(c))
+								b.append(c);
+							else
+								break;
+						}
+						ports.add(Integer.parseInt(b.toString()));
+					}
+				}
+			}
+			catch(Throwable t)
+			{
+				t.printStackTrace();
+			}
+		}
+		for(int p : ports)
+		{
+			System.out.println("ports.add(" + p + ");");
+		}
 	}
 
 }

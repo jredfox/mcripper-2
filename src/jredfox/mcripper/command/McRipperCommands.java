@@ -103,7 +103,8 @@ public class McRipperCommands {
 		public void run(ParamList<Object> params)
 		{
 			this.start(params);
-			McChecker.checkOmni();
+//			McChecker.checkOmni();
+			McChecker.checknewOmni();
 			this.finish(params);
 		}
 		
