@@ -104,7 +104,7 @@ public class McChecker {
 		}
 		
 		//do assets
-		List<File> assetsJsons = DeDuperUtil.getDirFiles(jsonAssets);
+		List<File> assetsJsons = DeDuperUtil.getDirFiles(jsonAssets, new String[]{"html", "xml"}, true);//blacklist html and xml index files caused by the betacraft update
 		for(File assets : assetsJsons)
 		{
 			checkAssets(assets);
