@@ -185,14 +185,14 @@ public class McRipperCommands {
 			for(File jsonFile : files)
 			{
 				JSONObject json = RippedUtils.getJSON(jsonFile);
-				File out = new File(rootOut, DeDuperUtil.getTrueName(jsonFile));
+				File out = new File(rootOut, DeDuperUtil.getTrueName(jsonFile) + "-" + RippedUtils.getSHA1(jsonFile));
 				try
 				{
 					if(this.isMinor(json))
 						this.ripMinor(json, mcDir, out, ripAll);
 					else
 					{
-						File jar = skip ? null : isFile ? jarFile : this.nextFile("input minecraft.jar that uses assetsIndex " + jsonFile.getName() + ":");
+						File jar = skip ? null : isFile ? jarFile : this.nextFile("input minecraft.jar for " + jsonFile.getName() + ":");
 						this.ripAssetsIndex(jar, json, mcDir, out, ripAll);
 					}
 				}
