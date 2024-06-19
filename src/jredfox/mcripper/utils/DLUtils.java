@@ -475,6 +475,8 @@ public class DLUtils {
 			System.err.println("omni archive index missing for:" + url + " skipping");
 			return;
 		}
+//		System.out.println("checking Omni-Archive Index:" + url);
+		String indexHash = RippedUtils.getSHA1(index);
 		List<String> lines = IOUtils.getFileLines(index);
 		for(String s : lines)
 		{
@@ -513,7 +515,7 @@ public class DLUtils {
 			
 			//download the jar (client server or library)
 			String relPath = dirPath + "/" + RippedUtils.getLastSplit(u, "/");
-			URLResponse rep = learn ? learnDl(am, u, new File(am.dir, relPath)) : dlMove(am, u, relPath, new File(am.dir, relPath));
+			URLResponse rep = learn ? learnDl(am, dirPath, indexHash, u, new File(am.dir, relPath)) : dlMove(am, u, relPath, new File(am.dir, relPath));
 			if(col != null && rep.file != null)
 				col.add(rep.file);
 		}
